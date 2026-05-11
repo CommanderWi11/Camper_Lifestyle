@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camper Life-style</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>Camper Life-style</h1>
+        <p class="subtitle">Buscando nuestra furgoneta perfecta</p>
+      </div>
+      <div class="header-params">
+        <span>≤ 55.000 €</span>
+        <span>4 plazas</span>
+        <span>Baño</span>
+        <span>≤ 100.000 km</span>
+        <span>≤ 10 años</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="filters">
+      <label>
+        Estado
+        <select id="filter-status">
+          <option value="">Todos</option>
+          <option value="new">Nuevo</option>
+          <option value="watching">Siguiendo</option>
+          <option value="contacted">Contactado</option>
+          <option value="discarded">Descartado</option>
+        </select>
+      </label>
+      <label>
+        Ordenar por
+        <select id="sort-by">
+          <option value="added_at">Más reciente</option>
+          <option value="price">Precio (menor)</option>
+        </select>
+      </label>
+    </div>
+    <div class="meta" id="last-updated"></div>
+  </div>
+
+  <main id="listings-grid">
+    <p class="loading">Cargando anuncios...</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
