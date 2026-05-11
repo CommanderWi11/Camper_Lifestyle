@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global user.name 'camper-bot'
           git config --global user.email 'bot@noreply.github.com'
-          git add dashboard/listings.json
+          git add docs/listings.json
           git diff --cached --quiet || (
             git commit -m "chore: weekly listings update $(date +%Y-%m-%d)" &&
             git push

@@ -8,7 +8,7 @@ in the Canary Islands. Weekly search via GitHub Actions. Comments via Supabase.
 1. Copy `dashboard/config.js.example` → `dashboard/config.js` and fill in Supabase credentials
 2. Install Python deps: `pip install -r scripts/requirements.txt`
 3. Run manually: `python scripts/search.py`
-4. GitHub Pages: configure repo Settings → Pages → Branch: main, Folder: /dashboard
+4. GitHub Pages: configure repo Settings → Pages → Branch: main, Folder: /docs
 
 ## Search parameters
 
