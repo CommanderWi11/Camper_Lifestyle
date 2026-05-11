@@ -3,12 +3,15 @@
 
 import json
 import hashlib
+import re
 import sys
 from datetime import date
 from pathlib import Path
+from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 PARAMS_FILE = Path(__file__).parent / "params.json"
 LISTINGS_FILE = Path(__file__).parent.parent / "docs" / "listings.json"
@@ -22,14 +25,6 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
     "Accept-Encoding": "gzip, deflate, br",
-}
-
-WALLAPOP_HEADERS = {
-    **HEADERS,
-    "Accept": "application/json, text/plain, */*",
-    "Referer": "https://es.wallapop.com/",
-    "Origin": "https://es.wallapop.com",
-    "X-DeviceOS": "0",
 }
 
 CANARY_KEYWORDS = {
@@ -58,53 +53,87 @@ def make_id(source: str, url: str) -> str:
     return f"{source}-{hashlib.md5(url.encode()).hexdigest()[:8]}"
 
 
+def _parse_attrs(text: str) -> tuple[int | None, int | None]:
+    """Parse year and km from Wallapop attribute string like '2008 · 80500 km · Diésel'."""
+    year, km = None, None
+    for part in text.split("·"):
+        part = part.strip()
+        if re.match(r"^\d{4}$", part):
+            year = int(part)
+        elif "km" in part.lower():
+            km_str = re.sub(r"[^\d]", "", part)
+            if km_str:
+                km = int(km_str)
+    return year, km
+
+
 def fetch_wallapop(params: dict) -> list:
-    """Query Wallapop JSON API. Returns list of raw listing dicts."""
+    """Scrape Wallapop search results using a headless browser (API is blocked)."""
     wp = params["wallapop"]
-    endpoint = "https://api.wallapop.com/api/v3/general/search"
     results = []
+    seen_ids: set[str] = set()
 
-    for keyword in params["keywords"]:
-        try:
-            resp = requests.get(
-                endpoint,
-                params={
-                    "keywords": keyword,
-                    "latitude": wp["latitude"],
-                    "longitude": wp["longitude"],
-                    "distance": wp["distance_km"] * 1000,
-                    "max_sale_price": params["max_price"],
-                    "order_by": "newest",
-                    "category_ids": "100",
-                },
-                headers=WALLAPOP_HEADERS,
-                timeout=15,
-            )
-            resp.raise_for_status()
-            data = resp.json()
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
 
-            for item in data.get("search_objects", []):
-                slug = item.get("web_slug", "")
-                if not slug:
-                    continue
-                url = f"https://es.wallapop.com/item/{slug}"
-                results.append({
-                    "id": make_id("wallapop", url),
-                    "title": item.get("title", "").strip(),
-                    "price": int(item.get("price", 0)),
-                    "year": None,
-                    "km": None,
-                    "sleeping": None,
-                    "bathroom": None,
-                    "location": item.get("location", {}).get("city", ""),
-                    "source": "wallapop",
-                    "url": url,
-                    "photo": item.get("main_image", {}).get("urls", {}).get("big", ""),
-                    "status": "new",
-                    "added_at": str(date.today()),
-                })
-        except Exception as exc:
-            print(f"[wallapop] error for '{keyword}': {exc}", file=sys.stderr)
+        for keyword in params["keywords"]:
+            try:
+                url = (
+                    f"https://es.wallapop.com/search"
+                    f"?keywords={quote(keyword)}"
+                    f"&latitude={wp['latitude']}&longitude={wp['longitude']}"
+                    f"&distance_in_km={wp['distance_km']}"
+                    f"&max_sale_price={params['max_price']}"
+                    f"&order_by=newest"
+                )
+                page.goto(url, timeout=30000)
+                page.wait_for_timeout(4000)
+
+                cards = page.query_selector_all('a[href*="/item/"][aria-label]')
+                for card in cards:
+                    href = card.get_attribute("href") or ""
+                    title = card.get_attribute("aria-label") or ""
+
+                    price_el = card.query_selector('strong[aria-label="Item price"]')
+                    price_text = price_el.inner_text() if price_el else ""
+                    price_str = re.sub(r"[^\d]", "", price_text)
+                    try:
+                        price = int(price_str)
+                    except ValueError:
+                        price = 0
+
+                    attrs_el = card.query_selector("label")
+                    year, km = _parse_attrs(attrs_el.inner_text() if attrs_el else "")
+
+                    img_el = card.query_selector("img")
+                    photo = img_el.get_attribute("src") if img_el else ""
+
+                    full_url = f"https://es.wallapop.com{href}" if href.startswith("/") else href
+                    listing_id = make_id("wallapop", full_url)
+                    if listing_id in seen_ids:
+                        continue
+                    seen_ids.add(listing_id)
+
+                    results.append({
+                        "id": listing_id,
+                        "title": title,
+                        "price": price,
+                        "year": year,
+                        "km": km,
+                        "sleeping": None,
+                        "bathroom": None,
+                        "location": "",
+                        "source": "wallapop",
+                        "url": full_url,
+                        "photo": photo,
+                        "status": "new",
+                        "added_at": str(date.today()),
+                    })
+            except Exception as exc:
+                print(f"[wallapop] error for '{keyword}': {exc}", file=sys.stderr)
+
+        browser.close()
 
     return results
 
