@@ -6,20 +6,36 @@ import hashlib
 import sys
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
 
 PARAMS_FILE = Path(__file__).parent / "params.json"
-LISTINGS_FILE = Path(__file__).parent.parent / "dashboard" / "listings.json"
+LISTINGS_FILE = Path(__file__).parent.parent / "docs" / "listings.json"
 
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
-    )
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+}
+
+WALLAPOP_HEADERS = {
+    **HEADERS,
+    "Accept": "application/json, text/plain, */*",
+    "Referer": "https://es.wallapop.com/",
+    "Origin": "https://es.wallapop.com",
+    "X-DeviceOS": "0",
+}
+
+CANARY_KEYWORDS = {
+    "canarias", "las palmas", "tenerife", "gran canaria",
+    "la palma", "lanzarote", "fuerteventura", "la gomera",
+    "el hierro", "la graciosa",
 }
 
 
@@ -61,7 +77,7 @@ def fetch_wallapop(params: dict) -> list:
                     "order_by": "newest",
                     "category_ids": "100",
                 },
-                headers=HEADERS,
+                headers=WALLAPOP_HEADERS,
                 timeout=15,
             )
             resp.raise_for_status()
@@ -94,74 +110,65 @@ def fetch_wallapop(params: dict) -> list:
 
 
 def fetch_milanuncios(params: dict) -> list:
-    """Scrape Milanuncios search results.
+    """Scrape Milanuncios autocaravanas category page, filter by Canary Islands.
 
-    NOTE: CSS selectors are brittle. If this stops working, inspect
-    milanuncios.com/autocaravanas-y-campers/ in a browser and update
-    the selectors below.
+    NOTE: If selectors break, inspect article[data-testid="AD_CARD"] on
+    milanuncios.com/autocaravanas-de-segunda-mano/ and update below.
     """
     results = []
 
-    for keyword in params["keywords"][:2]:  # limit to avoid rate limiting
-        try:
-            url = (
-                f"https://www.milanuncios.com/autocaravanas-y-campers/"
-                f"?texto={quote(keyword)}"
-                f"&lp={params['max_price']}&porloca=5"
-            )
-            resp = requests.get(url, headers=HEADERS, timeout=15)
-            resp.raise_for_status()
-            soup = BeautifulSoup(resp.text, "html.parser")
+    try:
+        url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/"
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
 
-            for article in soup.select("article.ma-AdCard"):
-                title_el = article.select_one(".ma-AdCard-title")
-                price_el = article.select_one(".ma-AdPrice-value")
-                location_el = article.select_one(".ma-AdLocation-text")
-                link_el = article.select_one("a.ma-AdCard-titleLink")
-                img_el = article.select_one("img.ma-AdCard-photo")
+        for article in soup.select('article[data-testid="AD_CARD"]'):
+            title_el = article.select_one(".ma-AdCardV2-title")
+            price_el = article.select_one(".ma-AdPrice-value")
+            location_el = article.select_one(".ma-AdLocation-text")
+            link_el = article.select_one("a.ma-AdCardListingV2-TitleLink")
+            img_el = article.select_one("img.ma-AdCardV2-photo")
 
-                if not title_el or not price_el or not link_el:
-                    continue
+            if not title_el or not link_el:
+                continue
 
-                price_str = (
-                    price_el.get_text(strip=True)
-                    .replace(".", "")
-                    .replace(",", "")
-                    .replace("€", "")
-                    .strip()
-                )
-                try:
-                    price = int(price_str)
-                except ValueError:
-                    continue
+            location = location_el.get_text(strip=True) if location_el else ""
+            if not any(kw in location.lower() for kw in CANARY_KEYWORDS):
+                continue
 
-                if price > params["max_price"]:
-                    continue
+            price_str = (
+                price_el.get_text(strip=True)
+                .replace(".", "").replace(",", "").replace("€", "").replace("\xa0", "").strip()
+            ) if price_el else "0"
+            try:
+                price = int(price_str)
+            except ValueError:
+                price = 0
 
-                href = link_el.get("href", "")
-                full_url = (
-                    f"https://www.milanuncios.com{href}"
-                    if href.startswith("/")
-                    else href
-                )
+            if params["max_price"] and price > params["max_price"]:
+                continue
 
-                results.append({
-                    "id": make_id("milanuncios", full_url),
-                    "title": title_el.get_text(strip=True),
-                    "price": price,
-                    "year": None,
-                    "km": None,
-                    "sleeping": None,
-                    "bathroom": None,
-                    "location": location_el.get_text(strip=True) if location_el else "",
-                    "source": "milanuncios",
-                    "url": full_url,
-                    "photo": img_el.get("src", "") if img_el else "",
-                    "status": "new",
-                    "added_at": str(date.today()),
-                })
-        except Exception as exc:
-            print(f"[milanuncios] error for '{keyword}': {exc}", file=sys.stderr)
+            href = link_el.get("href", "")
+            full_url = f"https://www.milanuncios.com{href}" if href.startswith("/") else href
+
+            results.append({
+                "id": make_id("milanuncios", full_url),
+                "title": title_el.get_text(strip=True),
+                "price": price,
+                "year": None,
+                "km": None,
+                "sleeping": None,
+                "bathroom": None,
+                "location": location,
+                "source": "milanuncios",
+                "url": full_url,
+                "photo": img_el.get("src", "") if img_el else "",
+                "status": "new",
+                "added_at": str(date.today()),
+            })
+    except Exception as exc:
+        print(f"[milanuncios] error: {exc}", file=sys.stderr)
 
     return results
 
