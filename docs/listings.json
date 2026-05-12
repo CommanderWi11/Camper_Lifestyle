@@ -10,8 +10,9 @@
     "location": "Modelo nuevo (referencia)",
     "source": "manual",
     "url": "https://www.sunlight.de/es/modelos/camper-vans/cliff-adventure/",
-    "photo": "",
-    "status": "watching",
+    "photo": "https://cdn.continentalcaravans.co.uk/wp-content/uploads/2026/01/2026-Sunlight-Cliff-640-RT-For-Sale-SU5313-7-1-1024x768.jpg",
+    "status": "reference",
+    "pinned": true,
     "added_at": "2026-05-11"
   },
   {

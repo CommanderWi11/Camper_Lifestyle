@@ -220,11 +220,12 @@ main {
   flex-shrink: 0;
 }
 
-.badge-new      { background: #fff3cd; color: #856404; }
-.badge-watching { background: #cfe2ff; color: #084298; }
-.badge-contacted{ background: #d1e7dd; color: #0a3622; }
-.badge-discarded{ background: #f8d7da; color: #842029; }
-.badge-feature  { background: #e8f4f8; color: #0c5460; }
+.badge-new       { background: #fff3cd; color: #856404; }
+.badge-watching  { background: #cfe2ff; color: #084298; }
+.badge-contacted { background: #d1e7dd; color: #0a3622; }
+.badge-discarded { background: #f8d7da; color: #842029; }
+.badge-feature   { background: #e8f4f8; color: #0c5460; }
+.badge-reference { background: #1a1a2e; color: #fff; }
 
 /* Comments */
 .comments {

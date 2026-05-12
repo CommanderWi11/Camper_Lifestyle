@@ -9,6 +9,7 @@ const STATUS_LABELS = {
   watching: 'Siguiendo',
   contacted: 'Contactado',
   discarded: 'Descartado',
+  reference: 'Referencia',
 };
 
 const STATUS_CLASSES = {
@@ -16,6 +17,7 @@ const STATUS_CLASSES = {
   watching: 'badge-watching',
   contacted: 'badge-contacted',
   discarded: 'badge-discarded',
+  reference: 'badge-reference',
 };
 
 async function init() {
@@ -88,11 +90,12 @@ function render() {
     listings = listings.filter(l => starredSet.has(l.id));
   }
 
-  if (sortBy === 'price') {
-    listings.sort((a, b) => a.price - b.price);
-  } else {
-    listings.sort((a, b) => (b.added_at || '').localeCompare(a.added_at || ''));
-  }
+  listings.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    if (sortBy === 'price') return a.price - b.price;
+    return (b.added_at || '').localeCompare(a.added_at || '');
+  });
 
   const grid = document.getElementById('listings-grid');
   grid.innerHTML = listings.length
