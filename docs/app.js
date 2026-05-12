@@ -3,6 +3,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let allListings = [];
 let commentsByListing = {};
 let starredSet = new Set();
+let hiddenSet = new Set();
 
 const STATUS_LABELS = {
   new: 'Nuevo',
@@ -21,10 +22,11 @@ const STATUS_CLASSES = {
 };
 
 async function init() {
-  const [listings, commentsResult, starsResult] = await Promise.all([
+  const [listings, commentsResult, starsResult, hiddenResult] = await Promise.all([
     fetch('listings.json').then(r => r.json()),
     supabaseClient.from('camper_comments').select('*').order('created_at', { ascending: true }),
     supabaseClient.from('camper_stars').select('listing_id'),
+    supabaseClient.from('camper_hidden').select('listing_id'),
   ]);
 
   allListings = listings;
@@ -41,6 +43,12 @@ async function init() {
   if (starsResult.data) {
     for (const row of starsResult.data) {
       starredSet.add(row.listing_id);
+    }
+  }
+
+  if (hiddenResult.data) {
+    for (const row of hiddenResult.data) {
+      hiddenSet.add(row.listing_id);
     }
   }
 
@@ -70,7 +78,9 @@ async function init() {
   document.getElementById('filter-status').addEventListener('change', render);
   document.getElementById('sort-by').addEventListener('change', render);
   document.getElementById('filter-starred').addEventListener('change', render);
+  document.getElementById('filter-hidden').addEventListener('change', render);
   document.getElementById('listings-grid').addEventListener('click', handleStarToggle);
+  document.getElementById('listings-grid').addEventListener('click', handleHideToggle);
 
   render();
 }
@@ -79,8 +89,13 @@ function render() {
   const statusFilter = document.getElementById('filter-status').value;
   const sortBy = document.getElementById('sort-by').value;
   const starredOnly = document.getElementById('filter-starred').checked;
+  const showHidden = document.getElementById('filter-hidden').checked;
 
   let listings = [...allListings];
+
+  if (!showHidden) {
+    listings = listings.filter(l => !hiddenSet.has(l.id) || l.pinned);
+  }
 
   if (statusFilter) {
     listings = listings.filter(l => l.status === statusFilter);
@@ -113,15 +128,17 @@ function renderCard(listing) {
     ? `${listing.price.toLocaleString('es-ES')} €`
     : '—';
   const isStarred = starredSet.has(listing.id);
+  const isHidden = hiddenSet.has(listing.id);
 
   return `
-    <article class="card" data-id="${listing.id}">
+    <article class="card${isHidden ? ' card--hidden' : ''}" data-id="${listing.id}">
       <div class="card-photo-wrapper">
         ${listing.photo
           ? `<img class="card-photo" src="${listing.photo}" alt="${listing.title}" loading="lazy">`
           : `<div class="card-photo card-photo--empty">🚐</div>`
         }
         <button class="star-btn${isStarred ? ' starred' : ''}" data-id="${listing.id}" aria-label="Marcar como favorito">★</button>
+        ${!listing.pinned ? `<button class="hide-btn" data-id="${listing.id}" aria-label="${isHidden ? 'Mostrar anuncio' : 'Ocultar anuncio'}">${isHidden ? '👁' : '✕'}</button>` : ''}
       </div>
       <div class="card-body">
         <div class="card-header">
@@ -235,6 +252,26 @@ async function handleStarToggle(e) {
   if (document.getElementById('filter-starred').checked) {
     render();
   }
+}
+
+async function handleHideToggle(e) {
+  const btn = e.target.closest('.hide-btn');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const wasHidden = hiddenSet.has(id);
+
+  btn.disabled = true;
+
+  if (wasHidden) {
+    await supabaseClient.from('camper_hidden').delete().eq('listing_id', id);
+    hiddenSet.delete(id);
+  } else {
+    await supabaseClient.from('camper_hidden').insert({ listing_id: id });
+    hiddenSet.add(id);
+  }
+
+  render();
 }
 
 init().catch(err => {

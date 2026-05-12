@@ -322,6 +322,31 @@ main {
 .star-btn.starred { background: rgba(0,0,0,0.55); color: #fbbf24; }
 .star-btn:disabled { opacity: 0.5; cursor: default; }
 
+.hide-btn {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hide-btn:hover { background: rgba(180,0,0,0.7); color: white; }
+.hide-btn:disabled { opacity: 0.5; cursor: default; }
+
+.card--hidden { opacity: 0.45; }
+.card--hidden .card-photo { filter: grayscale(1); }
+
 /* Starred filter checkbox */
 .filter-checkbox {
   display: inline-flex;
