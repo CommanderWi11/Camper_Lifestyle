@@ -364,7 +364,85 @@ main {
   accent-color: #1a1a2e;
 }
 
+/* Score chips */
+.score-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.score-chip {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.score-chip.green { background: #dcfce7; color: #15803d; }
+.score-chip.amber { background: #fef9c3; color: #a16207; }
+.score-chip.red   { background: #fee2e2; color: #b91c1c; }
+
+/* Action bar */
+.action-bar {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  padding-top: 0.6rem;
+  border-top: 1px solid #f0f0e8;
+}
+
+.action-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid #d0d0c8;
+  border-radius: 5px;
+  background: white;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: #666;
+  text-align: center;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.action-btn:hover { border-color: #aaa; color: #222; }
+
+.action-new.active       { background: #fff3cd; color: #856404; border-color: #fde68a; }
+.action-watching.active  { background: #cfe2ff; color: #084298; border-color: #93c5fd; }
+.action-contacted.active { background: #d1e7dd; color: #0a3622; border-color: #86efac; }
+.action-discarded.active { background: #f8d7da; color: #842029; border-color: #fca5a5; }
+
+/* New-since-visit ribbon */
+.new-ribbon {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(37, 99, 235, 0.85);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* New count in toolbar */
+#new-count {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin-left: 0.5rem;
+}
+
+#new-count.clickable { cursor: pointer; color: #2563eb; }
+#new-count.clickable:hover { text-decoration: underline; }
+#new-count.active { color: #1d4ed8; font-weight: 600; }
+
 @media (max-width: 480px) {
   main { grid-template-columns: 1fr; padding: 1rem; }
   .header-inner { flex-direction: column; align-items: flex-start; }
+  .action-btn { font-size: 0.68rem; padding: 0.25rem 0.3rem; }
 }
