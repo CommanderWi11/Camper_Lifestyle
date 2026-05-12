@@ -71,6 +71,10 @@ header h1 { font-size: 1.6rem; font-weight: 700; }
 }
 
 .meta { font-size: 0.78rem; color: #aaa; }
+
+.freshness-ok    { font-size: 0.78rem; color: #1a7f3c; font-weight: 600; }
+.freshness-warn  { font-size: 0.78rem; color: #b45309; font-weight: 600; }
+.freshness-stale { font-size: 0.78rem; color: #b91c1c; font-weight: 600; }
 .loading { color: #999; padding: 2rem 1.5rem; }
 
 /* Grid */

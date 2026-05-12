@@ -36,7 +36,25 @@ async function init() {
 
   const dates = allListings.map(l => l.added_at).filter(Boolean).sort().reverse();
   if (dates.length) {
-    document.getElementById('last-updated').textContent = `Actualizado: ${dates[0]}`;
+    const lastDate = dates[0];
+    const daysAgo = Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000);
+    const el = document.getElementById('last-updated');
+    let label, cls;
+    if (daysAgo === 0) {
+      label = `Actualizado hoy (${lastDate})`;
+      cls = 'freshness-ok';
+    } else if (daysAgo === 1) {
+      label = `Actualizado ayer (${lastDate})`;
+      cls = 'freshness-ok';
+    } else if (daysAgo <= 3) {
+      label = `Hace ${daysAgo} días (${lastDate}) — ejecuta buscar.sh`;
+      cls = 'freshness-warn';
+    } else {
+      label = `Desactualizado: ${daysAgo} días sin buscar (${lastDate})`;
+      cls = 'freshness-stale';
+    }
+    el.textContent = label;
+    el.className = cls;
   }
 
   document.getElementById('filter-status').addEventListener('change', render);
