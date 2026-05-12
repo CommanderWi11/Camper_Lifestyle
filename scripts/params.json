@@ -1,11 +1,14 @@
 {
   "max_price": 55000,
+  "min_price": 20000,
   "min_sleeping": 4,
   "requires_bathroom": true,
   "max_age_years": 10,
   "max_km": 100000,
+  "max_weight_kg": 3500,
+  "vehicle_type": "van",
   "location": "Canarias",
-  "keywords": ["camper", "autocaravana", "campervan", "furgoneta camper"],
+  "keywords": ["camper", "campervan", "furgoneta camper", "vivac"],
   "reference_models": ["Sunlight Cliff", "Cliff Adventure"],
   "wallapop": {
     "latitude": 28.1235,

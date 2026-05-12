@@ -2,6 +2,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 let allListings = [];
 let commentsByListing = {};
+let starredSet = new Set();
 
 const STATUS_LABELS = {
   new: 'Nuevo',
@@ -18,9 +19,10 @@ const STATUS_CLASSES = {
 };
 
 async function init() {
-  const [listings, commentsResult] = await Promise.all([
+  const [listings, commentsResult, starsResult] = await Promise.all([
     fetch('listings.json').then(r => r.json()),
     supabaseClient.from('camper_comments').select('*').order('created_at', { ascending: true }),
+    supabaseClient.from('camper_stars').select('listing_id'),
   ]);
 
   allListings = listings;
@@ -31,6 +33,12 @@ async function init() {
         commentsByListing[comment.listing_id] = [];
       }
       commentsByListing[comment.listing_id].push(comment);
+    }
+  }
+
+  if (starsResult.data) {
+    for (const row of starsResult.data) {
+      starredSet.add(row.listing_id);
     }
   }
 
@@ -59,6 +67,8 @@ async function init() {
 
   document.getElementById('filter-status').addEventListener('change', render);
   document.getElementById('sort-by').addEventListener('change', render);
+  document.getElementById('filter-starred').addEventListener('change', render);
+  document.getElementById('listings-grid').addEventListener('click', handleStarToggle);
 
   render();
 }
@@ -66,11 +76,16 @@ async function init() {
 function render() {
   const statusFilter = document.getElementById('filter-status').value;
   const sortBy = document.getElementById('sort-by').value;
+  const starredOnly = document.getElementById('filter-starred').checked;
 
   let listings = [...allListings];
 
   if (statusFilter) {
     listings = listings.filter(l => l.status === statusFilter);
+  }
+
+  if (starredOnly) {
+    listings = listings.filter(l => starredSet.has(l.id));
   }
 
   if (sortBy === 'price') {
@@ -94,13 +109,17 @@ function renderCard(listing) {
   const price = listing.price > 0
     ? `${listing.price.toLocaleString('es-ES')} €`
     : '—';
+  const isStarred = starredSet.has(listing.id);
 
   return `
     <article class="card" data-id="${listing.id}">
-      ${listing.photo
-        ? `<img class="card-photo" src="${listing.photo}" alt="${listing.title}" loading="lazy">`
-        : `<div class="card-photo card-photo--empty">🚐</div>`
-      }
+      <div class="card-photo-wrapper">
+        ${listing.photo
+          ? `<img class="card-photo" src="${listing.photo}" alt="${listing.title}" loading="lazy">`
+          : `<div class="card-photo card-photo--empty">🚐</div>`
+        }
+        <button class="star-btn${isStarred ? ' starred' : ''}" data-id="${listing.id}" aria-label="Marcar como favorito">★</button>
+      </div>
       <div class="card-body">
         <div class="card-header">
           <h2 class="card-title">
@@ -126,7 +145,6 @@ function renderCard(listing) {
         </div>
 
         <form class="comment-form" data-listing-id="${listing.id}">
-          <input name="author" placeholder="Tu nombre" required maxlength="50" autocomplete="name">
           <textarea name="body" placeholder="¿Qué te parece este anuncio?" required maxlength="500" rows="2"></textarea>
           <button type="submit">Comentar</button>
         </form>
@@ -141,7 +159,6 @@ function renderComment(comment) {
   });
   return `
     <div class="comment">
-      <strong>${escapeHtml(comment.author)}</strong>
       <span class="comment-date">${date}</span>
       <p>${escapeHtml(comment.body)}</p>
     </div>
@@ -161,7 +178,6 @@ async function handleCommentSubmit(e) {
   e.preventDefault();
   const form = e.target;
   const listingId = form.dataset.listingId;
-  const author = form.author.value.trim();
   const body = form.body.value.trim();
   const btn = form.querySelector('button');
 
@@ -170,7 +186,7 @@ async function handleCommentSubmit(e) {
 
   const { data, error } = await supabaseClient
     .from('camper_comments')
-    .insert({ listing_id: listingId, author, body })
+    .insert({ listing_id: listingId, author: 'Anónimo', body })
     .select()
     .single();
 
@@ -191,6 +207,31 @@ async function handleCommentSubmit(e) {
   );
 
   form.reset();
+}
+
+async function handleStarToggle(e) {
+  const btn = e.target.closest('.star-btn');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const wasStarred = starredSet.has(id);
+
+  btn.disabled = true;
+
+  if (wasStarred) {
+    await supabaseClient.from('camper_stars').delete().eq('listing_id', id);
+    starredSet.delete(id);
+  } else {
+    await supabaseClient.from('camper_stars').insert({ listing_id: id });
+    starredSet.add(id);
+  }
+
+  btn.classList.toggle('starred', starredSet.has(id));
+  btn.disabled = false;
+
+  if (document.getElementById('filter-starred').checked) {
+    render();
+  }
 }
 
 init().catch(err => {
