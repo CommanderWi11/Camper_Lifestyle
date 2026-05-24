@@ -1874,5 +1874,20 @@
     "photo": "https://cdn.wallapop.com/images/10420/kx/5i/__/c10420p1265007508/i6514099387.jpg?pictureSize=W640",
     "status": "new",
     "added_at": "2026-05-24"
+  },
+  {
+    "id": "wallapop-1b1ee087",
+    "title": "Autocaravana Ford Benimar Tessoro 496 Perfilada",
+    "price": 58000,
+    "year": 2020,
+    "km": 16500,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "wallapop",
+    "url": "https://es.wallapop.com/item/autocaravana-ford-benimar-tessoro-496-perfilada-1241800483",
+    "photo": "https://cdn.wallapop.com/images/10420/kj/c3/__/c10420p1241800483/i6367239260.jpg?pictureSize=W640",
+    "status": "new",
+    "added_at": "2026-05-24"
   }
 ]
