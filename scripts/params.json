@@ -1,15 +1,28 @@
 {
-  "max_price": 55000,
+  "_comment": "Cheap gates for Stage A (harvest.py) ONLY. The real judging — seatbelts, bed layout, damp risk, value vs market — lives in research-prompt.md, because it needs the detail page and the web, not a regex. Seven params used to sit here doing nothing at all (min_sleeping, requires_bathroom, max_km, vehicle_type, location, reference_models); they were never wired into the scraper and are now enforced by the rubric instead.",
+
+  "top_n": 5,
+
   "min_price": 20000,
-  "min_sleeping": 4,
-  "requires_bathroom": true,
+  "max_price": 100000,
   "max_age_years": 10,
-  "max_km": 100000,
   "max_weight_kg": 3500,
-  "vehicle_type": "van",
-  "location": "Canarias",
-  "keywords": ["camper", "campervan", "furgoneta camper", "vivac"],
-  "reference_models": ["Sunlight Cliff", "Cliff Adventure"],
+
+  "keywords": [
+    "autocaravana perfilada",
+    "autocaravana integral",
+    "perfilada",
+    "integral",
+    "hymer",
+    "carthago",
+    "burstner",
+    "benimar tessoro",
+    "chausson",
+    "adria matrix",
+    "dethleffs",
+    "frankia"
+  ],
+
   "wallapop": {
     "latitude": 28.1235,
     "longitude": -15.4366,

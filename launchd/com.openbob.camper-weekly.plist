@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Camper Lifestyle — weekly Top 5. Mondays 07:00 local.
+
+  Install:
+    ln -sf "/Users/openbob/Developer/Manual Search Script Run/launchd/com.openbob.camper-weekly.plist" ~/Library/LaunchAgents/
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.camper-weekly.plist
+
+  Force a run now (does not wait for Monday):
+    launchctl kickstart -k gui/$(id -u)/com.openbob.camper-weekly
+
+  Watch it:
+    tail -f ~/Library/Logs/camper-weekly.log
+
+  Uninstall:
+    launchctl bootout gui/$(id -u)/com.openbob.camper-weekly
+
+  Note: this runs on YOUR Mac on purpose. GitHub Actions cannot do this job — the
+  listing sites block datacenter IPs, which is why the old weekly-search.yml never
+  produced a single listing. The trade-off is that the Mac must be awake; if it is
+  asleep at 07:00 launchd runs the job on next wake, and the idempotency marker in
+  weekly-search.sh makes sure it still only runs once for that week.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.openbob.camper-weekly</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/openbob/Developer/Manual Search Script Run/scripts/weekly-search.sh</string>
+  </array>
+
+  <!-- No WorkingDirectory: the script cd's itself. (Matches the convention set
+       after the com.openbob.binter-payslips incident, 2026-07-11.) -->
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>7</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/openbob/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/openbob/Library/Logs/camper-weekly.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/openbob/Library/Logs/camper-weekly.log</string>
+</dict>
+</plist>
