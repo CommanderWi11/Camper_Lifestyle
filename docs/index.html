@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Camper Life-style</title>
+  <title>Camper Life-style — Top 5 semanal</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -13,17 +13,23 @@
     <div class="header-inner">
       <div>
         <h1>Camper Life-style</h1>
-        <p class="subtitle">Buscando nuestra furgoneta perfecta</p>
+        <p class="subtitle">Las 5 mejores de la semana · integrales y perfiladas en Canarias · 2 adultos + 2 peques</p>
       </div>
       <div class="header-params">
-        <span>≤ 55.000 €</span>
-        <span>4 plazas</span>
-        <span>Baño</span>
-        <span>≤ 100.000 km</span>
-        <span>≤ 10 años</span>
+        <span>4 cinturones</span>
+        <span>Camas fijas</span>
+        <span>Baño + ducha</span>
+        <span>≤ 3.500 kg</span>
+        <span>≤ 100.000 €</span>
       </div>
     </div>
   </header>
+
+  <div id="offline-banner" class="offline-banner" hidden>
+    <strong>Sin conexión con Supabase.</strong>
+    Los favoritos y descartes se guardan solo en este navegador.
+    <span class="offline-hint">Ejecuta el SQL de <code>docs/supabase-setup.sql</code> para recuperar la sincronización.</span>
+  </div>
 
   <div class="toolbar">
     <div class="filters">
@@ -34,21 +40,13 @@
           <option value="new">Nuevo</option>
           <option value="watching">Siguiendo</option>
           <option value="contacted">Contactado</option>
-          <option value="discarded">Descartado</option>
-        </select>
-      </label>
-      <label>
-        Ordenar por
-        <select id="sort-by">
-          <option value="added_at">Más reciente</option>
-          <option value="price">Precio (menor)</option>
         </select>
       </label>
       <label class="filter-checkbox">
-        <input type="checkbox" id="filter-starred"> Solo favoritos
+        <input type="checkbox" id="filter-starred"> Solo favoritos ★
       </label>
       <label class="filter-checkbox">
-        <input type="checkbox" id="filter-hidden"> Mostrar ocultos
+        <input type="checkbox" id="filter-hidden"> Ver descartadas 🗑
       </label>
     </div>
     <div class="meta">
