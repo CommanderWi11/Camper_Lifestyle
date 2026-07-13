@@ -94,14 +94,18 @@ header h1 { font-size: 1.6rem; font-weight: 700; }
 .freshness-stale { font-size: 0.78rem; color: #b91c1c; font-weight: 600; }
 .loading { color: #999; padding: 2rem 1.5rem; }
 
-/* Grid */
+/* Layout. `main` is now a column of week sections; each section holds its own grid,
+   so a week's Top 5 stays visually together instead of reflowing into its neighbours. */
 main {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1.25rem;
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.25rem;
 }
 
 /* Card */
@@ -322,10 +326,11 @@ main {
 .star-btn.starred { background: rgba(0,0,0,0.55); color: #fbbf24; }
 .star-btn:disabled { opacity: 0.5; cursor: default; }
 
-.hide-btn {
+/* Sits immediately left of the star. Top-left is taken by the rank badge. */
+.discard-btn {
   position: absolute;
   top: 0.5rem;
-  left: 0.5rem;
+  right: 2.75rem;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -341,8 +346,8 @@ main {
   transition: background 0.15s, color 0.15s;
 }
 
-.hide-btn:hover { background: rgba(180,0,0,0.7); color: white; }
-.hide-btn:disabled { opacity: 0.5; cursor: default; }
+.discard-btn:hover { background: rgba(180,0,0,0.7); color: white; }
+.discard-btn:disabled { opacity: 0.5; cursor: default; }
 
 .card--hidden { opacity: 0.45; }
 .card--hidden .card-photo { filter: grayscale(1); }
@@ -445,4 +450,144 @@ main {
   main { grid-template-columns: 1fr; padding: 1rem; }
   .header-inner { flex-direction: column; align-items: flex-start; }
   .action-btn { font-size: 0.68rem; padding: 0.25rem 0.3rem; }
+}
+
+/* ============================================================================
+   Weekly Top-5 board
+   ========================================================================== */
+
+/* Section heading per week. The newest week is the loud one; older weeks are
+   quiet dividers you scroll past to find a van that got demoted. */
+.week-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #666;
+  margin: 2.25rem 0 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e8e8e0;
+}
+
+.week-heading:first-child { margin-top: 0; }
+
+.week-heading--current {
+  font-size: 1.15rem;
+  color: #1a1a2e;
+  border-bottom-color: #1a1a2e;
+}
+
+.week-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #666;
+  background: #f0f0e8;
+  border-radius: 10px;
+  padding: 0.12rem 0.5rem;
+}
+
+.week-heading--current .week-count { background: #1a1a2e; color: #fff; }
+
+/* Rank + score sit on the photo, opposite the star/discard controls. */
+.rank-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0.15rem 0.55rem;
+  letter-spacing: 0.02em;
+}
+
+.score-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(255,255,255,0.94);
+  color: #1a1a2e;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+/* The specs that decide whether this van works for two toddlers. */
+.spec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.spec-chip {
+  font-size: 0.72rem;
+  background: #e8f4f8;
+  color: #0c5460;
+  border-radius: 4px;
+  padding: 0.12rem 0.4rem;
+  white-space: nowrap;
+}
+
+/* Why this one won. */
+.verdict {
+  background: #faf9f5;
+  border-left: 3px solid #1a1a2e;
+  border-radius: 0 6px 6px 0;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.verdict p {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #444;
+  margin: 0;
+}
+
+/* Anything the research could not confirm, or actively worries about. */
+.flags {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.flags li {
+  font-size: 0.74rem;
+  color: #842029;
+  background: #f8d7da;
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.flags li::before { content: "⚠ "; }
+
+/* Shown only when Supabase is unreachable, so a dead backend is obvious rather
+   than silently swallowing every star and discard. */
+.offline-banner {
+  max-width: 1400px;
+  margin: 1rem auto 0;
+  padding: 0.7rem 1rem;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffe69c;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.offline-hint { display: block; margin-top: 0.2rem; color: #6b5e2a; }
+.offline-banner code { background: rgba(0,0,0,0.06); padding: 0.05rem 0.3rem; border-radius: 3px; }
+
+@media (max-width: 480px) {
+  .week-heading { margin-top: 1.5rem; }
+  .week-heading--current { font-size: 1rem; }
 }
