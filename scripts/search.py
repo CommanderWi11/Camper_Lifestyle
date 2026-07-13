@@ -33,17 +33,18 @@ CANARY_KEYWORDS = {
     "el hierro", "la graciosa",
 }
 
-# Titles containing these words indicate an integrated motorhome (not a van).
-_MOTORHOME_RE = re.compile(
-    r"\b(autocaravana|integral|capuchina|perfilada|perfilad|mobil home|motorhome)\b",
+# Accept only integrales and perfiladas. Reject vans, capuchinas, and obvious car listings.
+_ACCEPT_RE = re.compile(r"\b(integral|integrales|perfilad[ao]s?)\b", re.IGNORECASE)
+_REJECT_RE = re.compile(
+    r"\b(camper|campervan|furgoneta|capuchina|sobrecabina|alcoba|"
+    r"vito|vivaro|trafic|california|caravelle|multivan|marco\s+polo)\b",
     re.IGNORECASE,
 )
-
-# Title must contain at least one of these to be considered a van/campervan.
-_VAN_RE = re.compile(
-    r"\b(camper|campervan|furgoneta|transporter|sprinter|ducato|transit|master|"
-    r"jumper|boxer|crafter|vito|vivaro|trafic|t[3-7]|california|"
-    r"caravelle|multivan|van)\b",
+# Premium integral/perfilada manufacturers — any of these in a title is an accept signal.
+_BRAND_RE = re.compile(
+    r"\b(hymer|b[uü]rstner|carthago|concorde|frankia|niesmann|morelo|"
+    r"benimar|chausson|adria\s+matrix|sun\s+living|pilote|rapido|"
+    r"dethleffs|roller\s+team|mclouis|laika)\b",
     re.IGNORECASE,
 )
 
@@ -88,15 +89,42 @@ def _parse_attrs(text: str) -> tuple[int | None, int | None]:
     return year, km
 
 
-def _is_van(title: str) -> bool:
-    """Return True if title looks like a campervan (not a car, not a full motorhome).
+def _is_target(title: str, strict: bool = True) -> bool:
+    """Return True if title looks like an integral or perfilada motorhome.
 
-    Requires a positive match on known van/camper terms — a blocklist-only approach
-    lets cars through when Wallapop fuzzy-matches their description keywords.
+    strict=True: title must mention integral/perfilada OR a known premium brand.
+    strict=False: any title that doesn't match the reject list passes — use for sources
+    already filtered to the autocaravanas category (Milanuncios, Coches.net, Autocasion).
     """
-    if _MOTORHOME_RE.search(title):
+    if _REJECT_RE.search(title):
         return False
-    return bool(_VAN_RE.search(title))
+    if strict:
+        return bool(_ACCEPT_RE.search(title) or _BRAND_RE.search(title))
+    return True
+
+
+def _extract_year(text: str) -> int | None:
+    """Find the first plausible 4-digit vehicle year in a free-text blob."""
+    if not text:
+        return None
+    # Prefer explicit "Año: YYYY" label when present.
+    m = re.search(r"a[nñ]o\s*:?\s*(\d{4})", text, re.IGNORECASE)
+    if m:
+        return int(m.group(1))
+    # Fallback: any 4-digit year in [1990, current+1].
+    cap = date.today().year + 1
+    for m in re.finditer(r"\b(19[9]\d|20\d\d)\b", text):
+        y = int(m.group(1))
+        if 1990 <= y <= cap:
+            return y
+    return None
+
+
+def _passes_age(year: int | None, max_age_years: int) -> bool:
+    """Return True if year is unknown or if (current_year - year) <= max_age_years."""
+    if year is None or not max_age_years:
+        return True
+    return (date.today().year - year) <= max_age_years
 
 
 def _passes_weight(text: str, max_kg: int) -> bool:
@@ -121,6 +149,7 @@ def fetch_wallapop(params: dict) -> list:
     wp = params["wallapop"]
     min_price = params.get("min_price", 0)
     max_weight = params.get("max_weight_kg", 99999)
+    max_age = params.get("max_age_years", 0)
     results = []
     seen_ids: set[str] = set()
 
@@ -147,7 +176,10 @@ def fetch_wallapop(params: dict) -> list:
                     href = card.get_attribute("href") or ""
                     title = card.get_attribute("aria-label") or ""
 
-                    if not _is_van(title):
+                    # Wallapop is a keyword-search source spanning all categories.
+                    # Strict mode keeps recall high via _BRAND_RE while filtering out
+                    # cars, real estate, and other non-motorhome listings.
+                    if not _is_target(title, strict=True):
                         continue
                     if not _passes_weight(title, max_weight):
                         continue
@@ -165,6 +197,8 @@ def fetch_wallapop(params: dict) -> list:
 
                     attrs_el = card.query_selector("label")
                     year, km = _parse_attrs(attrs_el.inner_text() if attrs_el else "")
+                    if not _passes_age(year, max_age):
+                        continue
 
                     img_el = card.query_selector("img")
                     photo = img_el.get_attribute("src") if img_el else ""
@@ -199,192 +233,214 @@ def fetch_wallapop(params: dict) -> list:
 
 
 def fetch_milanuncios(params: dict) -> list:
-    """Scrape Milanuncios autocaravanas category page, filter by Canary Islands.
+    """Scrape Milanuncios autocaravanas/Canarias listings via Playwright.
 
-    NOTE: If selectors break, inspect article[data-testid="AD_CARD"] on
-    milanuncios.com/autocaravanas-de-segunda-mano/ and update below.
+    Uses the geo-filtered URL (/canarias.htm) so we don't need a location post-filter.
+    Playwright is required because most cards are JS-rendered; plain requests only
+    sees the 3 "destacado" cards.
+
+    If selectors break, inspect article[data-testid="AD_CARD"] on
+    milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm and update below.
     """
     min_price = params.get("min_price", 0)
     max_weight = params.get("max_weight_kg", 99999)
+    max_age = params.get("max_age_years", 0)
     results = []
 
+    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm"
+
     try:
-        url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/"
-        resp = requests.get(url, headers=HEADERS, timeout=15)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            ctx = browser.new_context(
+                locale="es-ES",
+                user_agent=HEADERS["User-Agent"],
+            )
+            page = ctx.new_page()
+            page.goto(url, timeout=30000)
+            page.wait_for_timeout(5000)
+            # Scroll once to trigger lazy-loaded cards lower in the list.
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(2000)
 
-        for article in soup.select('article[data-testid="AD_CARD"]'):
-            title_el = article.select_one(".ma-AdCardV2-title")
-            price_el = article.select_one(".ma-AdPrice-value")
-            location_el = article.select_one(".ma-AdLocation-text")
-            link_el = article.select_one("a.ma-AdCardListingV2-TitleLink")
-            img_el = article.select_one("img.ma-AdCardV2-photo")
+            cards = page.query_selector_all('article[data-testid="AD_CARD"]')
+            print(f"[milanuncios] found {len(cards)} raw cards", file=sys.stderr)
 
-            if not title_el or not link_el:
-                continue
+            for card in cards:
+                title_el = card.query_selector(".ma-AdCardV2-title")
+                price_el = card.query_selector(".ma-AdPrice-value")
+                location_el = card.query_selector(".ma-AdLocation-text")
+                link_el = card.query_selector("a.ma-AdCardListingV2-TitleLink")
+                img_el = card.query_selector("img.ma-AdCardV2-photo") or card.query_selector("img")
 
-            location = location_el.get_text(strip=True) if location_el else ""
-            if not any(kw in location.lower() for kw in CANARY_KEYWORDS):
-                continue
+                if not title_el or not link_el:
+                    continue
 
-            title = title_el.get_text(strip=True)
-            if not _is_van(title):
-                continue
-            if not _passes_weight(title, max_weight):
-                continue
+                title = title_el.inner_text().strip()
+                if not _is_target(title, strict=False):
+                    continue
+                if not _passes_weight(title, max_weight):
+                    continue
 
-            price_str = (
-                price_el.get_text(strip=True)
-                .replace(".", "").replace(",", "").replace("€", "").replace("\xa0", "").strip()
-            ) if price_el else "0"
-            try:
-                price = int(price_str)
-            except ValueError:
-                price = 0
+                price_str = (
+                    price_el.inner_text().strip()
+                    .replace(".", "").replace(",", "").replace("€", "").replace("\xa0", "").strip()
+                ) if price_el else "0"
+                try:
+                    price = int(price_str)
+                except ValueError:
+                    price = 0
 
-            if params["max_price"] and price > params["max_price"]:
-                continue
-            if min_price and price and price < min_price:
-                continue
+                if params["max_price"] and price > params["max_price"]:
+                    continue
+                if min_price and price and price < min_price:
+                    continue
 
-            href = link_el.get("href", "")
-            full_url = f"https://www.milanuncios.com{href}" if href.startswith("/") else href
+                href = link_el.get_attribute("href") or ""
+                full_url = f"https://www.milanuncios.com{href}" if href.startswith("/") else href
+                location = location_el.inner_text().strip() if location_el else ""
 
-            results.append({
-                "id": make_id("milanuncios", full_url),
-                "title": title,
-                "price": price,
-                "year": None,
-                "km": None,
-                "sleeping": None,
-                "bathroom": None,
-                "location": location,
-                "source": "milanuncios",
-                "url": full_url,
-                "photo": img_el.get("src", "") if img_el else "",
-                "status": "new",
-                "added_at": str(date.today()),
-            })
+                year = _extract_year(card.inner_text())
+                if not _passes_age(year, max_age):
+                    continue
+
+                results.append({
+                    "id": make_id("milanuncios", full_url),
+                    "title": title,
+                    "price": price,
+                    "year": year,
+                    "km": None,
+                    "sleeping": None,
+                    "bathroom": None,
+                    "location": location,
+                    "source": "milanuncios",
+                    "url": full_url,
+                    "photo": img_el.get_attribute("src") if img_el else "",
+                    "status": "new",
+                    "added_at": str(date.today()),
+                })
+            browser.close()
     except Exception as exc:
         print(f"[milanuncios] error: {exc}", file=sys.stderr)
 
     return results
 
 
-def fetch_autoscout24(params: dict) -> list:
-    """Scrape Autoscout24 camper listings for Spain (post-filtered to Canary Islands).
+def _humanlike_context(p):
+    """Return a Playwright context tuned to look less like a headless bot.
 
-    AS24 is primarily a mainland-Europe platform — Canary Islands coverage may be sparse.
-    Uses Playwright since AS24 blocks plain requests. If the URL structure changes,
-    inspect https://www.autoscout24.es and update the search URL and selectors below.
+    Used for sources with bot-detection (Coches.net) that return "Ups!" or
+    block the listing UI when the request looks automated.
+    """
+    browser = p.chromium.launch(
+        headless=True,
+        args=["--disable-blink-features=AutomationControlled"],
+    )
+    ctx = browser.new_context(
+        locale="es-ES",
+        timezone_id="Atlantic/Canary",
+        user_agent=HEADERS["User-Agent"],
+        viewport={"width": 1440, "height": 900},
+    )
+    ctx.add_init_script(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    )
+    return browser, ctx
+
+
+def fetch_coches_net(params: dict) -> list:
+    """Scrape coches.net autocaravanas/Canarias listings via Playwright.
+
+    Bot-detection on coches.net is aggressive: requests that look headless get
+    served an "Ups! Parece que algo no va bien..." stub page with zero cards.
+    We use a humanlike browser context (locale, timezone, viewport, UA hint
+    spoofing) which reliably yields 6-22 cards per first-page load.
+
+    Pagination via ?page=N is unreliable (typically returns 0 on page 2 even
+    when the total count is higher), so we only scrape page 1.
+
+    If selectors break, inspect div.mt-CardAd on
+    coches.net/autocaravanas-segunda-mano/canarias/ and update below.
     """
     min_price = params.get("min_price", 0)
+    max_price = params.get("max_price", 99999999)
     max_weight = params.get("max_weight_kg", 99999)
+    max_age = params.get("max_age_years", 0)
     results = []
-    seen_ids: set[str] = set()
 
-    search_url = (
-        f"https://www.autoscout24.es/lst/"
-        f"?atype=C"
-        f"&pricefrom={min_price}"
-        f"&priceto={params['max_price']}"
-        f"&cy=E"
-        f"&ustate=N,U"
-    )
+    url = "https://www.coches.net/autocaravanas-segunda-mano/canarias/?page=1"
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(search_url, timeout=30000)
-            page.wait_for_timeout(4000)
+            browser, ctx = _humanlike_context(p)
+            page = ctx.new_page()
+            page.goto(url, timeout=45000)
+            page.wait_for_timeout(7000)
+            # One scroll to nudge any lazy-loaded cards into view.
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(2000)
 
-            # AS24 renders listing cards as <article> tags.
-            articles = page.query_selector_all('article[data-item-name="regular-ad"]')
-            print(f"[autoscout24] found {len(articles)} raw cards", file=sys.stderr)
+            # Detect the bot-block stub page and bail cleanly.
+            if "algo no va bien" in page.content().lower():
+                print("[coches_net] bot-block detected, returning empty", file=sys.stderr)
+                browser.close()
+                return []
 
-            for article in articles:
+            cards = page.query_selector_all('div.mt-CardAd')
+            print(f"[coches_net] found {len(cards)} raw cards", file=sys.stderr)
+
+            for card in cards:
                 try:
-                    # Title
-                    title_el = article.query_selector("h2")
-                    title = title_el.inner_text().strip() if title_el else ""
+                    link_el = card.query_selector('a[href*="-arvo.aspx"]')
+                    if not link_el:
+                        continue
+                    href = link_el.get_attribute("href") or ""
+                    full_url = (
+                        f"https://www.coches.net{href}" if href.startswith("/") else href
+                    )
+
+                    text = card.inner_text()
+                    title_el = card.query_selector('h2.mt-CardAd-infoHeaderTitle a') or link_el
+                    title = title_el.inner_text().strip()
                     if not title:
                         continue
-
-                    if not _is_van(title):
+                    if not _is_target(title, strict=False):
                         continue
-                    if not _passes_weight(title, max_weight):
-                        continue
-
-                    # URL
-                    link_el = article.query_selector('a[href*="/annonce/"]')
-                    if not link_el:
-                        link_el = article.query_selector("a[href]")
-                    href = link_el.get_attribute("href") if link_el else ""
-                    full_url = (
-                        f"https://www.autoscout24.es{href}"
-                        if href.startswith("/") else href
-                    )
-                    if not full_url:
+                    if not _passes_weight(text, max_weight):
                         continue
 
-                    listing_id = make_id("autoscout24", full_url)
-                    if listing_id in seen_ids:
-                        continue
-                    seen_ids.add(listing_id)
-
-                    # Price — try multiple selectors since class names change
+                    # Price: first "NN.NNN €" or "N.NNN €" in card text.
                     price = 0
-                    for price_sel in [
-                        'p[data-testid="regular-ad-price"]',
-                        'strong[class*="Price"]',
-                        'span[class*="price"]',
-                    ]:
-                        price_el = article.query_selector(price_sel)
-                        if price_el:
-                            price_str = re.sub(r"[^\d]", "", price_el.inner_text())
-                            price = int(price_str) if price_str else 0
-                            break
-
+                    m = re.search(r"(\d{1,3}(?:\.\d{3})+)\s*€", text)
+                    if m:
+                        price = int(m.group(1).replace(".", ""))
                     if price and price < min_price:
                         continue
-                    if price and price > params["max_price"]:
+                    if price and price > max_price:
                         continue
 
-                    # Location — post-filter to Canary Islands
+                    year = _extract_year(text)
+                    if not _passes_age(year, max_age):
+                        continue
+
+                    # Km: "NN.NNN km" or "N.NNN km".
+                    km = None
+                    m = re.search(r"(\d{1,3}(?:\.\d{3})+)\s*km", text, re.IGNORECASE)
+                    if m:
+                        km = int(m.group(1).replace(".", ""))
+
+                    # Location: any line containing a Canary keyword.
                     location = ""
-                    for loc_sel in [
-                        'span[data-testid="regular-ad-seller-address"]',
-                        'div[class*="seller"] span',
-                        'address',
-                    ]:
-                        loc_el = article.query_selector(loc_sel)
-                        if loc_el:
-                            location = loc_el.inner_text().strip()
+                    for line in text.split("\n"):
+                        if any(kw in line.lower() for kw in CANARY_KEYWORDS):
+                            location = line.strip()
                             break
 
-                    if location and not any(kw in location.lower() for kw in CANARY_KEYWORDS):
-                        continue
-
-                    # Year and km from vehicle details text
-                    year, km = None, None
-                    for detail_sel in [
-                        'span[data-testid="vehicle-detail"]',
-                        'ul[class*="DetailsSection"] li',
-                        'dl',
-                    ]:
-                        detail_el = article.query_selector(detail_sel)
-                        if detail_el:
-                            year, km = _parse_attrs(detail_el.inner_text())
-                            break
-
-                    # Photo
-                    img_el = article.query_selector("img")
+                    img_el = card.query_selector("img")
                     photo = img_el.get_attribute("src") if img_el else ""
 
                     results.append({
-                        "id": listing_id,
+                        "id": make_id("coches_net", full_url),
                         "title": title,
                         "price": price,
                         "year": year,
@@ -392,18 +448,17 @@ def fetch_autoscout24(params: dict) -> list:
                         "sleeping": None,
                         "bathroom": None,
                         "location": location,
-                        "source": "autoscout24",
+                        "source": "coches_net",
                         "url": full_url,
                         "photo": photo,
                         "status": "new",
                         "added_at": str(date.today()),
                     })
                 except Exception as exc:
-                    print(f"[autoscout24] error parsing card: {exc}", file=sys.stderr)
-
+                    print(f"[coches_net] error parsing card: {exc}", file=sys.stderr)
             browser.close()
     except Exception as exc:
-        print(f"[autoscout24] error: {exc}", file=sys.stderr)
+        print(f"[coches_net] error: {exc}", file=sys.stderr)
 
     return results
 
@@ -433,11 +488,11 @@ def main() -> None:
     milanuncios = fetch_milanuncios(params)
     print(f"[milanuncios] {len(milanuncios)} listings after filters")
 
-    print("Fetching Autoscout24...")
-    autoscout24 = fetch_autoscout24(params)
-    print(f"[autoscout24] {len(autoscout24)} listings after filters")
+    print("Fetching Coches.net...")
+    coches = fetch_coches_net(params)
+    print(f"[coches_net] {len(coches)} listings after filters")
 
-    merged = merge_listings(existing, wallapop + milanuncios + autoscout24)
+    merged = merge_listings(existing, wallapop + milanuncios + coches)
     save_listings(merged)
     print("Done.")
 
