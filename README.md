@@ -80,6 +80,12 @@ antiguo `weekly-search.yml` tenía un cron los lunes y no produjo ni un solo anu
 vida; está borrado). Si el Mac está dormido el lunes a las 07:00, launchd lo ejecuta al
 despertar.
 
+**Reintentos:** el agente se dispara los lunes a las 07:00, 13:00 y 19:00. Solo se escribe
+`.state/<semana>.done` cuando la publicación ha salido bien, así que si el run de las 07:00
+funciona, los otros dos salen inmediatamente sin hacer nada. Si falla (límite de sesión de
+Claude, web caída, sin red al despertar), hay dos oportunidades más el mismo día en vez de
+quedarse toda la semana sin tablero.
+
 ## Estado conocido
 
 - **Supabase está caído** — el proyecto fue borrado (NXDOMAIN). La web usa localStorage
