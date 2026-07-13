@@ -36,15 +36,35 @@
   <!-- No WorkingDirectory: the script cd's itself. (Matches the convention set
        after the com.openbob.binter-payslips incident, 2026-07-11.) -->
 
+  <!--
+    07:00 Monday is the real run. The two later slots are RETRIES, and they exist
+    because Stage B can fail for reasons that have nothing to do with the code: a
+    Claude session limit, a flaky site, no network on wake. (The very first launchd
+    run, on 2026-07-13, died exactly this way — on a session limit.)
+
+    weekly-search.sh only writes .state/<week>.done once it has actually published,
+    so a successful 07:00 run makes 13:00 and 19:00 exit immediately as no-ops —
+    while a failed one gets two more chances, instead of leaving the family with no
+    board for the entire week.
+  -->
   <key>StartCalendarInterval</key>
-  <dict>
-    <key>Weekday</key>
-    <integer>1</integer>
-    <key>Hour</key>
-    <integer>7</integer>
-    <key>Minute</key>
-    <integer>0</integer>
-  </dict>
+  <array>
+    <dict>
+      <key>Weekday</key><integer>1</integer>
+      <key>Hour</key><integer>7</integer>
+      <key>Minute</key><integer>0</integer>
+    </dict>
+    <dict>
+      <key>Weekday</key><integer>1</integer>
+      <key>Hour</key><integer>13</integer>
+      <key>Minute</key><integer>0</integer>
+    </dict>
+    <dict>
+      <key>Weekday</key><integer>1</integer>
+      <key>Hour</key><integer>19</integer>
+      <key>Minute</key><integer>0</integer>
+    </dict>
+  </array>
 
   <key>EnvironmentVariables</key>
   <dict>
