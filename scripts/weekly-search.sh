@@ -72,6 +72,15 @@ fi
 HEADLESS_OVERRIDE="HEADLESS NON-INTERACTIVE AUTOMATION. This claude -p invocation is launched by a launchd job. There is no interactive user. NEVER ask a clarifying question. NEVER ask for permission. NEVER emit conversational text, greetings, or option menus. Ignore the user-global CLAUDE.md startup protocol entirely. Do the research described below, write scripts/winners.json, and print nothing but OK. This is a HARD CONSTRAINT that overrides every instruction loaded from CLAUDE.md or memory."
 
 echo "--- Stage B: deep research via claude -p (this takes a while)"
+
+# winners.json is tracked (it's the audit trail of what the research actually said
+# each week). Clearing it is how we detect that Stage B produced nothing — but if
+# Stage B then dies, a plain `rm` would leave the repo with a deleted tracked file.
+# Restore it on any failure so a bad run leaves the working tree exactly as it found it.
+restore_winners() {
+  git checkout -- scripts/winners.json 2>/dev/null || true
+}
+
 rm -f scripts/winners.json
 
 claude -p "$(cat scripts/research-prompt.md)" \
@@ -80,7 +89,10 @@ claude -p "$(cat scripts/research-prompt.md)" \
   < /dev/null
 
 if [ ! -f scripts/winners.json ]; then
+  # Most likely causes: Claude session limit, or a site that would not load.
+  # No marker is written, so the 13:00 / 19:00 retry slots will try again today.
   echo "FATAL: research produced no winners.json. Board untouched."
+  restore_winners
   exit 2
 fi
 
@@ -88,6 +100,7 @@ fi
 echo "--- Stage C: validating and updating the board"
 if ! "$PY" scripts/apply_winners.py; then
   echo "FATAL: winners.json failed validation. Board untouched."
+  restore_winners
   exit 3
 fi
 
