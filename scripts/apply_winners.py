@@ -14,7 +14,8 @@ from pathlib import Path
 
 import board
 from harvest import (
-    BLOCKLIST_FILE, LISTINGS_FILE, load_blocklist, load_listings, make_id,
+    BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
+    load_listings, make_id,
 )
 
 WINNERS_FILE = Path(__file__).parent / "winners.json"
@@ -107,6 +108,16 @@ def main() -> int:
     if not winners:
         print("No winners this week; leaving the board as it is.")
         return 0
+
+    # Every winner reaches the board with a real photo. A card whose source dropped
+    # the image (lazy-load placeholder, price-on-request page) gets its og:image
+    # pulled from the detail page — at most MAX_WINNERS fetches, best-effort.
+    for w in winners:
+        if not (w.get("photo") or "").startswith("http"):
+            og = fetch_og_image(w.get("url", ""))
+            if og:
+                w["photo"] = og
+                print(f"  backfilled photo for {w['id']} <- og:image")
 
     week = board.current_week()
     updated = board.update_board(load_listings(), winners, week, blocked_ids=blocked)
