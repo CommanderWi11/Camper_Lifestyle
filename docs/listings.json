@@ -1,21 +1,5 @@
 [
   {
-    "id": "manual-concorde-liner-ref",
-    "title": "Referencia: Concorde Liner (gold standard integral)",
-    "price": 0,
-    "year": 2025,
-    "km": 0,
-    "sleeping": 4,
-    "bathroom": true,
-    "location": "Modelo de referencia (gama alta integral)",
-    "source": "manual",
-    "url": "https://www.concorde.eu/es/modelos/liner/",
-    "photo": "https://www.concorde.eu/wp-content/uploads/2024/01/concorde_liner_2025_header_2_d_clear.jpg",
-    "status": "reference",
-    "pinned": true,
-    "added_at": "2026-05-11"
-  },
-  {
     "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/itineo-cs660-/0990mhw",
     "source": "rentcamper_canarias",
     "title": "Itineo CS660 — integral compacta con literas traseras, 5 plazas",
@@ -88,7 +72,7 @@
     "year": 2019,
     "km": 32000,
     "location": "Tenerife",
-    "photo": "",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20400349/777a0fdc-888e-41bd-9fa6-8ba2bb5ece3a.jpg",
     "score": 74,
     "verdict": "La mejor opción en Tenerife y la única con un garaje de verdad (el T7400 SB tiene uno de los mayores del mercado: carrito, sillas de paseo y trastos de playa caben sin pelear). Anuncio de concesionario que declara explícitamente 'viajan y duermen 5', con camas gemelas traseras (210x80 y 205x80), basculante para dos sobre el salón y baño con ducha independiente. 32.000 km en 7 años (4.500 km/año) es poquísimo. Los peros son dos: mide 7,40 m — se pasa del límite de 7 m que nos marcamos para carreteras canarias, aparcamiento y ferries — y a 64.900 € es la más cara de las usadas de la lista.",
     "flags": [

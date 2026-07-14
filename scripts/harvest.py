@@ -122,6 +122,39 @@ def make_id(source: str, url: str) -> str:
     return f"{source}-{hashlib.md5(url.encode()).hexdigest()[:8]}"
 
 
+def fetch_og_image(url: str) -> str:
+    """Best-effort thumbnail for a detail page, via its Open Graph / Twitter card.
+
+    Search cards often carry a lazy-load placeholder in <img src>, so a harvested
+    listing can reach the board with no photo (coches.net does this). Every real
+    listing page, though, declares an `og:image` for social sharing — that is the
+    canonical hero shot. Used by Stage C to backfill winners with an empty photo,
+    so the board never shows a bare placeholder for a vehicle that has a picture.
+    Returns "" on any failure; the caller keeps its existing (empty) value.
+    """
+    if not url or not url.startswith("http"):
+        return ""
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+    except Exception as exc:  # network, HTTP, parse — all non-fatal here
+        print(f"[og:image] {url} -> {exc}", file=sys.stderr)
+        return ""
+    for attrs in (
+        {"property": "og:image"},
+        {"name": "og:image"},
+        {"property": "og:image:secure_url"},
+        {"name": "twitter:image"},
+        {"name": "twitter:image:src"},
+    ):
+        tag = soup.find("meta", attrs=attrs)
+        content = (tag.get("content") if tag else "") or ""
+        if content.startswith("http"):
+            return content.strip()
+    return ""
+
+
 # Words that carry no identifying signal — they appear in almost every Canary
 # dealer's SEO-stuffed title ("AUTOCARAVANA SEGUNDA MANO EN CANARIAS TENERIFE").
 _FP_STOPWORDS = {
@@ -588,8 +621,23 @@ def fetch_coches_net(params: dict) -> list:
                             location = line.strip()
                             break
 
+                    # coches.net lazy-loads: the visible <img src> is a 1x1/blur
+                    # placeholder until scrolled into view, and the real URL sits in
+                    # data-src / srcset. Take the first thing that looks like a real
+                    # image; Stage C backfills via og:image if all of these are empty.
                     img_el = card.query_selector("img")
-                    photo = img_el.get_attribute("src") if img_el else ""
+                    photo = ""
+                    if img_el:
+                        for attr in ("data-src", "src"):
+                            val = img_el.get_attribute(attr) or ""
+                            if val.startswith("http") and "data:image" not in val:
+                                photo = val
+                                break
+                        if not photo:
+                            srcset = img_el.get_attribute("srcset") or ""
+                            first = srcset.split(",")[0].strip().split(" ")[0]
+                            if first.startswith("http"):
+                                photo = first
 
                     results.append({
                         "id": make_id("coches_net", full_url),

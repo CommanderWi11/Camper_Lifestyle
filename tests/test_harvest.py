@@ -191,3 +191,35 @@ def test_a_source_that_throws_does_not_kill_the_harvest():
     with patch("harvest.requests.get", side_effect=OSError("network down")):
         assert harvest.fetch_autocaravanas_dm({}) == []
         assert harvest.fetch_mundo_autocaravanas({}) == []
+
+
+def test_fetch_og_image_reads_the_open_graph_tag():
+    resp = MagicMock(status_code=200)
+    resp.text = ('<html><head>'
+                 '<meta property="og:image" content="https://cdn/hero.jpg"/>'
+                 '</head></html>')
+    with patch("harvest.requests.get", return_value=resp):
+        assert harvest.fetch_og_image("https://site/ad") == "https://cdn/hero.jpg"
+
+
+def test_fetch_og_image_falls_back_to_twitter_card():
+    resp = MagicMock(status_code=200)
+    resp.text = ('<html><head>'
+                 '<meta name="twitter:image" content="https://cdn/tw.jpg"/>'
+                 '</head></html>')
+    with patch("harvest.requests.get", return_value=resp):
+        assert harvest.fetch_og_image("https://site/ad") == "https://cdn/tw.jpg"
+
+
+def test_fetch_og_image_ignores_non_http_and_missing_tags():
+    resp = MagicMock(status_code=200)
+    resp.text = '<html><head><meta property="og:image" content="/relative.jpg"/></head></html>'
+    with patch("harvest.requests.get", return_value=resp):
+        assert harvest.fetch_og_image("https://site/ad") == ""
+
+
+def test_fetch_og_image_is_best_effort_and_swallows_errors():
+    assert harvest.fetch_og_image("") == ""
+    assert harvest.fetch_og_image("not-a-url") == ""
+    with patch("harvest.requests.get", side_effect=OSError("network down")):
+        assert harvest.fetch_og_image("https://site/ad") == ""
