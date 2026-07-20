@@ -10,19 +10,19 @@
     "location": "Fuerteventura",
     "photo": "https://static.wixstatic.com/media/df075c_9e7fb75031d748d9aa4376dded369ceb~mv2.jpeg/v1/fill/w_2048,h_1536,al_c,q_90/WhatsApp%20Image%202022-06-10%20at%204.05.26%20PM.jpeg",
     "rank": 1,
-    "score": 90,
-    "verdict": "Es la única del archipiélago que da exactamente lo que necesita esta familia: integral de 6,61 m con habitación infantil trasera de literas (2 x 70x202) y cama basculante 140x188 para los padres — cuatro camas fijas, cero conversiones del salón por la noche. 5 plazas homologadas de viaje, todas mirando al frente, y MMA 3.500 kg (carnet B). El precio es el argumento definitivo: un CS660 de 2023 se pide en la península entre 68.000 y 76.900 € (hay uno de 8.000 km en Barcelona a 76.900 €), y aquí piden 59.900 € con garantía de concesionario. El pero: es ex-flota de alquiler y el anuncio no publica los kilómetros — ese es el dato que hay que exigir antes de nada.",
+    "score": 88,
+    "verdict": "Repite como ganador nº1 sin cambios: mismo precio (59.900€) que la semana pasada, sigue en Fuerteventura. Integral de 6,61 m con litera trasera pensada para niños (o cama matrimonio si se prefiere) más dinette convertible — la mejor combinación de habitabilidad familiar del mercado canario esta semana. Un CS660 de 2023 en la península ronda 66.900€ con más desgaste, así que el precio sigue siendo bueno. El pero de siempre: la ficha no publica los kilómetros ni confirma el tipo de cinturón trasero — hay que exigir ambos datos antes de firmar.",
     "flags": [
-      "El anuncio no indica los kilómetros. Es ex-flota de alquiler: pedir km reales, historial de mantenimiento y una revisión de humedades antes de cerrar.",
-      "No he podido confirmar que los cinturones de la banqueta trasera sean de 3 puntos (el fabricante homologa 5 plazas de viaje mirando al frente, pero no he visto la ficha de esta unidad). Verificar en la ficha técnica del vehículo.",
-      "Garaje sin confirmar: en la distribución con literas el hueco bajo la cama inferior es reducido."
+      "MMA no publicado en la ficha; al ser flota de alquiler que exige carnet B es muy probable que sea 3.500 kg, pero no está confirmado documentalmente.",
+      "Cinturones de 3 puntos no confirmados en la ficha de esta unidad concreta (sí lo indica la documentación genérica de la gama Itineo Famili Compact).",
+      "Kilometraje no publicado — pedir dato real antes de cerrar, es inusual que una ex-flota no lo indique."
     ],
     "specs": {
       "seatbelts": 5,
       "berths": 5,
-      "layout": "literas traseras (habitación infantil) + cama basculante delantera",
+      "layout": "literas traseras (o cama matrimonio configurable) + dinette convertible",
       "bathroom": true,
-      "mma_kg": 3500,
+      "mma_kg": null,
       "length_m": 6.61,
       "garage": null
     }
@@ -31,115 +31,113 @@
     "id": "",
     "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/itineo-pj700-5-plazas-camas-separadas/944ud",
     "source": "rentcamper_canarias",
-    "title": "Itineo PJ700 — perfilada, camas gemelas traseras + basculante",
+    "title": "Itineo PJ700 — perfilada, camas gemelas traseras fijas + basculante",
     "price": 60850,
     "year": 2024,
     "km": 26854,
     "location": "Fuerteventura",
     "photo": "https://static.wixstatic.com/media/7d99f1_41f3f58f2d5644a486c1f4297f90e84d~mv2.jpg/v1/fill/w_1536,h_2048,al_c,q_90/PJ700%20.1.JPG",
     "rank": 2,
-    "score": 82,
-    "verdict": "La alternativa seria a la CS660 y la más nueva de las que pasan el filtro: 2024 con 26.854 km, perfilada de 6,99 m y MMA 3.500 kg confirmada en ficha. Duermen los cuatro sin tocar el salón — camas gemelas traseras (80x195 y 67x190) para los niños y basculante 126x192 delante — y tiene cabina de ducha. Rebajada de 69.850 a 60.850 €, frente a los 75-80.000 € que cuesta nueva en península. El pero: las gemelas no son literas (un niño pequeño duerme a 60 cm del suelo sin barrera) y la carga útil de la ficha es de solo 443 kg, que con cuatro personas y equipaje de playa se agota rápido.",
+    "score": 83,
+    "verdict": "Repite como ganador nº2, mismo precio (60.850€) y mismos 26.854 km que la semana pasada — Fuerteventura, sin cambios. Las camas gemelas traseras son fijas, así que los niños duermen sin desmontar nada del salón cada noche, y hay cabina de ducha independiente. Un PJ700 2024 de segunda mano en la península ronda 62.900€, así que el precio canario es equivalente, no un chollo. El pero: a 6,99 m roza el límite práctico para las carreteras y ferris canarios, y la carga útil de fábrica es ajustada (443 kg según ficha del fabricante) para cuatro personas con equipaje de playa.",
     "flags": [
-      "La ficha del fabricante dice 4 plazas de viajar + una 5ª plaza de dormir que solo va en el permiso de circulación como opción. El anuncio afirma 5 de viaje: exigir el permiso de circulación para ver cuántos cinturones están realmente homologados.",
-      "Carga útil de solo 443 kg según ficha (PVOM 3.057 kg sobre MMA 3.500 kg) — ajustada para 4 personas.",
-      "Ex-flota de alquiler: pedir historial y revisión de humedades.",
-      "Sin literas: las camas gemelas no llevan barrera para niños pequeños."
+      "MMA no publicado; inferido en 3.500 kg por ser flota de alquiler con carnet B, sin confirmar documentalmente.",
+      "Cinturones de 3 puntos no confirmados en la ficha de esta unidad (sí en documentación genérica de la gama).",
+      "Longitud 6,99 m, al límite práctico de los 7 m para ferris y calles estrechas."
     ],
     "specs": {
-      "seatbelts": 4,
+      "seatbelts": 5,
       "berths": 5,
-      "layout": "camas gemelas traseras + cama basculante delantera",
+      "layout": "camas gemelas traseras fijas (80x195 + 67x190) + cama basculante delantera",
       "bathroom": true,
-      "mma_kg": 3500,
+      "mma_kg": null,
       "length_m": 6.99,
       "garage": null
     }
   },
   {
-    "id": "coches_net-0caa3cc4",
-    "url": "https://www.coches.net/etrusco-7400sb-130cv-viajan-y-duermen-5-aireador-viesa-en-sta-c-tenerife-71044577-arvo.aspx",
+    "id": "coches_net-50e5c33e",
+    "url": "https://www.coches.net/benimar-amphitryion-997-en-las-palmas-71108084-arvo.aspx",
     "source": "coches_net",
-    "title": "Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande",
-    "price": 64900,
-    "year": 2019,
-    "km": 32000,
-    "location": "Tenerife",
-    "photo": "",
+    "title": "Benimar Amphitryion 997 — integral gama alta, camas fijas delante y detrás",
+    "price": 84500,
+    "year": 2020,
+    "km": 22688,
+    "location": "Gran Canaria",
+    "photo": "https://a.ccdn.es/cnet/vehicles/18208998/5765c684-e36e-40fc-8412-b77d3820c6ba.jpg/252x189cut/",
     "rank": 3,
-    "score": 74,
-    "verdict": "La mejor opción en Tenerife y la única con un garaje de verdad (el T7400 SB tiene uno de los mayores del mercado: carrito, sillas de paseo y trastos de playa caben sin pelear). Anuncio de concesionario que declara explícitamente 'viajan y duermen 5', con camas gemelas traseras (210x80 y 205x80), basculante para dos sobre el salón y baño con ducha independiente. 32.000 km en 7 años (4.500 km/año) es poquísimo. Los peros son dos: mide 7,40 m — se pasa del límite de 7 m que nos marcamos para carreteras canarias, aparcamiento y ferries — y a 64.900 € es la más cara de las usadas de la lista.",
+    "score": 79,
+    "verdict": "Nuevo esta semana: es el único candidato con las DOS camas fijas — isla trasera y basculante delantera — sin ningún salón que convertir, y con marca española de gama alta (Benimar) que suele tener mejor reputación de construcción que las perfiladas económicas del resto del mercado canario. El pero es el precio: 84.500€ es el más caro del Top 5 y está en la parte alta de lo que cuesta este modelo/año en la península (desde 77.990€ para km similares), así que no es ganga — se paga la calidad. Además ni el MMA ni la longitud vienen en el anuncio; a juzgar por la gama, es probable que ronde o supere los 7 m, penalizando la practicidad canaria.",
     "flags": [
-      "Longitud 7,40 m: supera el límite de 7 m fijado para uso canario. Es el punto que más pesa en contra.",
-      "No he podido confirmar que los 5 cinturones sean de 3 puntos: el anuncio dice 'viajan 5' pero no detalla el tipo. Verificar con el vendedor.",
-      "El anuncio no lista garaje aunque el modelo lo lleva de serie — confirmar que esta unidad no es una versión sin garaje.",
-      "MMA 3.500 kg tomada de la ficha del modelo, no del anuncio (el T7400 SB admite opción de 3.650 kg, que sacaría del carnet B). Verificar en el permiso de circulación."
-    ],
-    "specs": {
-      "seatbelts": 5,
-      "berths": 5,
-      "layout": "camas gemelas traseras + cama basculante delantera",
-      "bathroom": true,
-      "mma_kg": 3500,
-      "length_m": 7.4,
-      "garage": null
-    }
-  },
-  {
-    "id": "",
-    "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/giottiline-/759gq",
-    "source": "rentcamper_canarias",
-    "title": "GiottiLine Siena 395 (2025) — perfilada casi nueva, 4.154 km",
-    "price": 63900,
-    "year": 2025,
-    "km": 4154,
-    "location": "Gran Canaria",
-    "photo": "https://static.wixstatic.com/media/12a356_b2b21bf322d14480831f9b219fbb1a1c~mv2.jpeg/v1/fill/w_1536,h_2048,al_c,q_90/FIORELLI.jpeg",
-    "rank": 4,
-    "score": 72,
-    "verdict": "Prácticamente nueva: 2025 con 4.154 km por 63.900 €, cuando una Siena 395 nueva ronda los 75.000 €. Perfilada de 5 plazas de viajar y 5 de dormir, con cama trasera fija (165x200) y basculante eléctrica para dos — los cuatro duermen sin desmontar el comedor — y ducha separada. Riesgo de estado prácticamente nulo. El pero es serio para Canarias: 7,40 m de largo, la más grande de la lista, y encima con solo un año no queda margen de negociación como en las de flota.",
-    "flags": [
-      "Longitud 7,40 m: incómoda para carreteras estrechas, aparcamiento urbano y ferries entre islas.",
-      "MMA no confirmada en el anuncio — verificar que sea 3.500 kg y no una versión reforzada.",
-      "No he podido confirmar el tipo de cinturones de las plazas traseras (declara 5 plazas de viaje).",
-      "Sin garaje confirmado."
-    ],
-    "specs": {
-      "seatbelts": 5,
-      "berths": 5,
-      "layout": "cama trasera fija + cama basculante eléctrica delantera",
-      "bathroom": true,
-      "mma_kg": null,
-      "length_m": 7.4,
-      "garage": null
-    }
-  },
-  {
-    "id": "campermax-f7410ec9",
-    "url": "https://campermax.es/listing/mclouis-mc4-231-170cv/",
-    "source": "campermax",
-    "title": "McLouis MC4 231 — perfilada corta (5,99 m), 2024, 6.000 km",
-    "price": 64900,
-    "year": 2024,
-    "km": 6000,
-    "location": "Gran Canaria",
-    "photo": "https://campermax.es/wp-content/uploads/2026/06/MC4-231-170CV-1.jpeg",
-    "rank": 5,
-    "score": 68,
-    "verdict": "La más manejable con diferencia: 5,99 m y MMA 3.500 kg, la única que se aparca sin drama en cualquier pueblo canario y entra en el ferry sin sobrecoste de longitud. De particular, 2024 con solo 6.000 km, y duermen cuatro sin tocar el comedor (cama trasera transversal + basculante eléctrica). La incluyo con una reserva grande: el anuncio dice 'viajan y duermen 4', pero la ficha técnica del modelo que he encontrado habla de 3 plazas homologadas y de basculante opcional. Si al ver el permiso de circulación no aparecen 4 cinturones de 3 puntos, queda eliminada de inmediato.",
-    "flags": [
-      "FLAG ROJO — CINTURONES: el anuncio declara 4 plazas para viajar, pero una ficha técnica del MC4 231 indica solo 3 plazas homologadas. Es un requisito innegociable: pedir foto del permiso de circulación y de los cinturones traseros ANTES de moverse. Si no hay 4 de 3 puntos, descartar.",
-      "A 64.900 € por una perfilada de 5,99 m es cara para lo que ofrece frente a la Itineo CS660 (59.900 €, integral, con literas).",
-      "Venta de particular: sin garantía de concesionario.",
-      "Sin garaje confirmado."
+      "Cinturones de 3 puntos no confirmados documentalmente para las 4 plazas — el anuncio original es ambiguo ('3 plazas circular, 4 duermen'); la ficha de fábrica del modelo indica 4 plazas homologadas, pero hay que verificarlo en el permiso de circulación.",
+      "MMA no publicado en el anuncio; los Amphitryion de esta gama suelen homologar 3.500 kg pero no está confirmado para esta unidad.",
+      "Longitud no publicada; los modelos de esta gama rondan 7,4-7,7 m, probablemente por encima del límite práctico de 7 m para Canarias — pedir ficha técnica antes de decidir.",
+      "Precio más alto del Top 5: unidades similares (12.800-24.800 km) se ofrecen en la península desde ~77.990€, así que a 84.500€ con 22.688 km está en la banda alta del mercado."
     ],
     "specs": {
       "seatbelts": 4,
       "berths": 4,
-      "layout": "cama trasera transversal fija + cama basculante eléctrica sobre el comedor",
+      "layout": "cama isla trasera fija + cama basculante delantera fija",
+      "bathroom": true,
+      "mma_kg": null,
+      "length_m": null,
+      "garage": null
+    }
+  },
+  {
+    "id": "milanuncios-dcc75ac8",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/etrusco-7400sb-130cv-viajan-y-duermen-5-604927348.htm",
+    "source": "milanuncios",
+    "title": "Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante",
+    "price": 64900,
+    "year": null,
+    "km": 32000,
+    "location": "Gran Canaria",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/e4358d79-220b-4369-997a-3a65016a659a?rule=hw396_70",
+    "rank": 4,
+    "score": 76,
+    "verdict": "Distribución de camas fijas ideal para niños (gemelas traseras + basculante delantera, nada que montar cada noche) por 64.900€, precio razonable para el segmento. El pero grande es la longitud: 7,43 m se pasa claramente del límite de 7 m que hace manejable el vehículo en las carreteras y ferris de Canarias. Además hay una coincidencia sospechosa de precio y kilometraje (32.000 km) con un anuncio de Tenerife que ganó el 3er puesto la semana pasada y que ha desaparecido de Coches.net — podría ser el mismo vehículo reubicado o republicado; hay que confirmar la isla real antes de ir a verlo.",
+    "flags": [
+      "Cinturones de 3 puntos no confirmados en el anuncio ni en fichas públicas del modelo — dato crítico pendiente.",
+      "Longitud 7,43 m: supera claramente el límite práctico de 7 m para ferris y calles estrechas canarias.",
+      "Precio (64.900€) y kilometraje (32.000 km) idénticos a un anuncio de un Etrusco 7400SB en Tenerife que ganó el puesto nº3 la semana pasada y ya no está publicado en Coches.net — no se puede descartar que sea el mismo vehículo republicado en otra isla/portal.",
+      "Ni año ni MMA vienen en este anuncio concreto."
+    ],
+    "specs": {
+      "seatbelts": null,
+      "berths": 5,
+      "layout": "camas gemelas traseras fijas + cama basculante delantera",
+      "bathroom": true,
+      "mma_kg": null,
+      "length_m": 7.43,
+      "garage": null
+    }
+  },
+  {
+    "id": "campermax-7148b11d",
+    "url": "https://campermax.es/listing/giottiline-toscan-69gc-140cv/",
+    "source": "campermax",
+    "title": "GiottiLine Toscan 69GC — perfilada a estrenar, camas gemelas traseras",
+    "price": 77900,
+    "year": 2026,
+    "km": 0,
+    "location": "Gran Canaria",
+    "photo": "https://campermax.es/wp-content/uploads/2026/05/TOSCAN-69GC-140CV-1.jpeg",
+    "rank": 5,
+    "score": 74,
+    "verdict": "Perfilada a estrenar (0 km, matriculación 04/2026) con camas gemelas traseras para los niños y MMA de 3.500 kg confirmado en ficha de fábrica, así que aquí no hay incógnitas de desgaste ni de humedad — es nueva. El pero: a 77.900€ se paga precio de lista (un 0 km de este modelo va de 77.900 a 84.415€ en la península), o sea que no hay ganga de mercado insular, y el anuncio y la ficha del fabricante no coinciden del todo en cuántas plazas homologa realmente (el anuncio dice 5, el fabricante dice 4 base más una 5ª opcional).",
+    "flags": [
+      "Tipo de cinturón (2 o 3 puntos) de las 4 plazas homologadas no confirmado documentalmente.",
+      "Es una unidad a estrenar (0 km) — no hay historial de humedades ni de uso real que evaluar, ni margen de negociación de precio de mercado usado.",
+      "El anuncio dice 'viajan y duermen 5' pero la ficha oficial del fabricante homologa 4 plazas base (5ª opcional) — confirmar con la ficha técnica de esta unidad concreta cuál es la homologación real."
+    ],
+    "specs": {
+      "seatbelts": 4,
+      "berths": 4,
+      "layout": "camas gemelas traseras convertibles + cama abatible en salón",
       "bathroom": true,
       "mma_kg": 3500,
-      "length_m": 5.99,
+      "length_m": 6.99,
       "garage": null
     }
   }
