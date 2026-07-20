@@ -96,3 +96,15 @@ def test_an_id_is_derived_when_claude_found_the_listing_itself():
 def test_garbage_instead_of_a_list_is_refused():
     with pytest.raises(Invalid, match="expected a JSON list"):
         validate({"winners": []}, blocked=set())
+
+
+def test_the_same_vehicle_ranked_twice_from_different_sources_is_refused():
+    """If the research pass picks up the same van from two different sites as
+    two separate 'winners', that is a research bug, not two real vehicles —
+    refuse to publish rather than show the family a duplicate card."""
+    coches_net = ok(id="coches_net-abc", rank=1, source="coches_net",
+                     title="Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande")
+    milanuncios = ok(id="milanuncios-xyz", rank=2, source="milanuncios",
+                      title="Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante")
+    with pytest.raises(Invalid, match="same"):
+        validate([coches_net, milanuncios], blocked=set())

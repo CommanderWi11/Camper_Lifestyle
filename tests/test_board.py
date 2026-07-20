@@ -13,17 +13,20 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 import board
 
 
-def winner(listing_id, rank, score=80, title=None):
-    return {
+def winner(listing_id, rank, score=80, title=None, source="test", year=None):
+    w = {
         "id": listing_id,
         "title": title or f"Autocaravana {listing_id}",
         "rank": rank,
         "score": score,
         "verdict": "Buena relación calidad-precio.",
         "url": f"https://example.com/{listing_id}",
-        "source": "test",
+        "source": source,
         "price": 50000,
     }
+    if year is not None:
+        w["year"] = year
+    return w
 
 
 def test_first_week_seeds_the_board():
@@ -96,6 +99,40 @@ def test_winner_fields_are_carried_onto_the_board():
     assert b[0]["score"] == 93
     assert b[0]["verdict"] == "Buena relación calidad-precio."
     assert b[0]["week_start"] == "2026-07-13", "W29 of 2026 starts Monday 13 July"
+
+
+def test_a_relist_on_a_different_source_is_promoted_not_duplicated():
+    """The real bug found live on the board 2026-07-20: the same Etrusco 7400SB
+    won one week from coches_net and a later week from milanuncios — two
+    different ids for the same van, which must fold into ONE card, not two."""
+    wk29 = board.update_board(
+        [], [winner("coches_net-abc", 3, source="coches_net",
+                     title="Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande")],
+        "2026-W29")
+    wk30 = board.update_board(
+        wk29, [winner("milanuncios-xyz", 4, source="milanuncios",
+                       title="Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante")],
+        "2026-W30")
+
+    assert len(wk30) == 1, "the relist must promote the existing card, not add a second one"
+    entry = wk30[0]
+    # The original id is kept (that's what Supabase stars/comments/discards key on).
+    assert entry["id"] == "coches_net-abc"
+    assert entry["week"] == "2026-W30" and entry["rank"] == 4
+    # Its content reflects the newest winning data (the current live listing).
+    assert "basculante" in entry["title"]
+
+
+def test_two_different_vans_sharing_a_chassis_are_not_merged():
+    wk29 = board.update_board(
+        [], [winner("mundo-a", 1, source="mundo_autocaravanas",
+                     title="Fiat Ducato 2.8 JTD – ADRIA CORAL 660 SP G – ¡Reservada!")],
+        "2026-W29")
+    wk30 = board.update_board(
+        wk29, [winner("dm-b", 1, source="autocaravanas_dm",
+                       title="Fiat Ducato 2.8 JTD – ELNAGH JOXY 10- ¡Reservada!")],
+        "2026-W30")
+    assert len(wk30) == 2, "different models must not be collapsed just for sharing a chassis"
 
 
 def test_iso_week_and_week_start_agree():

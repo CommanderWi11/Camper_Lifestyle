@@ -168,14 +168,27 @@ _FP_STOPWORDS = {
     # same vehicle, and a discard on one must carry to the other.
     "perfilada", "perfilado", "perfiladas", "perfilados", "integral", "integrales",
     "capuchina", "capuchinas",
+    # Base chassis — nearly every European integral/perfilada is built on one of
+    # these, so the chassis brand is noise, not identity (the coachbuilder brand
+    # + model is). Also engine/trim codes and sale-status words, equally generic.
+    "fiat", "ducato", "ford", "transit", "iveco", "daily", "mercedes", "mercedesbenz",
+    "sprinter", "peugeot", "boxer", "citroen", "jumper", "renault", "master",
+    "vw", "volkswagen", "crafter",
+    "td", "jtd", "tdi", "hdi", "dci", "cdti", "multijet", "cv",
+    "reservada", "reservado", "oportunidad",
 }
 
 
 def _slug_tokens(text: str) -> list[str]:
-    """Lowercase, strip accents, drop stopwords/noise — leaving brand+model tokens."""
+    """Lowercase, strip accents, drop stopwords/noise — leaving brand+model tokens.
+
+    Letters and digits are split into separate tokens ("7400SB" -> "7400", "sb")
+    so the same model matches regardless of whether a source's title happens to
+    put a space in the model code ("7400 SB") or not.
+    """
     norm = unicodedata.normalize("NFKD", text or "")
     norm = "".join(c for c in norm if not unicodedata.combining(c)).lower()
-    tokens = re.findall(r"[a-z0-9]+", norm)
+    tokens = re.findall(r"[a-z]+|[0-9]+", norm)
     return [t for t in tokens if t not in _FP_STOPWORDS and len(t) > 1]
 
 
@@ -188,10 +201,42 @@ def fingerprint(listing: dict) -> str:
 
     Price is deliberately excluded: sellers drop it, and a price cut must not
     resurrect a vehicle the family already rejected.
+
+    This stays a strict, exact-match identity — used for blocklist propagation,
+    where a false match would silently re-suppress an unrelated van. For "is this
+    a duplicate CARD on the board", see the looser `same_vehicle()` below: two
+    real listings of the same van rarely share every descriptive word (one site's
+    "camas gemelas fijas" vs another's "garaje grande"), so exact-set equality
+    under-catches there.
     """
     tokens = sorted(set(_slug_tokens(listing.get("title", ""))))
     year = listing.get("year") or ""
     return f"{'-'.join(tokens)}|{year}"
+
+
+def same_vehicle(a: dict, b: dict) -> bool:
+    """True if two listings from DIFFERENT sources are almost certainly the same
+    physical vehicle relisted (e.g. the dealer's own site AND a marketplace).
+
+    Deliberately cross-source only: a dealer's own catalog can legitimately carry
+    two units of the identical model (a same-source near-duplicate is the
+    dealer's data, not our scraper's problem to collapse), so same-source pairs
+    are never merged no matter how similar their titles are. Cross-source plus a
+    real token overlap (>=3 shared brand/model tokens, calibrated against a real
+    false-positive-heavy dataset of shared-chassis titles) is what actually tells
+    "same van seen twice" apart from "two different vans that happen to share a
+    chassis and engine code".
+    """
+    src_a, src_b = a.get("source"), b.get("source")
+    if not src_a or not src_b or src_a == src_b:
+        return False
+    overlap = set(_slug_tokens(a.get("title", ""))) & set(_slug_tokens(b.get("title", "")))
+    if len(overlap) < 3:
+        return False
+    year_a, year_b = a.get("year"), b.get("year")
+    if year_a and year_b and year_a != year_b:
+        return False
+    return True
 
 
 def _supabase_config() -> tuple[str, str] | None:

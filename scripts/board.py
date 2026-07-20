@@ -17,6 +17,8 @@ Never-won candidates never reach the board; they live in scripts/candidates.json
 
 from datetime import date, datetime, timedelta
 
+from harvest import same_vehicle
+
 
 def iso_week(day: str | date) -> str:
     """'2026-07-13' -> '2026-W29'. Uses the ISO week, so weeks start on Monday."""
@@ -79,17 +81,29 @@ def update_board(board: list, winners: list, week: str,
         wid = w.get("id")
         if not wid or wid in blocked:
             continue
-        # Promote in place if we've seen it before, so history (comments, stars,
-        # the id the Supabase tables key on) is preserved rather than recreated.
-        entry = by_id.get(wid, {})
+
+        # Promote in place if we've seen this exact id before, so history
+        # (comments, stars, the id the Supabase tables key on) is preserved
+        # rather than recreated. If it's a new id, check whether it's the same
+        # physical vehicle as an existing card under a DIFFERENT id (relisted on
+        # another source) — if so, promote that card instead of adding a second
+        # one for the same van.
+        target_id = wid
+        if wid not in by_id:
+            for existing_id, existing in by_id.items():
+                if same_vehicle(w, existing):
+                    target_id = existing_id
+                    break
+
+        entry = by_id.get(target_id, {})
         entry.update({k: v for k, v in w.items() if k in RESEARCH_FIELDS})
-        entry["id"] = wid
+        entry["id"] = target_id
         entry["week"] = week
         entry["week_start"] = monday
         entry["rank"] = w.get("rank")
         entry.setdefault("status", "new")
         entry.setdefault("added_at", str(date.today()))
-        by_id[wid] = entry
+        by_id[target_id] = entry
 
     return sorted(by_id.values(), key=_sort_key)
 

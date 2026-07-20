@@ -122,12 +122,12 @@
       "length_m": 7.43,
       "garage": null
     },
-    "id": "milanuncios-dcc75ac8",
+    "id": "coches_net-0caa3cc4",
     "week": "2026-W30",
     "week_start": "2026-07-20",
     "rank": 4,
     "status": "new",
-    "added_at": "2026-07-20"
+    "added_at": "2026-07-13"
   },
   {
     "url": "https://campermax.es/listing/giottiline-toscan-69gc-140cv/",
@@ -160,39 +160,6 @@
     "rank": 5,
     "status": "new",
     "added_at": "2026-07-20"
-  },
-  {
-    "url": "https://www.coches.net/etrusco-7400sb-130cv-viajan-y-duermen-5-aireador-viesa-en-sta-c-tenerife-71044577-arvo.aspx",
-    "source": "coches_net",
-    "title": "Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande",
-    "price": 64900,
-    "year": 2019,
-    "km": 32000,
-    "location": "Tenerife",
-    "photo": "https://a.ccdn.es/cnet/vehicles/20400349/777a0fdc-888e-41bd-9fa6-8ba2bb5ece3a.jpg",
-    "score": 74,
-    "verdict": "La mejor opción en Tenerife y la única con un garaje de verdad (el T7400 SB tiene uno de los mayores del mercado: carrito, sillas de paseo y trastos de playa caben sin pelear). Anuncio de concesionario que declara explícitamente 'viajan y duermen 5', con camas gemelas traseras (210x80 y 205x80), basculante para dos sobre el salón y baño con ducha independiente. 32.000 km en 7 años (4.500 km/año) es poquísimo. Los peros son dos: mide 7,40 m — se pasa del límite de 7 m que nos marcamos para carreteras canarias, aparcamiento y ferries — y a 64.900 € es la más cara de las usadas de la lista.",
-    "flags": [
-      "Longitud 7,40 m: supera el límite de 7 m fijado para uso canario. Es el punto que más pesa en contra.",
-      "No he podido confirmar que los 5 cinturones sean de 3 puntos: el anuncio dice 'viajan 5' pero no detalla el tipo. Verificar con el vendedor.",
-      "El anuncio no lista garaje aunque el modelo lo lleva de serie — confirmar que esta unidad no es una versión sin garaje.",
-      "MMA 3.500 kg tomada de la ficha del modelo, no del anuncio (el T7400 SB admite opción de 3.650 kg, que sacaría del carnet B). Verificar en el permiso de circulación."
-    ],
-    "specs": {
-      "seatbelts": 5,
-      "berths": 5,
-      "layout": "camas gemelas traseras + cama basculante delantera",
-      "bathroom": true,
-      "mma_kg": 3500,
-      "length_m": 7.4,
-      "garage": null
-    },
-    "id": "coches_net-0caa3cc4",
-    "week": "2026-W29",
-    "week_start": "2026-07-13",
-    "rank": 3,
-    "status": "new",
-    "added_at": "2026-07-13"
   },
   {
     "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/giottiline-/759gq",

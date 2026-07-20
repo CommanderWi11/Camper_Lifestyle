@@ -63,6 +63,62 @@ def test_fingerprint_ignores_price_so_a_discount_cannot_resurrect_a_reject():
     assert harvest.fingerprint(a) == harvest.fingerprint(b)
 
 
+def test_fingerprint_splits_letters_from_digits_in_model_codes():
+    """A real bug: coches.net wrote '7400 SB', milanuncios wrote '7400SB' — one
+    token in one title, two in the other. Without splitting, the fingerprints
+    (and therefore the board dedup) never matched and the same van showed up as
+    two separate cards."""
+    a = {"title": "Etrusco T 7400 SB, viajan y duermen 5"}
+    b = {"title": "Etrusco 7400SB 130cv"}
+    assert "7400" in harvest._slug_tokens(a["title"])
+    assert "sb" in harvest._slug_tokens(a["title"])
+    assert "7400" in harvest._slug_tokens(b["title"])
+    assert "sb" in harvest._slug_tokens(b["title"])
+
+
+# -------------------------------------------------------------------- same_vehicle
+
+def test_same_vehicle_matches_the_real_etrusco_duplicate():
+    """The actual duplicate found live on the board 2026-07-20: same van, same
+    model code, different sites, different description wording."""
+    coches_net = {"source": "coches_net",
+                  "title": "Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande"}
+    milanuncios = {"source": "milanuncios",
+                   "title": "Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante"}
+    assert harvest.same_vehicle(coches_net, milanuncios)
+
+
+def test_same_vehicle_requires_different_sources():
+    """A dealer's own catalog can legitimately carry two units of the identical
+    model — that is real stock, not a scraping duplicate, so same-source near-
+    identical titles must never be merged."""
+    a = {"source": "mundo_autocaravanas", "title": "MCLOUIS TANDY PLUS 640 (Ref. 1548)"}
+    b = {"source": "mundo_autocaravanas", "title": "MCLOUIS TANDY PLUS 640 (Ref. 1325)"}
+    assert not harvest.same_vehicle(a, b)
+
+
+def test_same_vehicle_rejects_shared_chassis_as_a_false_positive():
+    """Two totally different coachbuilder models that merely share a Fiat Ducato
+    base chassis and diesel engine code must not be treated as the same van —
+    this was the dominant false-positive source before chassis/engine words were
+    added to the stopword list."""
+    a = {"source": "mundo_autocaravanas", "title": "Fiat Ducato 2.8 JTD – ADRIA CORAL 660 SP G – ¡Reservada!"}
+    b = {"source": "autocaravanas_dm", "title": "Fiat Ducato 2.8 JTD – ELNAGH JOXY 10- ¡Reservada!"}
+    assert not harvest.same_vehicle(a, b)
+
+
+def test_same_vehicle_requires_real_token_overlap():
+    a = {"source": "wallapop", "title": "Hymer B-Klasse ModernComfort I 580"}
+    b = {"source": "milanuncios", "title": "Chausson Titanium 720"}
+    assert not harvest.same_vehicle(a, b)
+
+
+def test_same_vehicle_respects_conflicting_years():
+    a = {"source": "coches_net", "title": "Etrusco T 7400 SB, viajan y duermen 5", "year": 2015}
+    b = {"source": "milanuncios", "title": "Etrusco 7400SB 130cv, viajan y duermen 5", "year": 2019}
+    assert not harvest.same_vehicle(a, b)
+
+
 # -------------------------------------------------------------------- filtering
 
 def test_is_target_accepts_integrales_and_perfiladas():

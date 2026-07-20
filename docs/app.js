@@ -141,6 +141,21 @@ async function init() {
   ]);
   allListings = listings;
 
+  // Always mark the most recent additions, independent of visit history: a
+  // listing whose added_at falls within the current (top) week's run is a
+  // genuinely new entry this run, not a returning winner promoted back up —
+  // and should show as new even on a fresh browser or after localStorage is
+  // cleared, not just "since your last visit" (see below).
+  const rankedWeeks = [...new Set(allListings.filter(l => !l.pinned && l.week).map(l => l.week))]
+    .sort().reverse();
+  const currentWeekItems = allListings.filter(l => l.week === rankedWeeks[0]);
+  const currentWeekStart = currentWeekItems[0]?.week_start;
+  if (currentWeekStart) {
+    for (const l of currentWeekItems) {
+      if (l.added_at && l.added_at >= currentWeekStart) newSet.add(l.id);
+    }
+  }
+
   const dates = allListings.map(l => l.added_at).filter(Boolean).sort().reverse();
   if (dates.length) {
     const lastDate = dates[0];

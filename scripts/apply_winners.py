@@ -15,7 +15,7 @@ from pathlib import Path
 import board
 from harvest import (
     BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
-    load_listings, make_id,
+    load_listings, make_id, same_vehicle,
 )
 
 WINNERS_FILE = Path(__file__).parent / "winners.json"
@@ -55,6 +55,13 @@ def validate(raw: object, blocked: set[str]) -> list:
             raise Invalid(f"duplicate winner id {wid}")
         if wid in blocked:
             raise Invalid(f"{wid} was discarded by the family but came back as a winner")
+        for prev in winners:
+            if same_vehicle(w, prev):
+                raise Invalid(
+                    f"winner {wid} and winner {prev['id']} look like the same "
+                    f"vehicle from two different sources — the research pass "
+                    f"ranked one van as two separate winners"
+                )
         seen_ids.add(wid)
 
         rank = w.get("rank")
