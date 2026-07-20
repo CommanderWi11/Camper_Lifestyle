@@ -1,8 +1,8 @@
-# Camper Life-style
+# Motorhome Lifestyle
 
 Weekly **Top 5** integrales y perfiladas en Canarias, para una familia de 4 con dos peques.
 
-**Dashboard:** https://commanderwi11.github.io/Camper_Lifestyle/
+**Dashboard:** https://commanderwi11.github.io/Motorhome_Search/
 
 Cada lunes a las 07:00 el pipeline busca en todas las fuentes, investiga a fondo los
 candidatos serios, y publica las 5 mejores de la semana. Las que quedan desplazadas no
@@ -57,8 +57,8 @@ rellenar con basura.
 
 ```bash
 # Lanzar la búsqueda ahora (idempotente por semana ISO)
-launchctl kickstart -k gui/$(id -u)/com.openbob.camper-weekly
-tail -f ~/Library/Logs/camper-weekly.log
+launchctl kickstart -k gui/$(id -u)/com.openbob.motorhome-search-weekly
+tail -f ~/Library/Logs/motorhome-weekly.log
 
 # Descartar una autocaravana (no volverá a aparecer NI a buscarse)
 ./scripts/discard.py <listing-id>
@@ -71,8 +71,8 @@ tail -f ~/Library/Logs/camper-weekly.log
 ## Instalación del schedule
 
 ```bash
-ln -sf "$PWD/launchd/com.openbob.camper-weekly.plist" ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.camper-weekly.plist
+ln -sf "$PWD/launchd/com.openbob.motorhome-search-weekly.plist" ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.motorhome-search-weekly.plist
 ```
 
 Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas webs (el

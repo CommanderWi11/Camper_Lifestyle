@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Camper Lifestyle — weekly Top 5.
-# Schedule: Mondays 07:00 local, via ~/Library/LaunchAgents/com.openbob.camper-weekly.plist
+# Motorhome Lifestyle — weekly Top 5.
+# Schedule: Mondays 07:00 local, via ~/Library/LaunchAgents/com.openbob.motorhome-search-weekly.plist
 #
 #   Stage A  harvest.py        scrape every source -> candidates.json   (deterministic)
 #   Stage B  claude -p         deep research + rank -> winners.json     (judgement)
@@ -12,8 +12,8 @@
 
 set -uo pipefail
 
-REPO="/Users/openbob/Developer/Manual Search Script Run"
-LOG="$HOME/Library/Logs/camper-weekly.log"
+REPO="/Users/openbob/Library/Mobile Documents/com~apple~CloudDocs/AI Coworking/01_Personal_HQ/Projects/Motorhome_HQ/Motorhome_Search"
+LOG="$HOME/Library/Logs/motorhome-weekly.log"
 STATE_DIR="$REPO/.state"
 PY="$REPO/.venv/bin/python3"
 

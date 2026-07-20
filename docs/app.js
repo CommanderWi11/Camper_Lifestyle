@@ -1,4 +1,4 @@
-// Camper Life-style — the weekly Top 5 board.
+// Motorhome Lifestyle — the weekly Top 5 board.
 //
 // listings.json is a BOARD, not a feed: every entry is a past or present winner,
 // carrying the week it last won and its rank in that week. Rendering is simply
