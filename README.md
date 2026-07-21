@@ -1,12 +1,16 @@
 # Motorhome Lifestyle
 
-Weekly **Top 5** integrales y perfiladas en Canarias, para una familia de 4 con dos peques.
+**Top 5** semanal de integrales y perfiladas en Canarias, para una familia de 4 con dos
+peques — refrescado a diario.
 
 **Dashboard:** https://commanderwi11.github.io/Motorhome_Search/
 
-Cada lunes a las 07:00 el pipeline busca en todas las fuentes, investiga a fondo los
-candidatos serios, y publica las 5 mejores de la semana. Las que quedan desplazadas no
-desaparecen: bajan a la sección de su semana, y siguen ahí si haces scroll.
+Cada día a las 07:00 el pipeline busca en todas las fuentes, investiga a fondo los
+candidatos serios, y actualiza las 5 mejores **de esta semana**. El tablero sigue
+organizado por semana (una posición por semana ISO): el run diario simplemente lo
+mantiene fresco en vez de fijarlo el lunes y no tocarlo hasta el siguiente. Las que
+quedan desplazadas no desaparecen: bajan a la sección de su semana, y siguen ahí si
+haces scroll.
 
 ## Cómo funciona
 
@@ -18,7 +22,7 @@ desaparecen: bajan a la sección de su semana, y siguen ahí si haces scroll.
 | **D · Publicación** | `git push` → GitHub Pages en ~60s. | |
 
 Orquestado por `scripts/weekly-search.sh`, programado con
-`launchd/com.openbob.camper-weekly.plist`.
+`launchd/com.openbob.motorhome-search-daily.plist`.
 
 ## La rúbrica
 
@@ -56,9 +60,9 @@ rellenar con basura.
 ## Uso
 
 ```bash
-# Lanzar la búsqueda ahora (idempotente por semana ISO)
-launchctl kickstart -k gui/$(id -u)/com.openbob.motorhome-search-weekly
-tail -f ~/Library/Logs/motorhome-weekly.log
+# Lanzar la búsqueda ahora (idempotente por día natural, no por semana)
+launchctl kickstart -k gui/$(id -u)/com.openbob.motorhome-search-daily
+tail -f ~/Library/Logs/motorhome-daily.log
 
 # Descartar una autocaravana (no volverá a aparecer NI a buscarse)
 ./scripts/discard.py <listing-id>
@@ -71,25 +75,24 @@ tail -f ~/Library/Logs/motorhome-weekly.log
 ## Instalación del schedule
 
 ```bash
-ln -sf "$PWD/launchd/com.openbob.motorhome-search-weekly.plist" ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.motorhome-search-weekly.plist
+ln -sf "$PWD/launchd/com.openbob.motorhome-search-daily.plist" ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.motorhome-search-daily.plist
 ```
 
 Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas webs (el
 antiguo `weekly-search.yml` tenía un cron los lunes y no produjo ni un solo anuncio en su
-vida; está borrado). Si el Mac está dormido el lunes a las 07:00, launchd lo ejecuta al
-despertar.
+vida; está borrado). Si el Mac está dormido a las 07:00, launchd lo ejecuta al despertar.
 
-**Reintentos:** el agente se dispara los lunes a las 07:00, 13:00 y 19:00. Solo se escribe
-`.state/<semana>.done` cuando la publicación ha salido bien, así que si el run de las 07:00
-funciona, los otros dos salen inmediatamente sin hacer nada. Si falla (límite de sesión de
-Claude, web caída, sin red al despertar), hay dos oportunidades más el mismo día en vez de
-quedarse toda la semana sin tablero.
+**Reintentos:** el agente se dispara todos los días a las 07:00, 13:00 y 19:00 (antes solo
+los lunes; cambiado a diario el 2026-07-21). Solo se escribe `.state/<fecha>.done` cuando
+la publicación ha salido bien, así que si el run de las 07:00 funciona, los otros dos salen
+inmediatamente sin hacer nada. Si falla (límite de sesión de Claude, web caída, sin red al
+despertar), hay dos oportunidades más el mismo día en vez de quedarse sin tablero fresco.
 
 ## Estado conocido
 
 - **Supabase está caído** — el proyecto fue borrado (NXDOMAIN). La web usa localStorage
-  como respaldo y la búsqueda semanal lee `scripts/blocklist.json`, así que nada está
+  como respaldo y la búsqueda diaria lee `scripts/blocklist.json`, así que nada está
   roto, pero no sincroniza entre dispositivos. Para restaurarlo: `docs/supabase-setup.sql`.
 - **Wallapop devuelve 0** — cambiaron el DOM de búsqueda. El harvester lo avisa en el log
   (`<-- ZERO, check selectors`). Aportaba 1 anuncio; las fuentes nuevas aportan 48.

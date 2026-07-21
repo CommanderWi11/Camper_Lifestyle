@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Motorhome Lifestyle — weekly Top 5.
-# Schedule: Mondays 07:00 local, via ~/Library/LaunchAgents/com.openbob.motorhome-search-weekly.plist
+# Motorhome Lifestyle — refreshes the current week's Top 5, daily.
+# Schedule: every day 07:00/13:00/19:00 local, via
+# ~/Library/LaunchAgents/com.openbob.motorhome-search-daily.plist
 #
 #   Stage A  harvest.py        scrape every source -> candidates.json   (deterministic)
 #   Stage B  claude -p         deep research + rank -> winners.json     (judgement)
@@ -9,11 +10,19 @@
 #
 # If Stage B or C fails, NOTHING is committed. Last week's board stays up. A stale
 # board is fine; a corrupted one is not.
+#
+# The board itself is still WEEK-keyed (board.py: one position per ISO week) — this
+# script just runs that same weekly research more often, so the current week's Top 5
+# stays fresh with whatever new listings appeared today instead of only updating once
+# on Monday. A day with nothing new re-picks the same winners, and Stage D's
+# `git diff --cached --quiet` check means that publishes no new commit — a quiet day
+# is a no-op, not noise. 2026-07-21: switched from Monday-only to daily at Luis's
+# request; see MEMORY.md.
 
 set -uo pipefail
 
 REPO="/Users/openbob/Library/Mobile Documents/com~apple~CloudDocs/AI Coworking/01_Personal_HQ/Projects/Motorhome_HQ/Motorhome_Search"
-LOG="$HOME/Library/Logs/motorhome-weekly.log"
+LOG="$HOME/Library/Logs/motorhome-daily.log"
 STATE_DIR="$REPO/.state"
 PY="$REPO/.venv/bin/python3"
 
@@ -27,15 +36,18 @@ exec >> "$LOG" 2>&1
 cd "$REPO" || { echo "FATAL: $REPO missing"; exit 1; }
 
 WEEK="$("$PY" -c 'import sys; sys.path.insert(0,"scripts"); import board; print(board.current_week())')"
-MARKER="$STATE_DIR/$WEEK.done"
+TODAY="$(date '+%Y-%m-%d')"
+MARKER="$STATE_DIR/$TODAY.done"
 
 echo ""
-echo "======== $(date '+%Y-%m-%d %H:%M:%S')  weekly search  $WEEK ========"
+echo "======== $(date '+%Y-%m-%d %H:%M:%S')  daily search  week=$WEEK ========"
 
 # If the Mac was asleep at 07:00, launchd fires this on wake — possibly more than
-# once. One board per week, so bail if this week is already done.
+# once. One publish per CALENDAR DAY, so bail if today is already done; 13:00/19:00
+# are same-day retries if the 07:00 attempt failed (session limit, flaky site, no
+# network on wake — none of which are code bugs, all of which happened for real).
 if [ -f "$MARKER" ]; then
-  echo "Week $WEEK already published. Nothing to do."
+  echo "$TODAY already published. Nothing to do."
   exit 0
 fi
 
@@ -110,7 +122,7 @@ git add docs/listings.json scripts/candidates.json scripts/winners.json
 if git diff --cached --quiet; then
   echo "No change to publish."
 else
-  git commit -q -m "chore: top 5 for $WEEK" && git push -q && echo "Pushed. Pages live in ~60s."
+  git commit -q -m "chore: top 5 refresh $TODAY (week $WEEK)" && git push -q && echo "Pushed. Pages live in ~60s."
 fi
 
 touch "$MARKER"
