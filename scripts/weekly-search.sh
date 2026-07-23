@@ -114,6 +114,15 @@ CLAUDE_PID=$!
 while kill -0 "$CLAUDE_PID" 2>/dev/null; do
   if [ $(( $(date +%s) - STAGE_B_START )) -ge "$STAGE_B_TIMEOUT" ]; then
     echo "FATAL: claude -p exceeded ${STAGE_B_TIMEOUT}s — killing as a hang, not real work."
+    # 2026-07-23: both prior hangs (2026-07-20, 2026-07-23) were killed before anyone
+    # captured what the process was actually blocked on, so root cause is still just
+    # a theory (leading candidate: iCloud placeholder eviction stalling a file read —
+    # see CLAUDE.md/MEMORY.md). `sample` suspends the process and dumps every thread's
+    # call stack — it needs no sudo for a same-user process — so grab that evidence
+    # BEFORE killing, or the next hang teaches us nothing new either.
+    HANG_SAMPLE="$STATE_DIR/hang-sample-$(date '+%Y-%m-%d_%H%M%S').txt"
+    sample "$CLAUDE_PID" 5 -file "$HANG_SAMPLE" 2>&1 | tail -3
+    echo "Hung process call stacks captured to $HANG_SAMPLE — inspect before assuming the cause."
     kill -TERM "$CLAUDE_PID" 2>/dev/null
     sleep 5
     kill -KILL "$CLAUDE_PID" 2>/dev/null
