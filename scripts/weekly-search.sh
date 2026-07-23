@@ -95,14 +95,39 @@ restore_winners() {
 
 rm -f scripts/winners.json
 
+# 2026-07-20 and again 2026-07-23: Stage B hung with 0% CPU, zero open network
+# connections, and no Claude session transcript ever created — a true internal hang,
+# not a slow-but-working run, and nothing was watching, so it sat for hours until a
+# human noticed. macOS has no `timeout`/`gtimeout` binary installed, so this is a
+# plain-bash watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on
+# expiry, degrading a hang to the same "no winners.json" path as a real failure below
+# — which the existing 13:00/19:00 retry slots already recover from unattended.
+STAGE_B_TIMEOUT=1500  # 25 min; generous vs. observed successful runs, tune from the logged duration below
+STAGE_B_START=$(date +%s)
+
 claude -p "$(cat scripts/research-prompt.md)" \
   --append-system-prompt "$HEADLESS_OVERRIDE" \
   --allowedTools "Read,Write,Bash,WebFetch,WebSearch" \
-  < /dev/null
+  < /dev/null &
+CLAUDE_PID=$!
+
+while kill -0 "$CLAUDE_PID" 2>/dev/null; do
+  if [ $(( $(date +%s) - STAGE_B_START )) -ge "$STAGE_B_TIMEOUT" ]; then
+    echo "FATAL: claude -p exceeded ${STAGE_B_TIMEOUT}s — killing as a hang, not real work."
+    kill -TERM "$CLAUDE_PID" 2>/dev/null
+    sleep 5
+    kill -KILL "$CLAUDE_PID" 2>/dev/null
+    break
+  fi
+  sleep 10
+done
+wait "$CLAUDE_PID" 2>/dev/null
+echo "Stage B took $(( $(date +%s) - STAGE_B_START ))s."
 
 if [ ! -f scripts/winners.json ]; then
-  # Most likely causes: Claude session limit, or a site that would not load.
-  # No marker is written, so the 13:00 / 19:00 retry slots will try again today.
+  # Most likely causes: Claude session limit, a hang (see watchdog above), or a site
+  # that would not load. No marker is written, so the 13:00 / 19:00 retry slots will
+  # try again today.
   echo "FATAL: research produced no winners.json. Board untouched."
   restore_winners
   exit 2
