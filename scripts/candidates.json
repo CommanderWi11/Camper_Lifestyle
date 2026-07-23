@@ -42,7 +42,7 @@
     "location": "Sta. C. Tenerife",
     "source": "coches_net",
     "url": "https://www.coches.net/renault-ahorn-en-sta-c-tenerife-62059697-arvo.aspx",
-    "photo": "https://a.ccdn.es/cnet/vehicles/19015425/76662b31-d104-4730-b30b-e5936244a016.jpg/252x189cut/",
+    "photo": "https://a.ccdn.es/cnet/vehicles/19015425/76662b31-d104-4730-b30b-e5936244a016.jpg/560x421cut/",
     "status": "new",
     "added_at": "2026-07-13",
     "fingerprint": "ahorn-renault|2022"
@@ -842,7 +842,7 @@
     "location": "Las Palmas",
     "source": "coches_net",
     "url": "https://www.coches.net/benimar-amphitryion-997-en-las-palmas-71108084-arvo.aspx",
-    "photo": "https://a.ccdn.es/cnet/vehicles/18208998/5765c684-e36e-40fc-8412-b77d3820c6ba.jpg/252x189cut/",
+    "photo": "https://a.ccdn.es/cnet/vehicles/18208998/5765c684-e36e-40fc-8412-b77d3820c6ba.jpg/560x421cut/",
     "status": "new",
     "added_at": "2026-07-20",
     "fingerprint": "997-amphitryion-benimar|2020"
@@ -858,7 +858,7 @@
     "location": "Sta. C. Tenerife",
     "source": "coches_net",
     "url": "https://www.coches.net/-ford---transit-rimor-en-sta_c_tenerife-71112729-arvo.aspx",
-    "photo": "",
+    "photo": "https://a.ccdn.es/cnet/2026/07/18/71112729/2118639638_g.jpg/560x421cut/",
     "status": "new",
     "added_at": "2026-07-20",
     "fingerprint": "ford-rimor-transit|"
@@ -942,5 +942,53 @@
     "status": "new",
     "added_at": "2026-07-20",
     "fingerprint": "130cv-7400sb-duermen-etrusco-viajan|"
+  },
+  {
+    "id": "milanuncios-b7fc2c52",
+    "title": "NISSAN - NV300",
+    "price": 39900,
+    "year": 2025,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas de Gran Canaria (Las Palmas)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/nissan-nv300-606810757.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/9dfe91c7-4a0c-49ff-ab22-8e2750ef4d30?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-07-23",
+    "fingerprint": "300-nissan-nv|2025"
+  },
+  {
+    "id": "coches_net-d76ff7b3",
+    "title": "ELNAGH MAGNUM 582 VIAJAN Y DUERMEN 4, CAMA EN ISLA",
+    "price": 84900,
+    "year": 2022,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Sta. C. Tenerife",
+    "source": "coches_net",
+    "url": "https://www.coches.net/elnagh-magnum-582-160cv-viajan-y-duermen-4-cama-en-isla-en-sta-c-tenerife-71138717-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-07-23",
+    "fingerprint": "582-cama-duermen-elnagh-isla-magnum-viajan|2022"
+  },
+  {
+    "id": "coches_net-10dd24a5",
+    "title": "ELNAGH MAGNUM 582 VIAJAN Y DUERMEN 4",
+    "price": 84900,
+    "year": 2022,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas",
+    "source": "coches_net",
+    "url": "https://www.coches.net/elnagh-magnum-582-160cv-viajan-y-duermen-4-en-las-palmas-71138641-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-07-23",
+    "fingerprint": "582-duermen-elnagh-magnum-viajan|2022"
   }
 ]
