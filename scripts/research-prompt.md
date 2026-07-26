@@ -135,22 +135,18 @@ márcalo como "a confirmar con el vendedor" y sigue. Es un plus, no un filtro.
 ## LO QUE TIENES QUE HACER
 
 ### 1. Lee los candidatos ya recolectados
-`scripts/candidates.json` — lo ha generado el harvester (Wallapop, Milanuncios,
-Coches.net, Autocaravanas DM, Mundo Autocaravanas, Campermax, caravanas.net). Todos
-estos son fuentes españolas/canarias — siguen siendo candidatos válidos, el mercado
-canario/peninsular sigue siendo bienvenido, solo que ya no es obligatorio. Cada
-entrada trae `id`, `title`, `price`, `url`, `source`. **Los datos de las fichas de
-resultados son pobres a propósito**: no traen plazas, cinturones, distribución,
-volante, longitud ni MMA.
+`scripts/candidates.json` — lo ha generado el harvester, que cubre exactamente dos
+de los portales del encargo (lista completa en el paso siguiente): Milanuncios y
+Coches.net, a nivel nacional (no solo Canarias). Cada entrada trae `id`, `title`, `price`, `url`,
+`source`. **Los datos de las fichas de resultados son pobres a propósito**: no
+traen plazas, cinturones, distribución, volante, longitud ni MMA — por eso hace
+falta abrir cada anuncio serio (paso 3).
 
-### 2. Añade las fuentes españolas/canarias que el harvester NO puede leer
-Estas dos webs tienen el HTML hostil (Wix con clases ofuscadas / contenido JS), así que
-**tienes que abrirlas tú con WebFetch**:
+El resto de portales del encargo — mobile.de, AutoScout24, Marktplaats, leboncoin,
+La Centrale, Subito.it, CamperOnLine, Autocasion, OLX, páginas de fabricante — no
+tienen scraper propio todavía: los buscas tú mismo, en vivo, en el siguiente paso.
 
-- **RentCamper Canarias** — https://www.rentcampercanarias.com/autocaravanas-ocasion
-- **Autocaravanas Canarias** — https://www.autocaravanascanarias.rentals/es/venta/
-
-### 3. Busca por toda Europa — esto es lo nuevo y lo más importante
+### 2. Busca por toda Europa — esto es lo nuevo y lo más importante
 El mercado español/canario por sí solo ya no basta: el encargo es **toda Europa**.
 Usa WebSearch y WebFetch en estos portales, con los términos nativos de cada idioma
 (el layout es lo difícil de buscar, así que usa el término local, no la traducción
@@ -189,7 +185,7 @@ como máximo ~2 búsquedas WebSearch + ~3 fichas de detalle WebFetch por portal,
 máximo total aproximado de 25-30 fetches en toda la ejecución. No conviertas "buscar
 más amplio" en una cadena de fetches sin fin.
 
-### 4. Investiga de verdad a los finalistas
+### 3. Investiga de verdad a los finalistas
 Para cada candidato serio, **abre su anuncio** (WebFetch) y saca los datos que no
 están en la ficha de resultados:
 - plazas con cinturón de 3 puntos (¡y confírmalo, no lo asumas!), volante (izquierda
@@ -208,7 +204,7 @@ humedad, y a cuánto se vende ese mismo modelo en otros países europeos.
 Si un dato clave no lo puedes confirmar, **dilo en `flags`**. No te lo inventes.
 Un "no he podido confirmar el volante" honesto vale más que un dato falso.
 
-### 5. Elige las 5 mejores
+### 4. Elige las 5 mejores
 Ordena por puntuación. `rank` 1 = la mejor.
 
 **Si no hay 5 que merezcan la pena, devuelve menos.** Tres buenas es un resultado mejor
@@ -225,15 +221,15 @@ la palabra `OK` al terminar.
 ```json
 [
   {
-    "id": "mundo_autocaravanas-1a2b3c4d",
+    "id": "mobile_de-1a2b3c4d",
     "url": "https://...",
-    "source": "mundo_autocaravanas",
+    "source": "mobile_de",
     "title": "Roller Team Zefiro side — camas gemelas traseras",
     "price": 59900,
     "year": 2018,
     "km": 62000,
-    "country": "España",
-    "location": "Tenerife",
+    "country": "Alemania",
+    "location": "Múnich",
     "photo": "https://...",
     "dealer_or_private": "particular",
     "vat_status": "a confirmar con el vendedor",

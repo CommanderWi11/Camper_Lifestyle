@@ -1,36 +1,9 @@
 {
-  "_comment": "Cheap gates for Stage A (harvest.py) ONLY. The real judging — seatbelts, bed layout, damp risk, value vs market — lives in research-prompt.md, because it needs the detail page and the web, not a regex. Seven params used to sit here doing nothing at all (min_sleeping, requires_bathroom, max_km, vehicle_type, location, reference_models); they were never wired into the scraper and are now enforced by the rubric instead.",
+  "_comment": "Cheap gates for Stage A (harvest.py) ONLY. The real judging — seatbelts, bed layout, damp risk, budget, age, value vs market — lives in research-prompt.md, because it needs the detail page and the web, not a regex. 2026-07-26: dropped max_age_years (Stage A has no basis to hard-reject on age — the brief says never discard on mileage/age alone) and the wallapop geo-filter (Wallapop itself was removed, see harvest.py's SOURCES). min_price/max_price stay as documented values Stage B reads, but are no longer enforced as a Stage A reject either, for the same reason.",
 
   "top_n": 5,
 
   "min_price": 50000,
   "max_price": 100000,
-  "max_age_years": 15,
-  "max_weight_kg": 3500,
-
-  "keywords": [
-    "autocaravana",
-    "hymer",
-    "burstner",
-    "benimar",
-    "chausson",
-    "adria matrix",
-    "adria coral",
-    "dethleffs",
-    "weinsberg",
-    "knaus",
-    "carado",
-    "sunlight",
-    "elnagh",
-    "challenger",
-    "roller team",
-    "etrusco",
-    "rapido"
-  ],
-
-  "wallapop": {
-    "latitude": 28.1235,
-    "longitude": -15.4366,
-    "distance_km": 500
-  }
+  "max_weight_kg": 3500
 }

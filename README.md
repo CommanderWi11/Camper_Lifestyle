@@ -14,7 +14,7 @@ favorito ★ — en ese caso se queda en la sección de Favoritos aunque ya no g
 
 | Etapa | Qué hace | Salida |
 |---|---|---|
-| **A · Harvest** (`scripts/harvest.py`) | Rastrea fuentes españolas/canarias. Determinista, sin IA. | `scripts/candidates.json` |
+| **A · Harvest** (`scripts/harvest.py`) | Rastrea Milanuncios y Coches.net (España, nacional). Determinista, sin IA. | `scripts/candidates.json` |
 | **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca por toda Europa (mobile.de, AutoScout24, leboncoin, Subito.it, etc.), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
 | **C · Validación** (`scripts/apply_winners.py`) | Comprueba la salida y la integra en el tablero (Top 5 + Favoritos). Si algo no cuadra, **no publica**. | `docs/listings.json` |
 | **D · Publicación** | `git push` → GitHub Pages en ~60s. | |
@@ -37,14 +37,18 @@ Rúbrica completa: `scripts/research-prompt.md`.
 
 ## Fuentes
 
-**Deterministas (Stage A, España/Canarias)** — JSON APIs: Autocaravanas DM (Shopify),
-Mundo Autocaravanas (WooCommerce). Playwright (con anti-bot): Milanuncios, Coches.net,
-Wallapop. HTML estático: Campermax, caravanas.net. Vía `claude -p` + WebFetch (markup
-hostil): RentCamper Canarias y Autocaravanas Canarias.
+Exactamente las que pide el encargo (`scripts/research-prompt.md` §5) — nada más.
+2026-07-26: se eliminaron 5 fuentes (Wallapop, Autocaravanas DM, Mundo
+Autocaravanas, Campermax, caravanas.net) y 2 fetches obligatorios en Stage B
+(RentCamper Canarias, Autocaravanas Canarias) — ninguna estaba en el encargo; eran
+herencia de un proyecto anterior, solo-Canarias, ajeno a este.
+
+**Deterministas (Stage A)** — Milanuncios y Coches.net, vía Playwright (con
+anti-bot en Coches.net), a nivel nacional (no solo Canarias).
 
 **Europa (Stage B, en vivo)** — mobile.de, AutoScout24 (DE/AT/NL/BE), Marktplaats,
-leboncoin, La Centrale, Subito.it, CamperOnLine, OLX (PL/PT), páginas de stock de
-fabricantes. Sin scraper dedicado todavía — es la fase 2 pendiente (ver
+leboncoin, La Centrale, Subito.it, CamperOnLine, Autocasion, OLX (PL/PT), páginas de
+stock de fabricantes. Sin scraper dedicado todavía — es la fase 2 pendiente (ver
 `scripts/harvest.py`, docstring del módulo).
 
 ## Uso
@@ -82,4 +86,3 @@ de las 07:00 funciona, los otros dos salen inmediatamente sin hacer nada.
   los usa el dashboard). Sin conexión, la web usa localStorage y `harvest.py` lee
   `scripts/blocklist.json`, así que nada se rompe — solo deja de sincronizar entre
   dispositivos.
-- **Wallapop devuelve 0** — cambiaron el DOM de búsqueda, sin arreglar todavía.

@@ -1,36 +1,22 @@
 #!/usr/bin/env python3
-"""Stage A of the weekly pipeline: harvest Spain/Canary Islands motorhome candidates.
+"""Stage A of the daily pipeline: harvest Spain motorhome candidates.
 
 This script is deliberately DUMB. It casts a wide net and writes every plausible
-candidate it finds to candidates.json — no body-type filtering (see the note above
-_BRAND_RE). It does not rank, score, or pick winners — that is Stage B (`claude -p`,
-driven by research-prompt.md), which reads the detail pages and judges against the
-family's actual brief.
+candidate it finds to candidates.json — no body-type filtering, no age filtering,
+no price filtering. It does not rank, score, or pick winners — that is Stage B
+(`claude -p`, driven by research-prompt.md), which reads the detail pages and
+judges every candidate against the family's actual brief.
 
-All sources below are hard-locked to Spain/the Canaries at the URL/param level, not
-just by keyword — this script cannot reach Germany/France/Italy/Netherlands etc.
-Europe-wide coverage (the current rubric's actual scope) happens live in Stage B via
-WebSearch/WebFetch. Adding dedicated scrapers for the highest-value European portals
-is a planned future phase, not done here.
-
-Sources are tiered by how stable their contract is:
-
-  Tier 1 — JSON APIs (rock solid, survive a site redesign)
-    * Autocaravanas DM    — Shopify  /products.json
-    * Mundo Autocaravanas — WooCommerce Store API /wp-json/wc/store/products
-
-  Tier 2 — semantic CSS (stable-ish; a source dropping to 0 is logged loudly)
-    * Wallapop, Milanuncios, Coches.net (Playwright — bot-protected, need a real browser)
-    * Campermax, caravanas.net (static HTML)
-
-  Tier 3 — hostile markup, deliberately NOT scraped here (see research-prompt.md)
-    * RentCamper Canarias — a Wix site with obfuscated, auto-generated class names
-      (`apPOZK`, `RuqxDs`) and no JSON-LD, so a CSS scraper would rot fast. It is
-      also our single best family source ("literas ideal para niños", "4 plazas").
-    * Autocaravanas Canarias — static HTML exposes exactly one vehicle; the rest of
-      the fleet is JS-rendered or price-on-request.
-    Stage B fetches both with WebFetch and reads the rendered text, which does not
-    care what the class names are and self-heals when the sites change.
+2026-07-26: trimmed to match the brief's own §5 portal list exactly. The brief
+names, for Spain, only "Milanuncios / Coches.net / Autocasion" — so those are the
+only two sources scraped here (Autocasion has no deterministic scraper yet; Stage B
+covers it, and every other European country, via live WebSearch/WebFetch). Five
+other sources (Wallapop, Autocaravanas DM, Mundo Autocaravanas, Campermax,
+caravanas.net) and two mandatory Stage-B fetch targets (RentCamper Canarias,
+Autocaravanas Canarias) were removed — none of them are named anywhere in the
+brief; they were leftover from an older, unrelated Canary-only project. If you're
+tempted to re-add a "good" source later, check it's actually in the brief's §5
+list first, not just a site that happens to carry motorhome listings.
 
 Discarded listings (the 🗑 button -> Supabase `camper_hidden`) are excluded here,
 so a discard means "never searched again", not merely "hidden in the UI".
@@ -43,7 +29,6 @@ import sys
 import unicodedata
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
@@ -70,29 +55,11 @@ HEADERS = {
     # Letting urllib3 negotiate (gzip/deflate) is correct and safe.
 }
 
-JSON_HEADERS = {**HEADERS, "Accept": "application/json"}
-
 CANARY_KEYWORDS = {
     "canarias", "las palmas", "tenerife", "gran canaria",
     "la palma", "lanzarote", "fuerteventura", "la gomera",
     "el hierro", "la graciosa",
 }
-
-# 2026-07-26: the family's brief has NO body-type restriction (no "integral/
-# perfilada only", no excluding capuchinas/campervans) — that was specific to the
-# old Canary-only rubric this project used before. Body type is judged (if at all)
-# by Stage B against the actual brief, not filtered here. Kept only as a recall
-# signal for open-keyword sources (see _BRAND_RE / _is_target strict mode below),
-# never as an exclusion.
-#
-# Brand list matches the brief's own "model families worth checking" (§5) exactly
-# — not a broader "premium manufacturer" whitelist.
-_BRAND_RE = re.compile(
-    r"\b(adria(?:\s+(?:matrix|coral))?|hymer|b[uü]rstner|rapido|chausson|challenger|"
-    r"weinsberg|knaus|carado|sunlight|dethleffs|benimar|elnagh|roller\s+team|"
-    r"etrusco)\b",
-    re.IGNORECASE,
-)
 
 # Patterns that indicate weight is mentioned in the title/text.
 _WEIGHT_RE = re.compile(
@@ -217,9 +184,9 @@ def _slug_tokens(text: str) -> list[str]:
 def fingerprint(listing: dict) -> str:
     """Stable cross-source identity for the *same physical vehicle*.
 
-    `id` is md5(url), so the same van listed on Wallapop and on the dealer's own
-    site gets two different ids — and discarding one would not blocklist the other.
-    The fingerprint is brand+model tokens + year, which survives the URL change.
+    `id` is md5(url), so the same van listed on two sites gets two different ids
+    — and discarding one would not blocklist the other. The fingerprint is
+    brand+model tokens + year, which survives the URL change.
 
     Price is deliberately excluded: sellers drop it, and a price cut must not
     resurrect a vehicle the family already rejected.
@@ -293,7 +260,7 @@ def _supabase_blocklist() -> set[str]:
         resp.raise_for_status()
         return {row["listing_id"] for row in resp.json() if row.get("listing_id")}
     except Exception as exc:
-        # Fail OPEN, loudly. A dead Supabase must not abort the weekly run, but a
+        # Fail OPEN, loudly. A dead Supabase must not abort the daily run, but a
         # silent failure that quietly resurrects rejected vans is worse than noise.
         print(f"[blocklist] Supabase unreachable ({type(exc).__name__}) — "
               f"falling back to {BLOCKLIST_FILE.name} only", file=sys.stderr)
@@ -376,39 +343,6 @@ def load_starred() -> dict[str, str]:
     return cached
 
 
-def _parse_attrs(text: str) -> tuple[int | None, int | None]:
-    """Parse year and km from an attribute string like '2008 · 80500 km · Diésel'."""
-    year, km = None, None
-    for part in text.split("·"):
-        part = part.strip()
-        if re.match(r"^\d{4}$", part):
-            year = int(part)
-        elif "km" in part.lower():
-            km_str = re.sub(r"[^\d]", "", part)
-            if km_str:
-                km = int(km_str)
-    return year, km
-
-
-def _is_target(title: str, strict: bool = True) -> bool:
-    """Return True if title looks like a candidate worth harvesting.
-
-    No body-type filtering here (see the note above _BRAND_RE) — the brief cares
-    about function (twin beds, LHD, weight, length, belts), not body type, and
-    Stage B judges that from the detail page, not the search-result title.
-
-    strict=True: for open-keyword searches (Wallapop) where the keyword match
-    alone doesn't guarantee relevance — require a recognized brand as a weak
-    relevance signal.
-    strict=False: the source's own search/category already scoped results to
-    motorhomes (Milanuncios, Coches.net, Autocasion, etc.) — accept everything.
-    """
-    if not strict:
-        return True
-    return bool(_BRAND_RE.search(title))
-    return True
-
-
 def _extract_year(text: str) -> int | None:
     """Find the first plausible 4-digit vehicle year in a free-text blob."""
     if not text:
@@ -426,18 +360,14 @@ def _extract_year(text: str) -> int | None:
     return None
 
 
-def _passes_age(year: int | None, max_age_years: int) -> bool:
-    """Return True if year is unknown or if (current_year - year) <= max_age_years."""
-    if year is None or not max_age_years:
-        return True
-    return (date.today().year - year) <= max_age_years
-
-
 def _passes_weight(text: str, max_kg: int) -> bool:
     """Return True if no weight is found in text, or if found weight is within limit.
 
-    Weight in tonnes is converted to kg (e.g. 3.5t → 3500 kg).
-    Listings without any weight mention always pass through.
+    Weight in tonnes is converted to kg (e.g. 3.5t → 3500 kg). This is the one
+    brief hard-requirement (MAM ≤3,500 kg) that's cheaply checkable from a
+    title/card text, so it's the only gate Stage A still enforces. Listings
+    without any weight mention always pass through — Stage B confirms weight
+    from the actual spec/plate.
     """
     m = _WEIGHT_RE.search(text)
     if not m:
@@ -450,110 +380,19 @@ def _passes_weight(text: str, max_kg: int) -> bool:
     return weight_kg <= max_kg
 
 
-def fetch_wallapop(params: dict) -> list:
-    """Scrape Wallapop search results using a headless browser (API is blocked)."""
-    wp = params["wallapop"]
-    min_price = params.get("min_price", 0)
-    max_weight = params.get("max_weight_kg", 99999)
-    max_age = params.get("max_age_years", 0)
-    results = []
-    seen_ids: set[str] = set()
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-
-        for keyword in params["keywords"]:
-            try:
-                url = (
-                    f"https://es.wallapop.com/search"
-                    f"?keywords={quote(keyword)}"
-                    f"&latitude={wp['latitude']}&longitude={wp['longitude']}"
-                    f"&distance_in_km={wp['distance_km']}"
-                    f"&min_sale_price={min_price}"
-                    f"&max_sale_price={params['max_price']}"
-                    f"&order_by=newest"
-                )
-                page.goto(url, timeout=30000)
-                page.wait_for_timeout(4000)
-
-                cards = page.query_selector_all('a[href*="/item/"][aria-label]')
-                for card in cards:
-                    href = card.get_attribute("href") or ""
-                    title = card.get_attribute("aria-label") or ""
-
-                    # Wallapop is a keyword-search source spanning all categories.
-                    # Strict mode keeps recall high via _BRAND_RE while filtering out
-                    # cars, real estate, and other non-motorhome listings.
-                    if not _is_target(title, strict=True):
-                        continue
-                    if not _passes_weight(title, max_weight):
-                        continue
-
-                    price_el = card.query_selector('strong[aria-label="Item price"]')
-                    price_text = price_el.inner_text() if price_el else ""
-                    price_str = re.sub(r"[^\d]", "", price_text)
-                    try:
-                        price = int(price_str)
-                    except ValueError:
-                        price = 0
-
-                    if price and price < min_price:
-                        continue
-
-                    attrs_el = card.query_selector("label")
-                    year, km = _parse_attrs(attrs_el.inner_text() if attrs_el else "")
-                    if not _passes_age(year, max_age):
-                        continue
-
-                    img_el = card.query_selector("img")
-                    photo = img_el.get_attribute("src") if img_el else ""
-
-                    full_url = f"https://es.wallapop.com{href}" if href.startswith("/") else href
-                    listing_id = make_id("wallapop", full_url)
-                    if listing_id in seen_ids:
-                        continue
-                    seen_ids.add(listing_id)
-
-                    results.append({
-                        "id": listing_id,
-                        "title": title,
-                        "price": price,
-                        "year": year,
-                        "km": km,
-                        "sleeping": None,
-                        "bathroom": None,
-                        "location": "",
-                        "source": "wallapop",
-                        "url": full_url,
-                        "photo": photo,
-                        "status": "new",
-                        "added_at": str(date.today()),
-                    })
-            except Exception as exc:
-                print(f"[wallapop] error for '{keyword}': {exc}", file=sys.stderr)
-
-        browser.close()
-
-    return results
-
-
 def fetch_milanuncios(params: dict) -> list:
-    """Scrape Milanuncios autocaravanas/Canarias listings via Playwright.
+    """Scrape Milanuncios autocaravanas listings (nationwide Spain) via Playwright.
 
-    Uses the geo-filtered URL (/canarias.htm) so we don't need a location post-filter.
     Playwright is required because most cards are JS-rendered; plain requests only
     sees the 3 "destacado" cards.
 
     If selectors break, inspect article[data-testid="AD_CARD"] on
-    milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm and update below.
+    milanuncios.com/autocaravanas-de-segunda-mano/ and update below.
     """
-    min_price = params.get("min_price", 0)
     max_weight = params.get("max_weight_kg", 99999)
-    max_age = params.get("max_age_years", 0)
     results = []
 
-    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm"
+    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/"
 
     try:
         with sync_playwright() as p:
@@ -583,8 +422,6 @@ def fetch_milanuncios(params: dict) -> list:
                     continue
 
                 title = title_el.inner_text().strip()
-                if not _is_target(title, strict=False):
-                    continue
                 if not _passes_weight(title, max_weight):
                     continue
 
@@ -597,18 +434,11 @@ def fetch_milanuncios(params: dict) -> list:
                 except ValueError:
                     price = 0
 
-                if params["max_price"] and price > params["max_price"]:
-                    continue
-                if min_price and price and price < min_price:
-                    continue
-
                 href = link_el.get_attribute("href") or ""
                 full_url = f"https://www.milanuncios.com{href}" if href.startswith("/") else href
                 location = location_el.inner_text().strip() if location_el else ""
 
                 year = _extract_year(card.inner_text())
-                if not _passes_age(year, max_age):
-                    continue
 
                 results.append({
                     "id": make_id("milanuncios", full_url),
@@ -644,7 +474,7 @@ def _humanlike_context(p):
     )
     ctx = browser.new_context(
         locale="es-ES",
-        timezone_id="Atlantic/Canary",
+        timezone_id="Europe/Madrid",
         user_agent=HEADERS["User-Agent"],
         viewport={"width": 1440, "height": 900},
     )
@@ -655,26 +485,25 @@ def _humanlike_context(p):
 
 
 def fetch_coches_net(params: dict) -> list:
-    """Scrape coches.net autocaravanas/Canarias listings via Playwright.
+    """Scrape coches.net autocaravanas listings (nationwide Spain) via Playwright.
 
     Bot-detection on coches.net is aggressive: requests that look headless get
     served an "Ups! Parece que algo no va bien..." stub page with zero cards.
     We use a humanlike browser context (locale, timezone, viewport, UA hint
-    spoofing) which reliably yields 6-22 cards per first-page load.
+    spoofing) which reliably yields cards on first-page load.
 
     Pagination via ?page=N is unreliable (typically returns 0 on page 2 even
     when the total count is higher), so we only scrape page 1.
 
     If selectors break, inspect div.mt-CardAd on
-    coches.net/autocaravanas-segunda-mano/canarias/ and update below.
+    coches.net/autocaravanas-y-remolques/ and update below. (2026-07-26: the
+    category slug was renamed from autocaravanas-segunda-mano; the old path
+    still redirects today but don't rely on that.)
     """
-    min_price = params.get("min_price", 0)
-    max_price = params.get("max_price", 99999999)
     max_weight = params.get("max_weight_kg", 99999)
-    max_age = params.get("max_age_years", 0)
     results = []
 
-    url = "https://www.coches.net/autocaravanas-segunda-mano/canarias/?page=1"
+    url = "https://www.coches.net/autocaravanas-y-remolques/?page=1"
 
     try:
         with sync_playwright() as p:
@@ -710,8 +539,6 @@ def fetch_coches_net(params: dict) -> list:
                     title = title_el.inner_text().strip()
                     if not title:
                         continue
-                    if not _is_target(title, strict=False):
-                        continue
                     if not _passes_weight(text, max_weight):
                         continue
 
@@ -720,14 +547,8 @@ def fetch_coches_net(params: dict) -> list:
                     m = re.search(r"(\d{1,3}(?:\.\d{3})+)\s*€", text)
                     if m:
                         price = int(m.group(1).replace(".", ""))
-                    if price and price < min_price:
-                        continue
-                    if price and price > max_price:
-                        continue
 
                     year = _extract_year(text)
-                    if not _passes_age(year, max_age):
-                        continue
 
                     # Km: "NN.NNN km" or "N.NNN km".
                     km = None
@@ -735,7 +556,9 @@ def fetch_coches_net(params: dict) -> list:
                     if m:
                         km = int(m.group(1).replace(".", ""))
 
-                    # Location: any line containing a Canary keyword.
+                    # Location: any line containing a Canary keyword. Nationwide
+                    # results often won't match this and leave location="" —
+                    # Stage B fills it in from the detail page.
                     location = ""
                     for line in text.split("\n"):
                         if any(kw in line.lower() for kw in CANARY_KEYWORDS):
@@ -785,248 +608,15 @@ def fetch_coches_net(params: dict) -> list:
 
 
 # ---------------------------------------------------------------------------
-# Tier 1 — JSON APIs. These have a real contract and survive a site redesign.
-# ---------------------------------------------------------------------------
-
-def _blank(source: str, url: str, title: str) -> dict:
-    """A candidate with every field the board expects, so downstream never KeyErrors."""
-    return {
-        "id": make_id(source, url),
-        "title": title,
-        "price": 0,
-        "year": None,
-        "km": None,
-        "sleeping": None,
-        "bathroom": None,
-        "location": "",
-        "source": source,
-        "url": url,
-        "photo": "",
-        "status": "new",
-        "added_at": str(date.today()),
-    }
-
-
-def fetch_autocaravanas_dm(params: dict) -> list:
-    """Autocaravanas DM (Tenerife) — Shopify storefront.
-
-    Shopify exposes every product as JSON at /products.json. No HTML parsing,
-    nothing to break. Body type is NOT reliable from the title (their titles are
-    SEO soup, and their tags list `INTEGRAL` and `CAPUCHINA` on the same vehicle),
-    so we let it through here and let Stage B classify from the detail page.
-    """
-    results = []
-    try:
-        resp = requests.get("https://autocaravanasdm.com/products.json",
-                            params={"limit": 250}, headers=JSON_HEADERS, timeout=30)
-        resp.raise_for_status()
-        for p in resp.json().get("products", []):
-            if (p.get("product_type") or "").upper() not in ("AUTOCARAVANAS", ""):
-                continue
-            title = (p.get("title") or "").strip()
-            if not title or not _is_target(title, strict=False):
-                continue
-            url = f"https://autocaravanasdm.com/products/{p['handle']}"
-            item = _blank("autocaravanas_dm", url, title)
-            variants = p.get("variants") or []
-            if variants:
-                try:
-                    item["price"] = int(float(variants[0].get("price") or 0))
-                except (TypeError, ValueError):
-                    pass
-            images = p.get("images") or []
-            if images:
-                item["photo"] = images[0].get("src", "")
-            blob = f"{title} {BeautifulSoup(p.get('body_html') or '', 'html.parser').get_text(' ')}"
-            item["year"] = _extract_year(blob)
-            item["location"] = "Canarias"
-            results.append(item)
-    except Exception as exc:
-        print(f"[autocaravanas_dm] error: {exc}", file=sys.stderr)
-    return results
-
-
-def fetch_mundo_autocaravanas(params: dict) -> list:
-    """Mundo Autocaravanas (Tenerife) — WooCommerce Store API.
-
-    /wp-json/wc/store/products returns clean JSON. Prices come in MINOR units
-    (3450000 + currency_minor_unit=2 -> 34,500 EUR). They also sell plain cars,
-    so drop anything in the `coches` category.
-    """
-    results = []
-    try:
-        resp = requests.get("https://mundoautocaravanas.com/wp-json/wc/store/products",
-                            params={"per_page": 100}, headers=JSON_HEADERS, timeout=30)
-        resp.raise_for_status()
-        for p in resp.json():
-            cats = {(c.get("slug") or "").lower() for c in (p.get("categories") or [])}
-            # They also sell plain cars, and the catalogue keeps sold stock around.
-            # Only "disponibles" is actually buyable today.
-            if "coches" in cats or "disponibles" not in cats:
-                continue
-            title = BeautifulSoup(p.get("name") or "", "html.parser").get_text(" ", strip=True)
-            if not title or not _is_target(title, strict=False):
-                continue
-            url = p.get("permalink") or ""
-            if not url:
-                continue
-            item = _blank("mundo_autocaravanas", url, title)
-            prices = p.get("prices") or {}
-            try:
-                minor = int(prices.get("currency_minor_unit", 2))
-                item["price"] = int(int(prices.get("price") or 0) / (10 ** minor))
-            except (TypeError, ValueError):
-                pass
-            images = p.get("images") or []
-            if images:
-                item["photo"] = images[0].get("src", "")
-            desc = BeautifulSoup(p.get("description") or "", "html.parser").get_text(" ")
-            item["year"] = _extract_year(f"{title} {desc}")
-            item["location"] = "Tenerife"
-            results.append(item)
-    except Exception as exc:
-        print(f"[mundo_autocaravanas] error: {exc}", file=sys.stderr)
-    return results
-
-
-# ---------------------------------------------------------------------------
-# Tier 2 — static HTML with semantic class names.
-# ---------------------------------------------------------------------------
-
-def _soup(url: str) -> BeautifulSoup | None:
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        return BeautifulSoup(resp.text, "html.parser")
-    except Exception as exc:
-        print(f"[fetch] {url} -> {exc}", file=sys.stderr)
-        return None
-
-
-_PRICE_RE = re.compile(r"(\d{1,3}(?:[.\s]\d{3})+)\s*€|€\s*(\d{1,3}(?:[.\s]\d{3})+)")
-
-
-def _price_from(text: str) -> int:
-    m = _PRICE_RE.search(text or "")
-    if not m:
-        return 0
-    raw = m.group(1) or m.group(2) or ""
-    try:
-        return int(re.sub(r"[^\d]", "", raw))
-    except ValueError:
-        return 0
-
-
-def _ancestor_text(el, levels: int = 4) -> str:
-    """Walk up from a link to the block that actually holds its price/specs."""
-    node = el
-    for _ in range(levels):
-        if node.parent is None:
-            break
-        node = node.parent
-        text = node.get_text(" ", strip=True)
-        if "€" in text:
-            return text
-    return el.get_text(" ", strip=True)
-
-
-def fetch_campermax(params: dict) -> list:
-    """Campermax (Las Palmas). Bootstrap cards; card text carries price/year/km."""
-    results = []
-    seen = set()
-    for page in range(1, 4):
-        url = ("https://campermax.es/listing-category/en-venta/" if page == 1
-               else f"https://campermax.es/listing-category/en-venta/page/{page}/")
-        soup = _soup(url)
-        if not soup:
-            break
-        cards = soup.select("div.card")
-        found = 0
-        for card in cards:
-            link = card.select_one('a[href*="/listing/"]')
-            if not link:
-                continue
-            href = link["href"]
-            if href in seen:
-                continue
-            title_el = card.select_one("h3.finder-hp-listing-title") or link
-            title = title_el.get_text(" ", strip=True)
-            if not title or not _is_target(title, strict=False):
-                continue
-            text = card.get_text(" ", strip=True)
-            seen.add(href)
-            found += 1
-            item = _blank("campermax", href, title)
-            item["price"] = _price_from(text)
-            item["year"] = _extract_year(text)
-            km = re.search(r"([\d.]+)\s*km", text, re.IGNORECASE)
-            if km:
-                try:
-                    item["km"] = int(re.sub(r"[^\d]", "", km.group(1)))
-                except ValueError:
-                    pass
-            img = card.select_one("img")
-            if img:
-                item["photo"] = img.get("src") or img.get("data-src") or ""
-            item["location"] = "Las Palmas"
-            results.append(item)
-        if found == 0:
-            break
-    return results
-
-
-def fetch_caravanas_net(params: dict) -> list:
-    """caravanas.net — private sellers.
-
-    Their province filter ONLY works as a URL path. `?provincia=` is silently
-    ignored and returns all ~138 national listings, so never use the query form.
-    """
-    results = []
-    seen = set()
-    for province in ("las-palmas", "santa-cruz-de-tenerife"):
-        soup = _soup(f"https://www.caravanas.net/search/autocaravana/{province}")
-        if not soup:
-            continue
-        for link in soup.select('a[href*="/ad/"]'):
-            href = link.get("href") or ""
-            m = re.search(r"/ad/(\d+)/([\w-]+)", href)
-            if not m or href in seen:
-                continue
-            slug = m.group(2)
-            title = link.get_text(" ", strip=True) or slug.replace("-", " ").title()
-            if not _is_target(title, strict=False):
-                continue
-            seen.add(href)
-            full = href if href.startswith("http") else f"https://www.caravanas.net{href}"
-            item = _blank("caravanas_net", full, title)
-            block = _ancestor_text(link, levels=5)
-            item["price"] = _price_from(block)
-            item["year"] = _extract_year(block)
-            img = link.select_one("img")
-            if img:
-                item["photo"] = img.get("src") or img.get("data-src") or ""
-            item["location"] = province.replace("-", " ").title()
-            results.append(item)
-    return results
-
-
-# ---------------------------------------------------------------------------
 # Assembly
 # ---------------------------------------------------------------------------
-
-def apply_price_filter(items: list, params: dict) -> list:
-    """Drop anything outside the budget. Price 0 means 'not published' — keep it,
-    Stage B will read the real price off the detail page."""
-    lo, hi = params.get("min_price", 0), params.get("max_price", 10 ** 9)
-    return [i for i in items if not i["price"] or lo <= i["price"] <= hi]
-
 
 def merge_candidates(existing: list, new_results: list,
                      blocked_ids: set[str], blocked_fps: set[str]) -> list:
     """Grow the candidate pool, never resurrecting a discarded vehicle.
 
     The pool is the dedupe ledger: it remembers everything we have ever seen so a
-    vehicle is not re-announced as 'new' every single week.
+    vehicle is not re-announced as 'new' every single run.
     """
     by_id = {item["id"]: item for item in existing}
     added = skipped = 0
@@ -1052,13 +642,8 @@ def merge_candidates(existing: list, new_results: list,
 
 
 SOURCES = [
-    ("wallapop", fetch_wallapop),
     ("milanuncios", fetch_milanuncios),
     ("coches_net", fetch_coches_net),
-    ("autocaravanas_dm", fetch_autocaravanas_dm),
-    ("mundo_autocaravanas", fetch_mundo_autocaravanas),
-    ("campermax", fetch_campermax),
-    ("caravanas_net", fetch_caravanas_net),
 ]
 
 
@@ -1073,7 +658,7 @@ def main() -> None:
     for name, fetcher in SOURCES:
         print(f"Fetching {name}...")
         try:
-            found = apply_price_filter(fetcher(params), params)
+            found = fetcher(params)
         except Exception as exc:
             print(f"[{name}] FAILED: {exc}", file=sys.stderr)
             found = []

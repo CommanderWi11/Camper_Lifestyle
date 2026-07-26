@@ -120,55 +120,21 @@ def test_same_vehicle_respects_conflicting_years():
 
 
 # -------------------------------------------------------------------- filtering
-
-def test_is_target_has_no_body_type_filter():
-    # The family's brief has no body-type restriction (no "integral/perfilada
-    # only", no excluding capuchinas/campervans) — that was the old Canary-only
-    # rubric. A capuchina or camper van is as valid a candidate as any other,
-    # for a source whose own category scoping already narrowed to motorhomes.
-    assert harvest._is_target("Autocaravana capuchina Elnagh", strict=False)
-    assert harvest._is_target("Camper van Mercedes Vito", strict=False)
-    assert harvest._is_target("Furgoneta camperizada", strict=False)
-
-
-def test_is_target_strict_requires_a_recognized_brand():
-    # Wallapop is an open-keyword search, so strict mode needs a weak relevance
-    # signal — a brand from the brief's own model-family list (§5).
-    assert harvest._is_target("HYMER Exsis-T 2019", strict=True)
-    assert harvest._is_target("Weinsberg CaraSuite 600 MQ", strict=True)
-    assert not harvest._is_target("Mercedes Vito furgoneta", strict=True)
-
-
-def test_is_target_strict_rejects_brands_outside_the_brief():
-    # Carthago isn't in the brief's model-family list — it was a premium-brand
-    # whitelist entry specific to the old Canary-only rubric.
-    assert not harvest._is_target("Carthago c-tourer 2018", strict=True)
-
-
-def test_passes_age_is_lenient_when_the_year_is_unknown():
-    # Milanuncios almost never publishes a year. Dropping those would gut recall,
-    # so an unknown year passes and Stage B resolves it from the detail page.
-    assert harvest._passes_age(None, 10)
-
+#
+# 2026-07-26: the redesign to use only the family's brief removed every Stage-A
+# exclusionary gate except weight — no body-type filter, no age cutoff, no price
+# floor/ceiling. None of those had any basis in the brief (which explicitly says
+# never discard on mileage/age alone, and treats budget as a target Stage B
+# weighs, not a hard reject), and age/price gates actively contradicted it. The
+# brand-whitelist "strict" accept mode (`_is_target`/`_BRAND_RE`) was also removed
+# — it only existed to support Wallapop's open-keyword search, which isn't in the
+# brief's portal list and was dropped along with Autocaravanas DM, Mundo
+# Autocaravanas, Campermax, and caravanas.net (also not in the brief).
 
 def test_passes_weight_rejects_over_the_b_licence_limit():
     assert not harvest._passes_weight("Integral 4.5 t", 3500)
     assert harvest._passes_weight("Perfilada MMA: 3500 kg", 3500)
     assert harvest._passes_weight("no weight mentioned", 3500)
-
-
-def test_price_parsing_handles_spanish_thousands_separators():
-    assert harvest._price_from("Precio 64.900 €") == 64900
-    assert harvest._price_from("€64.900") == 64900
-    assert harvest._price_from("sin precio") == 0
-
-
-def test_price_filter_keeps_listings_with_no_published_price():
-    """Price 0 means 'precio a consultar'. Stage B reads the real price off the
-    detail page — dropping them here would silently lose most dealer stock."""
-    params = {"min_price": 20000, "max_price": 100000}
-    items = [{"price": 0}, {"price": 50000}, {"price": 5000}, {"price": 200000}]
-    assert harvest.apply_price_filter(items, params) == [{"price": 0}, {"price": 50000}]
 
 
 # -------------------------------------------------------------------- blocklist
@@ -213,48 +179,6 @@ def test_blocklist_falls_open_when_supabase_is_unreachable():
          patch("harvest.requests.get", side_effect=OSError("dns failure")), \
          patch("harvest._load_json", return_value=["locally-discarded"]):
         assert harvest.load_blocklist() == {"locally-discarded"}
-
-
-# ----------------------------------------------------------------- JSON sources
-
-def test_shopify_fetcher_parses_products_json():
-    resp = MagicMock(status_code=200)
-    resp.json.return_value = {"products": [{
-        "title": "RIMOR SUPERBRIG 675 AUTOCARAVANA PERFILADA",
-        "handle": "rimor-superbrig-675",
-        "product_type": "AUTOCARAVANAS",
-        "variants": [{"price": "42900.00"}],
-        "images": [{"src": "https://cdn/img.jpg"}],
-        "body_html": "<p>Año: 2010</p>",
-    }]}
-    with patch("harvest.requests.get", return_value=resp):
-        got = harvest.fetch_autocaravanas_dm({})
-    assert len(got) == 1
-    assert got[0]["price"] == 42900
-    assert got[0]["year"] == 2010
-    assert got[0]["url"] == "https://autocaravanasdm.com/products/rimor-superbrig-675"
-
-
-def test_woo_fetcher_converts_minor_units_and_skips_cars():
-    resp = MagicMock(status_code=200)
-    resp.json.return_value = [
-        {"name": "ROLLER TEAM ZEFIRO perfilada", "permalink": "https://m.com/p/1",
-         "prices": {"price": "5990000", "currency_minor_unit": 2},
-         "categories": [{"slug": "disponibles"}], "images": [{"src": "i.jpg"}]},
-        {"name": "CITROEN BERLINGO", "permalink": "https://m.com/p/2",
-         "prices": {"price": "1300000", "currency_minor_unit": 2},
-         "categories": [{"slug": "coches"}, {"slug": "disponibles"}], "images": []},
-    ]
-    with patch("harvest.requests.get", return_value=resp):
-        got = harvest.fetch_mundo_autocaravanas({})
-    assert len(got) == 1, "the car must be dropped"
-    assert got[0]["price"] == 59900, "5,990,000 minor units == 59,900 EUR"
-
-
-def test_a_source_that_throws_does_not_kill_the_harvest():
-    with patch("harvest.requests.get", side_effect=OSError("network down")):
-        assert harvest.fetch_autocaravanas_dm({}) == []
-        assert harvest.fetch_mundo_autocaravanas({}) == []
 
 
 def test_fetch_og_image_reads_the_open_graph_tag():
