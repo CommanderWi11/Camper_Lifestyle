@@ -98,6 +98,18 @@ def test_garbage_instead_of_a_list_is_refused():
         validate({"winners": []}, blocked=set())
 
 
+def test_right_hand_drive_is_refused():
+    """LHD is a hard requirement (research-prompt.md) — a machine-checked invariant,
+    not just prompt-trust."""
+    with pytest.raises(Invalid, match="right-hand drive"):
+        validate([ok(specs={"drive_side": "right"})], blocked=set())
+
+
+def test_left_hand_drive_passes():
+    got = validate([ok(specs={"drive_side": "left"})], blocked=set())
+    assert got[0]["specs"]["drive_side"] == "left"
+
+
 def test_the_same_vehicle_ranked_twice_from_different_sources_is_refused():
     """If the research pass picks up the same van from two different sites as
     two separate 'winners', that is a research bug, not two real vehicles —

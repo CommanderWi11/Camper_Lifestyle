@@ -15,7 +15,7 @@ from pathlib import Path
 import board
 from harvest import (
     BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
-    load_listings, make_id, same_vehicle,
+    load_listings, load_starred, make_id, same_vehicle,
 )
 
 WINNERS_FILE = Path(__file__).parent / "winners.json"
@@ -83,6 +83,12 @@ def validate(raw: object, blocked: set[str]) -> list:
         w["id"] = wid
         w.setdefault("flags", [])
         w.setdefault("specs", {})
+
+        # Left-hand drive is a hard requirement (research-prompt.md) — make it a
+        # machine-checked invariant like rank/score, not just prompt-trust.
+        if w["specs"].get("drive_side") == "right":
+            raise Invalid(f"winner {wid} has right-hand drive — hard requirement is LHD")
+
         winners.append(w)
 
     # Ranks must be 1..n with no gaps, otherwise the ordering is a lie.
@@ -126,15 +132,19 @@ def main() -> int:
                 w["photo"] = og
                 print(f"  backfilled photo for {w['id']} <- og:image")
 
-    week = board.current_week()
-    updated = board.update_board(load_listings(), winners, week, blocked_ids=blocked)
+    starred = load_starred()
+    updated = board.update_board(
+        load_listings(), winners, starred_ids=set(starred), blocked_ids=blocked,
+    )
     LISTINGS_FILE.write_text(json.dumps(updated, ensure_ascii=False, indent=2))
 
-    print(f"Board updated for {week} ({board.week_start(week)}):")
+    favorites = sum(1 for l in updated if not l.get("rank"))
+    print(f"Board updated:")
     for w in sorted(winners, key=lambda x: x["rank"]):
         flags = f"  ⚠ {len(w['flags'])} flag(s)" if w["flags"] else ""
         print(f"  #{w['rank']}  {w['score']:>3}  {w['title'][:52]}{flags}")
-    print(f"{len(updated)} listings on the board.")
+    print(f"{len(updated)} listings on the board ({len(winners)} in today's Top 5, "
+          f"{favorites} favorite(s)).")
     return 0
 
 

@@ -1,24 +1,22 @@
 # Motorhome Lifestyle
 
-**Top 5** semanal de integrales y perfiladas en Canarias, para una familia de 4 con dos
-peques — refrescado a diario.
+**Top 5** de hoy — autocaravanas en venta por toda Europa para una familia de 4 (2
+adultos + 2 peques), buscadas y valoradas a diario.
 
 **Dashboard:** https://commanderwi11.github.io/Motorhome_Search/
 
 Cada día a las 07:00 el pipeline busca en todas las fuentes, investiga a fondo los
-candidatos serios, y actualiza las 5 mejores **de esta semana**. El tablero sigue
-organizado por semana (una posición por semana ISO): el run diario simplemente lo
-mantiene fresco en vez de fijarlo el lunes y no tocarlo hasta el siguiente. Las que
-quedan desplazadas no desaparecen: bajan a la sección de su semana, y siguen ahí si
-haces scroll.
+candidatos serios, y publica las 5 mejores **de hoy**. No hay archivo por semanas: un
+ganador que deja de estar en el Top 5 desaparece, salvo que esté marcado como
+favorito ★ — en ese caso se queda en la sección de Favoritos aunque ya no gane.
 
 ## Cómo funciona
 
 | Etapa | Qué hace | Salida |
 |---|---|---|
-| **A · Harvest** (`scripts/harvest.py`) | Rastrea todas las fuentes. Determinista, sin IA. | `scripts/candidates.json` |
-| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca fallos conocidos y humedades, compara con el precio real de mercado, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
-| **C · Validación** (`scripts/apply_winners.py`) | Comprueba la salida y la integra en el tablero. Si algo no cuadra, **no publica**. | `docs/listings.json` |
+| **A · Harvest** (`scripts/harvest.py`) | Rastrea fuentes españolas/canarias. Determinista, sin IA. | `scripts/candidates.json` |
+| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca por toda Europa (mobile.de, AutoScout24, leboncoin, Subito.it, etc.), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
+| **C · Validación** (`scripts/apply_winners.py`) | Comprueba la salida y la integra en el tablero (Top 5 + Favoritos). Si algo no cuadra, **no publica**. | `docs/listings.json` |
 | **D · Publicación** | `git push` → GitHub Pages en ~60s. | |
 
 Orquestado por `scripts/weekly-search.sh`, programado con
@@ -26,45 +24,37 @@ Orquestado por `scripts/weekly-search.sh`, programado con
 
 ## La rúbrica
 
-Familia de 4, dos niños pequeños. Filtros innegociables: **≥4 plazas de viaje con
-cinturón de 3 puntos** (el dato que descarta a la mayoría de perfiladas baratas — las
-sillitas infantiles lo necesitan), ≥4 plazas para dormir, baño con ducha, ≤3.500 kg
-(carnet B), en Canarias, integral o perfilada.
+Familia de 4 (2 adultos, un niño de 2,5 años y un bebé de 3 meses). Búsqueda por toda
+Europa — la vuelta hasta el sur de España es un viaje por carretera que la familia
+hace por gusto, así que solo el ferry a Canarias cuenta como coste real de logística.
 
-Después se puntúa: habitabilidad familiar (40% — las **literas traseras** son oro; una
-cama que hay que montar cada noche con dos peques dormidos es un defecto serio),
-relación calidad-precio (35%), estado y riesgo (15% — las **humedades** son el asesino
-número uno de una autocaravana usada), y practicidad canaria (10% — ≤7 m por las
-carreteras y los ferries).
+Filtros innegociables: MMA ≤3.500 kg (carnet B), **longitud ≥ 6,90 m**, camas gemelas
+traseras convertibles en doble vía kit de fábrica, **volante a la izquierda**, ≥4
+plazas homologadas con cinturón de 3 puntos. El baño separado y la 4ª/5ª plaza
+infantil son preferencias fuertes, no filtros.
 
 Rúbrica completa: `scripts/research-prompt.md`.
 
 ## Fuentes
 
-**JSON APIs** (sólidas): Autocaravanas DM (Shopify), Mundo Autocaravanas (WooCommerce).
-**Playwright** (con anti-bot): Milanuncios, Coches.net, Wallapop.
-**HTML estático**: Campermax, caravanas.net.
-**Vía `claude -p` + WebFetch** (markup hostil, se leen como texto): **RentCamper
-Canarias** y Autocaravanas Canarias — flotas de alquiler que venden su stock. RentCamper
-es la mejor fuente familiar de Canarias (literas para niños) y aportó **3 de las 5
-ganadoras** de la primera semana.
+**Deterministas (Stage A, España/Canarias)** — JSON APIs: Autocaravanas DM (Shopify),
+Mundo Autocaravanas (WooCommerce). Playwright (con anti-bot): Milanuncios, Coches.net,
+Wallapop. HTML estático: Campermax, caravanas.net. Vía `claude -p` + WebFetch (markup
+hostil): RentCamper Canarias y Autocaravanas Canarias.
 
-**Callejones sin salida ya comprobados** (no los reimplementes): `autocasion.com` y
-`autoscout24.es` ignoran silenciosamente el filtro de provincia y devuelven resultados
-de la península. `coches.com` no tiene categoría de autocaravanas.
-
-El mercado canario es diminuto — **35-45 unidades en todo el archipiélago**. Algunas
-semanas habrá menos de 5 que merezcan la pena, y el pipeline devolverá 3 antes que
-rellenar con basura.
+**Europa (Stage B, en vivo)** — mobile.de, AutoScout24 (DE/AT/NL/BE), Marktplaats,
+leboncoin, La Centrale, Subito.it, CamperOnLine, OLX (PL/PT), páginas de stock de
+fabricantes. Sin scraper dedicado todavía — es la fase 2 pendiente (ver
+`scripts/harvest.py`, docstring del módulo).
 
 ## Uso
 
 ```bash
-# Lanzar la búsqueda ahora (idempotente por día natural, no por semana)
+# Lanzar la búsqueda ahora (idempotente por día natural)
 launchctl kickstart -k gui/$(id -u)/com.openbob.motorhome-search-daily
 tail -f ~/Library/Logs/motorhome-daily.log
 
-# Descartar una autocaravana (no volverá a aparecer NI a buscarse)
+# Eliminar una autocaravana (no volverá a aparecer NI a buscarse)
 ./scripts/discard.py <listing-id>
 ./scripts/discard.py --list
 
@@ -79,20 +69,17 @@ ln -sf "$PWD/launchd/com.openbob.motorhome-search-daily.plist" ~/Library/LaunchA
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.motorhome-search-daily.plist
 ```
 
-Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas webs (el
-antiguo `weekly-search.yml` tenía un cron los lunes y no produjo ni un solo anuncio en su
-vida; está borrado). Si el Mac está dormido a las 07:00, launchd lo ejecuta al despertar.
+Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas webs.
 
-**Reintentos:** el agente se dispara todos los días a las 07:00, 13:00 y 19:00 (antes solo
-los lunes; cambiado a diario el 2026-07-21). Solo se escribe `.state/<fecha>.done` cuando
-la publicación ha salido bien, así que si el run de las 07:00 funciona, los otros dos salen
-inmediatamente sin hacer nada. Si falla (límite de sesión de Claude, web caída, sin red al
-despertar), hay dos oportunidades más el mismo día en vez de quedarse sin tablero fresco.
+**Reintentos:** el agente se dispara todos los días a las 07:00, 13:00 y 19:00. Solo se
+escribe `.state/<fecha>.done` cuando la publicación ha salido bien, así que si el run
+de las 07:00 funciona, los otros dos salen inmediatamente sin hacer nada.
 
 ## Estado conocido
 
-- **Supabase está caído** — el proyecto fue borrado (NXDOMAIN). La web usa localStorage
-  como respaldo y la búsqueda diaria lee `scripts/blocklist.json`, así que nada está
-  roto, pero no sincroniza entre dispositivos. Para restaurarlo: `docs/supabase-setup.sql`.
-- **Wallapop devuelve 0** — cambiaron el DOM de búsqueda. El harvester lo avisa en el log
-  (`<-- ZERO, check selectors`). Aportaba 1 anuncio; las fuentes nuevas aportan 48.
+- **Supabase** — ver `docs/supabase-setup.sql` para el schema (`camper_stars`,
+  `camper_hidden`; `camper_comments`/`camper_status` siguen en el schema pero ya no
+  los usa el dashboard). Sin conexión, la web usa localStorage y `harvest.py` lee
+  `scripts/blocklist.json`, así que nada se rompe — solo deja de sincronizar entre
+  dispositivos.
+- **Wallapop devuelve 0** — cambiaron el DOM de búsqueda, sin arreglar todavía.

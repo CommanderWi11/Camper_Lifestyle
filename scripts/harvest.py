@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Stage A of the weekly pipeline: harvest Canary Islands motorhome candidates.
+"""Stage A of the weekly pipeline: harvest Spain/Canary Islands motorhome candidates.
 
 This script is deliberately DUMB. It casts a wide net and writes every plausible
 integral/perfilada it finds to candidates.json. It does not rank, score, or pick
 winners — that is Stage B (`claude -p`, driven by research-prompt.md), which reads
 the detail pages and judges against the family rubric.
+
+All sources below are hard-locked to Spain/the Canaries at the URL/param level, not
+just by keyword — this script cannot reach Germany/France/Italy/Netherlands etc.
+Europe-wide coverage (the current rubric's actual scope) happens live in Stage B via
+WebSearch/WebFetch. Adding dedicated scrapers for the highest-value European portals
+is a planned future phase, not done here.
 
 Sources are tiered by how stable their contract is:
 
@@ -45,6 +51,7 @@ from playwright.sync_api import sync_playwright
 PARAMS_FILE = Path(__file__).parent / "params.json"
 CANDIDATES_FILE = Path(__file__).parent / "candidates.json"
 BLOCKLIST_FILE = Path(__file__).parent / "blocklist.json"
+STARRED_FILE = Path(__file__).parent / "starred.json"
 LISTINGS_FILE = Path(__file__).parent.parent / "docs" / "listings.json"
 CONFIG_JS = Path(__file__).parent.parent / "docs" / "config.js"
 
@@ -80,8 +87,9 @@ _REJECT_RE = re.compile(
 # Premium integral/perfilada manufacturers — any of these in a title is an accept signal.
 _BRAND_RE = re.compile(
     r"\b(hymer|b[uü]rstner|carthago|concorde|frankia|niesmann|morelo|"
-    r"benimar|chausson|adria\s+matrix|sun\s+living|pilote|rapido|"
-    r"dethleffs|roller\s+team|mclouis|laika)\b",
+    r"benimar|chausson|adria(?:\s+(?:matrix|coral))?|sun\s+living|pilote|rapido|"
+    r"dethleffs|roller\s+team|mclouis|laika|weinsberg|knaus|carado|"
+    r"sunlight|elnagh|challenger|etrusco)\b",
     re.IGNORECASE,
 )
 
@@ -176,6 +184,19 @@ _FP_STOPWORDS = {
     "vw", "volkswagen", "crafter",
     "td", "jtd", "tdi", "hdi", "dci", "cdti", "multijet", "cv",
     "reservada", "reservado", "oportunidad",
+    # 2026-07-26: the Europe-wide brief's titles all describe the same shared
+    # layout vocabulary (twin beds, separate shower, brand new) — a real
+    # collision surfaced these as a false-positive same_vehicle match between a
+    # Giottiline and an unrelated Challenger that merely shared "camas",
+    # "gemelas", "estrenar". These describe the van's configuration, not its
+    # identity, same reasoning as the body-type words above.
+    "camas", "cama", "gemelas", "gemelo", "individuales", "traseras", "trasera",
+    "delantera", "delanteras", "basculante", "convertible", "convertibles",
+    "fija", "fijas", "fijo", "fijos", "dobles", "doble", "litera", "literas",
+    "garaje", "ducha", "bano", "separado", "separada", "separados", "separadas",
+    "combinado", "combinada", "kit", "relleno", "incluido", "opcional",
+    "estrenar", "homologadas", "homologada", "plaza", "viajar", "dormir",
+    "izquierda", "izquierdo", "volante",
 }
 
 
@@ -303,6 +324,55 @@ def blocked_fingerprints(blocked_ids: set[str]) -> set[str]:
     """
     known = load_candidates() + load_listings()
     return {fingerprint(l) for l in known if l.get("id") in blocked_ids}
+
+
+def _supabase_starred() -> dict[str, str] | None:
+    """Starred ids -> `created_at` from Supabase `camper_stars`, or None if unreachable.
+
+    None (not {}) on failure, so the caller can fall back to the last-known-good
+    local cache instead of silently wiping the Favorites section on a Supabase outage.
+    """
+    cfg = _supabase_config()
+    if not cfg:
+        return None
+    url, key = cfg
+    try:
+        resp = requests.get(
+            f"{url}/rest/v1/camper_stars",
+            params={"select": "listing_id,created_at"},
+            headers={"apikey": key, "Authorization": f"Bearer {key}"},
+            timeout=20,
+        )
+        resp.raise_for_status()
+        return {row["listing_id"]: row.get("created_at")
+                for row in resp.json() if row.get("listing_id")}
+    except Exception as exc:
+        print(f"[starred] Supabase unreachable ({type(exc).__name__}) — "
+              f"falling back to last cached {STARRED_FILE.name}", file=sys.stderr)
+        return None
+
+
+def load_starred() -> dict[str, str]:
+    """Every listing id the family has starred, mapped to when they starred it.
+
+    Unlike the blocklist there is no committed manual fallback here — a dead
+    Supabase project must not silently drop everyone's Favorites on the next board
+    update, so on failure we fall back to the last successful cache instead of {}.
+    """
+    remote = _supabase_starred()
+    if remote is not None:
+        STARRED_FILE.write_text(json.dumps(remote, indent=2, ensure_ascii=False))
+        print(f"[starred] {len(remote)} starred (from Supabase, cached to {STARRED_FILE.name})")
+        return remote
+
+    cached = {}
+    if STARRED_FILE.exists():
+        try:
+            cached = json.loads(STARRED_FILE.read_text())
+        except Exception:
+            cached = {}
+    print(f"[starred] using last cached {STARRED_FILE.name} ({len(cached)} starred)")
+    return cached
 
 
 def _parse_attrs(text: str) -> tuple[int | None, int | None]:

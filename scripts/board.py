@@ -3,80 +3,64 @@
 
 One rule governs everything:
 
-    A listing holds EXACTLY ONE position — the most recent week it won.
+    A listing is on the board if it won today's Top 5, OR if the family starred it.
+    Everything else disappears — there is no week-by-week archive.
 
 From that single invariant you get all the behaviour the family asked for:
-  * This week's winners sort to the top, in rank order.
-  * A van that wins again is *promoted* into the new week rather than duplicated.
-  * A van that gets replaced keeps the week it last won, so it simply drops below
-    the new block — still there, still scrollable, just no longer top of the page.
-  * Sections are (week desc, rank asc). No special-casing anywhere.
+  * Today's Top 5 always reflects the latest research pass, refreshed daily.
+  * A van that wins again is *promoted* into today's Top 5 rather than duplicated.
+  * A van that gets replaced but is starred drops to the Favorites section
+    (rank=None) instead of vanishing or cluttering an archive.
+  * A van that gets replaced and was never starred simply disappears.
 
 Never-won candidates never reach the board; they live in scripts/candidates.json.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date
 
 from harvest import same_vehicle
-
-
-def iso_week(day: str | date) -> str:
-    """'2026-07-13' -> '2026-W29'. Uses the ISO week, so weeks start on Monday."""
-    if isinstance(day, str):
-        day = datetime.strptime(day, "%Y-%m-%d").date()
-    year, week, _ = day.isocalendar()
-    return f"{year}-W{week:02d}"
-
-
-def week_start(week: str) -> str:
-    """'2026-W29' -> '2026-07-13' (the Monday). Used for the section headings."""
-    year, wk = week.split("-W")
-    monday = date.fromisocalendar(int(year), int(wk), 1)
-    return monday.isoformat()
-
 
 # Fields Stage B (the research pass) is allowed to write onto a board entry.
 # Anything else the model invents is ignored — the board schema stays ours.
 RESEARCH_FIELDS = (
-    "title", "price", "year", "km", "location", "photo", "url", "source",
-    "score", "verdict", "flags", "specs",
+    "title", "price", "year", "km", "country", "location", "photo", "url", "source",
+    "score", "verdict", "flags", "specs", "dealer_or_private", "vat_status",
+    "checked_at",
 )
 
 
 def _sort_key(listing: dict) -> tuple:
-    # Pinned reference first, then newest week, then best rank within that week.
-    return (
-        0 if listing.get("pinned") else 1,
-        # Weeks are zero-padded ISO strings, so reverse-lexicographic == newest-first.
-        _invert(listing.get("week", "")),
-        listing.get("rank") or 99,
-    )
+    # Today's Top 5 first, in rank order; Favorites (rank None) after, stable by id
+    # (the dashboard re-sorts Favorites by star recency client-side, using the
+    # `camper_stars.created_at` timestamp it already has — the board's own order
+    # only needs to be deterministic, not meaningful).
+    rank = listing.get("rank")
+    return (0, rank) if rank else (1, listing.get("id", ""))
 
 
-def _invert(week: str) -> str:
-    """Sort weeks descending inside an ascending sort, without a custom comparator."""
-    # '2026-W29' -> each char flipped against 'z' so bigger weeks sort earlier.
-    return "".join(chr(0x7E - ord(c)) for c in week)
-
-
-def update_board(board: list, winners: list, week: str,
+def update_board(board: list, winners: list, starred_ids: set[str] | None = None,
                  blocked_ids: set[str] | None = None) -> list:
-    """Fold this week's winners into the board and return it, correctly ordered.
+    """Fold today's winners into the board and return it, correctly ordered.
 
-    `board`   — last week's board (list of listing dicts).
-    `winners` — this week's ranked picks, each with at least `id` and `rank`.
-    `week`    — ISO week string, e.g. '2026-W29'.
-    `blocked_ids` — listings the family discarded; they are dropped entirely.
+    `board`        — the board as of the last run (list of listing dicts).
+    `winners`      — today's ranked picks, each with at least `id` and `rank`.
+    `starred_ids`  — listing ids the family has starred; kept as Favorites
+                     (rank set to None) even after they drop out of the Top 5.
+    `blocked_ids`  — listings the family discarded; dropped entirely, permanently.
     """
+    starred = starred_ids or set()
     blocked = blocked_ids or set()
-    monday = week_start(week)
 
     by_id: dict[str, dict] = {}
+    previous_top5_ids: set[str] = set()
     for entry in board:
         if entry.get("id") in blocked:
             continue
         by_id[entry["id"]] = dict(entry)
+        if entry.get("rank"):
+            previous_top5_ids.add(entry["id"])
 
+    winner_ids: set[str] = set()
     for w in winners:
         wid = w.get("id")
         if not wid or wid in blocked:
@@ -98,15 +82,23 @@ def update_board(board: list, winners: list, week: str,
         entry = by_id.get(target_id, {})
         entry.update({k: v for k, v in w.items() if k in RESEARCH_FIELDS})
         entry["id"] = target_id
-        entry["week"] = week
-        entry["week_start"] = monday
         entry["rank"] = w.get("rank")
+        entry["is_new_today"] = target_id not in previous_top5_ids
         entry.setdefault("status", "new")
         entry.setdefault("added_at", str(date.today()))
         by_id[target_id] = entry
+        winner_ids.add(target_id)
+
+    # Anything not in today's winners survives only if starred (as a Favorite,
+    # rank=None) — everything else simply disappears. This one loop is the whole
+    # "Top 5 refreshes daily, Favorites persist, no archive" behaviour.
+    for lid in list(by_id):
+        if lid in winner_ids:
+            continue
+        if lid in starred:
+            by_id[lid]["rank"] = None
+            by_id[lid]["is_new_today"] = False
+        else:
+            del by_id[lid]
 
     return sorted(by_id.values(), key=_sort_key)
-
-
-def current_week(today: date | None = None) -> str:
-    return iso_week(today or date.today())

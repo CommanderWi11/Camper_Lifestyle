@@ -3,9 +3,9 @@
 
   "top_n": 5,
 
-  "min_price": 20000,
+  "min_price": 50000,
   "max_price": 100000,
-  "max_age_years": 10,
+  "max_age_years": 15,
   "max_weight_kg": 3500,
 
   "keywords": [
@@ -20,7 +20,15 @@
     "chausson",
     "adria matrix",
     "dethleffs",
-    "frankia"
+    "frankia",
+    "weinsberg",
+    "knaus",
+    "carado",
+    "sunlight",
+    "elnagh",
+    "challenger",
+    "roller team",
+    "etrusco"
   ],
 
   "wallapop": {

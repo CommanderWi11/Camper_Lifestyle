@@ -46,7 +46,7 @@ def main() -> int:
         save(blocked + args.listing_id)
         added = len(set(args.listing_id) - set(blocked))
         print(f"Discarded {added}. {len(set(blocked) | set(args.listing_id))} total.")
-        print("They will not appear in next Monday's search.")
+        print("They will not appear in the next daily search.")
     return 0
 
 

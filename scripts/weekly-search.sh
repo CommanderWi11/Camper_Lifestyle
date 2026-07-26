@@ -11,13 +11,11 @@
 # If Stage B or C fails, NOTHING is committed. Last week's board stays up. A stale
 # board is fine; a corrupted one is not.
 #
-# The board itself is still WEEK-keyed (board.py: one position per ISO week) — this
-# script just runs that same weekly research more often, so the current week's Top 5
-# stays fresh with whatever new listings appeared today instead of only updating once
-# on Monday. A day with nothing new re-picks the same winners, and Stage D's
-# `git diff --cached --quiet` check means that publishes no new commit — a quiet day
-# is a no-op, not noise. 2026-07-21: switched from Monday-only to daily at Luis's
-# request; see MEMORY.md.
+# The board is Top 5 (today) + Favorites (starred) — no week-by-week archive. Winners
+# that don't repeat and aren't starred simply drop off; a day with nothing new
+# re-picks the same winners, and Stage D's `git diff --cached --quiet` check means
+# that publishes no new commit — a quiet day is a no-op, not noise. 2026-07-21:
+# switched from Monday-only to daily at Luis's request; see MEMORY.md.
 
 set -uo pipefail
 
@@ -35,12 +33,11 @@ exec >> "$LOG" 2>&1
 
 cd "$REPO" || { echo "FATAL: $REPO missing"; exit 1; }
 
-WEEK="$("$PY" -c 'import sys; sys.path.insert(0,"scripts"); import board; print(board.current_week())')"
 TODAY="$(date '+%Y-%m-%d')"
 MARKER="$STATE_DIR/$TODAY.done"
 
 echo ""
-echo "======== $(date '+%Y-%m-%d %H:%M:%S')  daily search  week=$WEEK ========"
+echo "======== $(date '+%Y-%m-%d %H:%M:%S')  daily search ========"
 
 # If the Mac was asleep at 07:00, launchd fires this on wake — possibly more than
 # once. One publish per CALENDAR DAY, so bail if today is already done; 13:00/19:00
@@ -95,31 +92,46 @@ restore_winners() {
 
 rm -f scripts/winners.json
 
-# 2026-07-20 and again 2026-07-23: Stage B hung with 0% CPU, zero open network
-# connections, and no Claude session transcript ever created — a true internal hang,
-# not a slow-but-working run, and nothing was watching, so it sat for hours until a
-# human noticed. macOS has no `timeout`/`gtimeout` binary installed, so this is a
-# plain-bash watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on
-# expiry, degrading a hang to the same "no winners.json" path as a real failure below
-# — which the existing 13:00/19:00 retry slots already recover from unattended.
-STAGE_B_TIMEOUT=1500  # 25 min; generous vs. observed successful runs, tune from the logged duration below
+# 2026-07-20 through 2026-07-26: Stage B hung on 7 consecutive scheduled runs, every
+# hang-sample showing the identical stack (getcwd() stuck in open$NOCANCEL at process
+# startup, 0% CPU afterwards, no session transcript ever created). A live interactive
+# `claude -p "OK"` from this same iCloud cwd does NOT reproduce it on demand (returns
+# in ~5s), so the trigger is specific to the cold/unattended launchd context (minimal
+# PATH/env, no TTY, straight after sleep/wake) rather than a blanket "this cwd always
+# hangs" fact. Root cause is still not 100% certain, but the fix is cheap and safe
+# either way: run Stage B's `claude -p` itself from a small LOCAL non-iCloud scratch
+# directory, so iCloud/FileProvider is out of the picture for the one process that's
+# actually been shown hanging. Stage A/C/D keep running from the iCloud repo path
+# exactly as before — they've never hung.
+STAGE_B_SCRATCH="$HOME/Library/Application Support/motorhome-search/stage-b-scratch"
+rm -rf "$STAGE_B_SCRATCH"
+mkdir -p "$STAGE_B_SCRATCH/scripts"
+cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
+
+# macOS has no `timeout`/`gtimeout` binary installed, so this is a plain-bash
+# watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on expiry,
+# degrading a hang to the same "no winners.json" path as a real failure below —
+# which the existing 13:00/19:00 retry slots already recover from unattended.
+STAGE_B_TIMEOUT=1500  # 25 min; re-tune once real Europe-wide runs show actual wall-clock time
 STAGE_B_START=$(date +%s)
 
-claude -p "$(cat scripts/research-prompt.md)" \
+# `exec` replaces this subshell with the claude process itself (no extra process
+# layer), so $! below is the real claude PID — `sample`/`kill` target it directly.
+( cd "$STAGE_B_SCRATCH" && exec claude -p "$(cat "$REPO/scripts/research-prompt.md")" \
   --append-system-prompt "$HEADLESS_OVERRIDE" \
   --allowedTools "Read,Write,Bash,WebFetch,WebSearch" \
-  < /dev/null &
+  < /dev/null ) &
 CLAUDE_PID=$!
 
 while kill -0 "$CLAUDE_PID" 2>/dev/null; do
   if [ $(( $(date +%s) - STAGE_B_START )) -ge "$STAGE_B_TIMEOUT" ]; then
     echo "FATAL: claude -p exceeded ${STAGE_B_TIMEOUT}s — killing as a hang, not real work."
-    # 2026-07-23: both prior hangs (2026-07-20, 2026-07-23) were killed before anyone
-    # captured what the process was actually blocked on, so root cause is still just
-    # a theory (leading candidate: iCloud placeholder eviction stalling a file read —
-    # see CLAUDE.md/MEMORY.md). `sample` suspends the process and dumps every thread's
-    # call stack — it needs no sudo for a same-user process — so grab that evidence
-    # BEFORE killing, or the next hang teaches us nothing new either.
+    # `sample` suspends the process and dumps every thread's call stack — it needs no
+    # sudo for a same-user process — so grab that evidence BEFORE killing. Now that
+    # Stage B runs from a local scratch dir (see above), a fresh hang-sample here
+    # would tell us whether the scratch-dir fix actually helped or the cause lies
+    # elsewhere (e.g. a genuinely slow/hostile portal, now that Stage B fetches many
+    # more of them) — read it, don't assume.
     HANG_SAMPLE="$STATE_DIR/hang-sample-$(date '+%Y-%m-%d_%H%M%S').txt"
     sample "$CLAUDE_PID" 5 -file "$HANG_SAMPLE" 2>&1 | tail -3
     echo "Hung process call stacks captured to $HANG_SAMPLE — inspect before assuming the cause."
@@ -132,6 +144,12 @@ while kill -0 "$CLAUDE_PID" 2>/dev/null; do
 done
 wait "$CLAUDE_PID" 2>/dev/null
 echo "Stage B took $(( $(date +%s) - STAGE_B_START ))s."
+
+# Bring the output back from the scratch dir into the repo. Leave the scratch dir
+# itself in place (not cleaned up) so a hang's partial state is inspectable afterward.
+if [ -f "$STAGE_B_SCRATCH/scripts/winners.json" ]; then
+  cp "$STAGE_B_SCRATCH/scripts/winners.json" scripts/winners.json
+fi
 
 if [ ! -f scripts/winners.json ]; then
   # Most likely causes: Claude session limit, a hang (see watchdog above), or a site
@@ -152,11 +170,11 @@ fi
 
 # --------------------------------------------------------------- Stage D: publish
 echo "--- Stage D: publishing"
-git add docs/listings.json scripts/candidates.json scripts/winners.json
+git add docs/listings.json scripts/candidates.json scripts/winners.json scripts/starred.json
 if git diff --cached --quiet; then
   echo "No change to publish."
 else
-  git commit -q -m "chore: top 5 refresh $TODAY (week $WEEK)" && git push -q && echo "Pushed. Pages live in ~60s."
+  git commit -q -m "chore: top 5 refresh $TODAY" && git push -q && echo "Pushed. Pages live in ~60s."
 fi
 
 touch "$MARKER"

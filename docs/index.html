@@ -3,60 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Motorhome Lifestyle — Top 5 semanal</title>
+  <title>Top 5 de hoy — Motorhome Search</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
 </head>
 <body>
   <header>
-    <div class="header-inner">
-      <div>
-        <h1>Motorhome Lifestyle</h1>
-        <p class="subtitle">Las 5 mejores de la semana · integrales y perfiladas en Canarias · 2 adultos + 2 peques</p>
-      </div>
-      <div class="header-params">
-        <span>4 cinturones</span>
-        <span>Camas fijas</span>
-        <span>Baño + ducha</span>
-        <span>≤ 3.500 kg</span>
-        <span>≤ 100.000 €</span>
-      </div>
-    </div>
+    <h1>Top 5 de hoy</h1>
+    <span id="last-updated"></span>
   </header>
 
   <div id="offline-banner" class="offline-banner" hidden>
-    <strong>Sin conexión con Supabase.</strong>
-    Los favoritos y descartes se guardan solo en este navegador.
-    <span class="offline-hint">Ejecuta el SQL de <code>docs/supabase-setup.sql</code> para recuperar la sincronización.</span>
-  </div>
-
-  <div class="toolbar">
-    <div class="filters">
-      <label>
-        Estado
-        <select id="filter-status">
-          <option value="">Todos</option>
-          <option value="new">Nuevo</option>
-          <option value="watching">Siguiendo</option>
-          <option value="contacted">Contactado</option>
-        </select>
-      </label>
-      <label class="filter-checkbox">
-        <input type="checkbox" id="filter-starred"> Solo favoritos ★
-      </label>
-      <label class="filter-checkbox">
-        <input type="checkbox" id="filter-hidden"> Ver descartadas 🗑
-      </label>
-    </div>
-    <div class="meta">
-      <span id="last-updated"></span>
-      <span id="new-count"></span>
-    </div>
+    Sin conexión — favoritos y descartes solo en este navegador.
   </div>
 
   <main id="listings-grid">
-    <p class="loading">Cargando anuncios...</p>
+    <p class="msg">Cargando…</p>
   </main>
 
   <script src="app.js"></script>
