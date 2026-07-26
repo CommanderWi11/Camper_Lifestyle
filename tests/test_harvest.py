@@ -121,20 +121,28 @@ def test_same_vehicle_respects_conflicting_years():
 
 # -------------------------------------------------------------------- filtering
 
-def test_is_target_accepts_integrales_and_perfiladas():
-    assert harvest._is_target("Autocaravana perfilada Benimar", strict=True)
-    assert harvest._is_target("HYMER integral 2019", strict=True)
+def test_is_target_has_no_body_type_filter():
+    # The family's brief has no body-type restriction (no "integral/perfilada
+    # only", no excluding capuchinas/campervans) — that was the old Canary-only
+    # rubric. A capuchina or camper van is as valid a candidate as any other,
+    # for a source whose own category scoping already narrowed to motorhomes.
+    assert harvest._is_target("Autocaravana capuchina Elnagh", strict=False)
+    assert harvest._is_target("Camper van Mercedes Vito", strict=False)
+    assert harvest._is_target("Furgoneta camperizada", strict=False)
 
 
-def test_is_target_rejects_vans_and_capuchinas():
-    assert not harvest._is_target("Camper van Mercedes Vito", strict=True)
-    assert not harvest._is_target("Autocaravana capuchina Elnagh", strict=False)
-    assert not harvest._is_target("Furgoneta camperizada", strict=False)
+def test_is_target_strict_requires_a_recognized_brand():
+    # Wallapop is an open-keyword search, so strict mode needs a weak relevance
+    # signal — a brand from the brief's own model-family list (§5).
+    assert harvest._is_target("HYMER Exsis-T 2019", strict=True)
+    assert harvest._is_target("Weinsberg CaraSuite 600 MQ", strict=True)
+    assert not harvest._is_target("Mercedes Vito furgoneta", strict=True)
 
 
-def test_is_target_accepts_a_premium_brand_without_the_body_keyword():
-    # Wallapop titles rarely say "perfilada"; the brand name is the accept signal.
-    assert harvest._is_target("Carthago c-tourer 2018", strict=True)
+def test_is_target_strict_rejects_brands_outside_the_brief():
+    # Carthago isn't in the brief's model-family list — it was a premium-brand
+    # whitelist entry specific to the old Canary-only rubric.
+    assert not harvest._is_target("Carthago c-tourer 2018", strict=True)
 
 
 def test_passes_age_is_lenient_when_the_year_is_unknown():

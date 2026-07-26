@@ -44,7 +44,19 @@ propia familia.
 - **Ubicación en Canarias** — ahora el alcance es toda Europa; un candidato en
   Canarias o en la península sigue siendo bienvenido, simplemente ya no es
   obligatorio.
-- **Altura** — no la uses nunca como criterio de filtro o rechazo.
+- **Integral o perfilada únicamente** — la familia no ha pedido excluir ningún tipo
+  de carrocería. Si una capuchina, camper van o cualquier otro tipo cumple los 5
+  requisitos innegociables de arriba, es un candidato tan válido como cualquier
+  perfilada o integral. No la descartes solo por el tipo de carrocería.
+- **≥4 plazas para dormir como filtro aparte** — el encargo actual solo exige ≥4
+  plazas de *viaje* con cinturón (arriba). Las plazas para dormir importan como
+  preferencia (4ª/5ª plaza infantil, ver abajo), no como filtro eliminatorio propio.
+
+### Parámetros
+
+- **Presupuesto: 50.000 € – 100.000 €.** Nuevo o de segunda mano, cualquiera de los
+  dos vale.
+- **Altura: no es un criterio.** Nunca filtres ni rechaces por altura.
 
 ### Regla de kilometraje (vehículos de ocasión)
 
@@ -74,38 +86,30 @@ habitáculo.
 
 ---
 
-## Puntuación 0–100 (para ordenar a las que sí pasan el filtro)
+## Cómo ordenar a las que sí pasan el filtro
 
-Esta ponderación es una propuesta mía a partir del encargo de la familia — no viene
-dada como porcentajes exactos, así que reajústala si el veredicto final no refleja
-bien lo que de verdad importa.
+Ordena por **valor global** — así lo pide la familia, sin fórmula ni porcentajes
+fijos. No hay pesos predefinidos: usa tu juicio, comparando cada candidato contra
+las preferencias fuertes y los extras de arriba (camas gemelas + kit, baño separado,
+4ª/5ª plaza, historial de mantenimiento y sin humedad, IVA/tipo de vendedor) y contra
+lo que ese modelo/año realmente vale en el **mercado europeo real** (no solo en el
+país donde está publicado — busca ese mismo modelo/año a la venta en otros países,
+aplicando la regla de kilometraje de arriba). Ningún factor individual manda sobre
+los demás — es una valoración de conjunto, igual que pediría la familia si mirara los
+anuncios ella misma.
 
-**Habitabilidad familiar — 35%.**
-- Camas gemelas + kit de relleno (o cama doble de fábrica) = lo esperado; penaliza
-  fuerte cualquier diseño que obligue a montar/desmontar una cama cada noche.
-- Tipo de baño (separado = mejor, combinado = compromiso anotado).
-- 4ª/5ª plaza infantil, garaje para carrito/silla de paseo y cosas de playa.
+Para cada candidato, además de lo anterior, comprueba:
+- Historial de mantenimiento y humedades — el asesino nº1 de las autocaravanas de
+  ocasión (delaminación de techo, juntas). Busca fallos conocidos de ese
+  modelo/generación.
+- Homologación como autocaravana con CoC válido en la UE, para la ITV española tras
+  la reinmatriculación.
+- Que el anuncio siga vivo **hoy** — anota la fecha de esa verificación.
 
-**Relación calidad-precio — 30%.**
-- Compara el precio pedido con lo que ese modelo/año realmente vale **en el mercado
-  europeo real** (no solo en el país donde está publicado) — busca ese mismo
-  modelo/año a la venta en otros países.
-- Aplica la regla de kilometraje de arriba.
-- IVA/tipo de vendedor (particular vs concesionario) como criterio de desempate, no
-  como filtro — ver el apartado de IVA.
+Asigna igualmente un `score` de 0 a 100 en la salida (lo necesita el panel para
+ordenar) — que refleje ese valor global, no un cálculo de porcentajes.
 
-**Estado y riesgo — 20%.**
-- Historial de mantenimiento, humedades (el asesino nº1 de las autocaravanas de
-  ocasión — delaminación de techo, juntas), particular vs concesionario (garantía).
-- Busca fallos conocidos de ese modelo/generación.
-
-**Practicidad y logística — 15%.**
-- Homologación como autocaravana con CoC válido en la UE, para poder pasar la ITV
-  española tras la reinmatriculación.
-- Enlace del anuncio verificado como vivo **hoy**, con la fecha de verificación.
-- Ángulo de IVA/Canarias (ver abajo) — es un plus, no filtro.
-
-### Logística y coste real (léelo antes de puntuar "practicidad")
+### Logística y coste real (léelo antes de valorar cada candidato)
 
 La familia recoge el vehículo en persona y se lo lleva conduciendo hasta un puerto del
 sur de España como parte de un viaje por carretera — no es un transporte contratado.

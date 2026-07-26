@@ -2,9 +2,10 @@
 """Stage A of the weekly pipeline: harvest Spain/Canary Islands motorhome candidates.
 
 This script is deliberately DUMB. It casts a wide net and writes every plausible
-integral/perfilada it finds to candidates.json. It does not rank, score, or pick
-winners — that is Stage B (`claude -p`, driven by research-prompt.md), which reads
-the detail pages and judges against the family rubric.
+candidate it finds to candidates.json — no body-type filtering (see the note above
+_BRAND_RE). It does not rank, score, or pick winners — that is Stage B (`claude -p`,
+driven by research-prompt.md), which reads the detail pages and judges against the
+family's actual brief.
 
 All sources below are hard-locked to Spain/the Canaries at the URL/param level, not
 just by keyword — this script cannot reach Germany/France/Italy/Netherlands etc.
@@ -77,19 +78,19 @@ CANARY_KEYWORDS = {
     "el hierro", "la graciosa",
 }
 
-# Accept only integrales and perfiladas. Reject vans, capuchinas, and obvious car listings.
-_ACCEPT_RE = re.compile(r"\b(integral|integrales|perfilad[ao]s?)\b", re.IGNORECASE)
-_REJECT_RE = re.compile(
-    r"\b(camper|campervan|furgoneta|capuchina|sobrecabina|alcoba|"
-    r"vito|vivaro|trafic|california|caravelle|multivan|marco\s+polo)\b",
-    re.IGNORECASE,
-)
-# Premium integral/perfilada manufacturers — any of these in a title is an accept signal.
+# 2026-07-26: the family's brief has NO body-type restriction (no "integral/
+# perfilada only", no excluding capuchinas/campervans) — that was specific to the
+# old Canary-only rubric this project used before. Body type is judged (if at all)
+# by Stage B against the actual brief, not filtered here. Kept only as a recall
+# signal for open-keyword sources (see _BRAND_RE / _is_target strict mode below),
+# never as an exclusion.
+#
+# Brand list matches the brief's own "model families worth checking" (§5) exactly
+# — not a broader "premium manufacturer" whitelist.
 _BRAND_RE = re.compile(
-    r"\b(hymer|b[uü]rstner|carthago|concorde|frankia|niesmann|morelo|"
-    r"benimar|chausson|adria(?:\s+(?:matrix|coral))?|sun\s+living|pilote|rapido|"
-    r"dethleffs|roller\s+team|mclouis|laika|weinsberg|knaus|carado|"
-    r"sunlight|elnagh|challenger|etrusco)\b",
+    r"\b(adria(?:\s+(?:matrix|coral))?|hymer|b[uü]rstner|rapido|chausson|challenger|"
+    r"weinsberg|knaus|carado|sunlight|dethleffs|benimar|elnagh|roller\s+team|"
+    r"etrusco)\b",
     re.IGNORECASE,
 )
 
@@ -390,16 +391,21 @@ def _parse_attrs(text: str) -> tuple[int | None, int | None]:
 
 
 def _is_target(title: str, strict: bool = True) -> bool:
-    """Return True if title looks like an integral or perfilada motorhome.
+    """Return True if title looks like a candidate worth harvesting.
 
-    strict=True: title must mention integral/perfilada OR a known premium brand.
-    strict=False: any title that doesn't match the reject list passes — use for sources
-    already filtered to the autocaravanas category (Milanuncios, Coches.net, Autocasion).
+    No body-type filtering here (see the note above _BRAND_RE) — the brief cares
+    about function (twin beds, LHD, weight, length, belts), not body type, and
+    Stage B judges that from the detail page, not the search-result title.
+
+    strict=True: for open-keyword searches (Wallapop) where the keyword match
+    alone doesn't guarantee relevance — require a recognized brand as a weak
+    relevance signal.
+    strict=False: the source's own search/category already scoped results to
+    motorhomes (Milanuncios, Coches.net, Autocasion, etc.) — accept everything.
     """
-    if _REJECT_RE.search(title):
-        return False
-    if strict:
-        return bool(_ACCEPT_RE.search(title) or _BRAND_RE.search(title))
+    if not strict:
+        return True
+    return bool(_BRAND_RE.search(title))
     return True
 
 
