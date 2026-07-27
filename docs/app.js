@@ -94,18 +94,36 @@ async function init() {
   render();
 }
 
-function splitTop5AndFavorites(listings) {
+/** Every listing this dashboard knows about, automated board + history, keyed
+ *  by id — a favorite can be starred from either, so Favoritos has to be able
+ *  to find it wherever it lives. historySnapshots is newest-first, so on a
+ *  shared id (the same vehicle reappearing across dated searches) the most
+ *  recent snapshot's copy wins. */
+function allKnownEntries() {
+  const known = new Map();
+  for (const l of allListings) known.set(l.id, l);
+  for (const snapshot of historySnapshots) {
+    for (const e of snapshot.entries) {
+      if (!known.has(e.id)) known.set(e.id, e);
+    }
+  }
+  return known;
+}
+
+function splitTop5AndFavorites(listings, known) {
   const top5 = listings.filter(l => l.rank).sort((a, b) => a.rank - b.rank);
   const top5Ids = new Set(top5.map(l => l.id));
-  const favorites = listings
-    .filter(l => starredSet.has(l.id) && !top5Ids.has(l.id))
+  const favorites = [...starredSet]
+    .filter(id => !hiddenSet.has(id) && !top5Ids.has(id) && known.has(id))
+    .map(id => known.get(id))
     .sort((a, b) => (starredAtById.get(b.id) || '').localeCompare(starredAtById.get(a.id) || ''));
   return { top5, favorites };
 }
 
 function render() {
+  const known = allKnownEntries();
   const listings = allListings.filter(l => !hiddenSet.has(l.id));
-  const { top5, favorites } = splitTop5AndFavorites(listings);
+  const { top5, favorites } = splitTop5AndFavorites(listings, known);
   const grid = document.getElementById('listings-grid');
 
   if (!top5.length && !favorites.length && !historySnapshots.length) {
