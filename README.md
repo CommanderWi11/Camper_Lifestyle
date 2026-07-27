@@ -79,6 +79,15 @@ Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas
 escribe `.state/<fecha>.done` cuando la publicación ha salido bien, así que si el run
 de las 07:00 funciona, los otros dos salen inmediatamente sin hacer nada.
 
+## Búsquedas manuales (historial)
+
+Debajo de Top 5 + Favoritos, el dashboard muestra una sección por cada búsqueda
+manual pegada por Luis (portales que el harvester automático no puede leer:
+mobile.de, AutoScout24, leboncoin, Marktplaats, Subito, sitios de
+concesionarios individuales...). Vive en `docs/history.json`, generado por
+`scripts/ingest_manual_shortlist.py` — no toca `listings.json` ni el pipeline
+diario, es un archivo aparte y aditivo.
+
 ## Estado conocido
 
 - **Supabase** — ver `docs/supabase-setup.sql` para el schema (`camper_stars`,

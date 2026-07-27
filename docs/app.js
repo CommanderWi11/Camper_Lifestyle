@@ -3,8 +3,15 @@
 // listings.json holds today's ranked Top 5 (rank 1-5) and Favorites (starred,
 // rank null). A listing that drops out of the Top 5 and was never starred simply
 // isn't in the file on the next research pass — no archive to maintain here.
+//
+// history.json is a SEPARATE, additive concept: dated snapshots of Luis's manual
+// deep-research passes (sites the automated harvester can't reach), added
+// 2026-07-27 via scripts/ingest_manual_shortlist.py. It never feeds back into
+// listings.json/board.py — it's just rendered below Favoritos, one section per
+// date, using the same card/star/delete plumbing.
 
 let allListings = [];
+let historySnapshots = [];
 let starredSet = new Set();
 let starredAtById = new Map();
 let hiddenSet = new Set();
@@ -65,11 +72,13 @@ async function persistHidden(id) {
 }
 
 async function init() {
-  const [listings] = await Promise.all([
+  const [listings, history] = await Promise.all([
     fetch('listings.json').then(r => r.json()),
+    fetch('history.json').then(r => r.ok ? r.json() : []).catch(() => []),
     loadState(),
   ]);
   allListings = listings;
+  historySnapshots = history;
 
   const dates = allListings.map(l => l.checked_at || l.added_at).filter(Boolean).sort().reverse();
   if (dates.length) {
@@ -99,7 +108,7 @@ function render() {
   const { top5, favorites } = splitTop5AndFavorites(listings);
   const grid = document.getElementById('listings-grid');
 
-  if (!top5.length && !favorites.length) {
+  if (!top5.length && !favorites.length && !historySnapshots.length) {
     grid.innerHTML = '<p class="msg">Nada por aquí todavía.</p>';
     return;
   }
@@ -116,7 +125,32 @@ function render() {
     : '<p class="msg">Pulsa ★ en una autocaravana para guardarla aquí.</p>';
   html += '</section>';
 
+  html += renderHistory();
+
   grid.innerHTML = html;
+}
+
+const MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+function formatDateEs(isoDate) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return `${d} ${MONTHS_ES[m - 1]} ${y}`;
+}
+
+/** Manual research snapshots (history.json), one section per date. A listing
+ *  already shown in Favoritos (starred) or discarded is skipped here so it
+ *  isn't shown twice — starring/deleting collapses across every date that
+ *  mentions the same listing, since they share the same id. */
+function renderHistory() {
+  if (!historySnapshots.length) return '';
+  let html = '';
+  for (const snapshot of historySnapshots) {
+    const entries = snapshot.entries.filter(e => !hiddenSet.has(e.id) && !starredSet.has(e.id));
+    if (!entries.length) continue;
+    html += `<section><h2 class="history-heading">Búsqueda manual — ${formatDateEs(snapshot.date)}</h2>`;
+    html += `<div class="grid">${entries.map(renderCard).join('')}</div>`;
+    html += '</section>';
+  }
+  return html;
 }
 
 function renderCard(listing) {
@@ -179,7 +213,8 @@ async function handleDiscardToggle(e) {
   const btn = e.target.closest('.btn-delete');
   if (!btn) return;
   const id = btn.dataset.id;
-  const listing = allListings.find(l => l.id === id);
+  const listing = allListings.find(l => l.id === id)
+    || historySnapshots.flatMap(s => s.entries).find(e => e.id === id);
   if (!confirm(`¿Eliminar "${listing ? listing.title : 'esta autocaravana'}"? No volverá a aparecer.`)) return;
 
   btn.disabled = true;
