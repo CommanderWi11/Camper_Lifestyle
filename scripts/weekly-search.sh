@@ -105,8 +105,12 @@ rm -f scripts/winners.json
 # exactly as before — they've never hung.
 STAGE_B_SCRATCH="$HOME/Library/Application Support/motorhome-search/stage-b-scratch"
 rm -rf "$STAGE_B_SCRATCH"
-mkdir -p "$STAGE_B_SCRATCH/scripts"
+mkdir -p "$STAGE_B_SCRATCH/scripts" "$STAGE_B_SCRATCH/docs"
 cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
+# config.js has only the public Supabase anon key (same one shipped to every
+# dashboard visitor) — Stage B reads it to check the family's discard list
+# before finalizing winners, see research-prompt.md step 1.
+cp docs/config.js "$STAGE_B_SCRATCH/docs/config.js"
 
 # macOS has no `timeout`/`gtimeout` binary installed, so this is a plain-bash
 # watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on expiry,

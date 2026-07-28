@@ -146,6 +146,27 @@ El resto de portales del encargo — mobile.de, AutoScout24, Marktplaats, lebonc
 La Centrale, Subito.it, CamperOnLine, Autocasion, OLX, páginas de fabricante — no
 tienen scraper propio todavía: los buscas tú mismo, en vivo, en el siguiente paso.
 
+**Antes de dar por definitivo el resultado, respeta los descartes de la familia —
+tan importante como los requisitos innegociables.** El botón 🗑 del dashboard
+descarta un vehículo para siempre: el harvester ya lo excluye de
+`candidates.json`, pero tu propia búsqueda en vivo por Europa (paso 2) puede
+volver a encontrar ese mismo anuncio (misma URL, ya sin saber que fue
+descartado). Antes de escribir `winners.json`, ejecuta esto por Bash:
+
+```bash
+SUPA_URL=$(grep -o 'SUPABASE_URL = "[^"]*"' docs/config.js | cut -d'"' -f2)
+SUPA_KEY=$(grep -o 'SUPABASE_ANON_KEY = "[^"]*"' docs/config.js | cut -d'"' -f2)
+curl -s "$SUPA_URL/rest/v1/camper_hidden?select=listing_id" -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
+```
+
+Si falla (Supabase caído, sin red), sigue sin ese filtro extra — no es fatal.
+Si funciona, descarta de tus finalistas cualquier candidato cuyo `id` (el de
+`candidates.json`) o cuya URL coincida con uno de esos ids descartados —
+**aunque sea, objetivamente, el mejor hallazgo de la ejecución.** Más abajo
+(paso 4) se dice que "repetir ganadores de ejecuciones anteriores es
+correcto" — eso NO aplica a un vehículo descartado desde entonces: un
+descarte de la familia siempre gana a un buen valor.
+
 ### 2. Busca por toda Europa — esto es lo nuevo y lo más importante
 El mercado español/canario por sí solo ya no basta: el encargo es **toda Europa**.
 Usa WebSearch y WebFetch en estos portales, con los términos nativos de cada idioma
@@ -209,7 +230,8 @@ Ordena por puntuación. `rank` 1 = la mejor.
 
 **Si no hay 5 que merezcan la pena, devuelve menos.** Tres buenas es un resultado mejor
 que cinco con dos rellenos. Repetir ganadores de la ejecución anterior es correcto si
-siguen siendo lo mejor disponible. No rellenes por rellenar.
+siguen siendo lo mejor disponible **y no están en la lista de descartes del paso 1**.
+No rellenes por rellenar.
 
 ---
 
