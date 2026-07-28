@@ -191,11 +191,18 @@ Usa WebSearch y WebFetch en estos portales, con los términos nativos de cada id
 (el layout es lo difícil de buscar, así que usa el término local, no la traducción
 literal):
 
-**Portales:** mobile.de, AutoScout24 (DE/AT/NL/BE), Caravaning-Markt y sitios de
-concesionario tipo camper24 (DE), Marktplaats (NL), leboncoin y La Centrale (FR),
-Subito.it y CamperOnLine (IT), Milanuncios/Coches.net/Autocasion (ES — ya cubiertos en
-parte por el harvester, pero repásalos también aquí para lo que se les escape), OLX
-(PL/PT), además de páginas de stock de concesionarios de fábrica.
+**Portales:** abre `Resources/europe-motorhome-selling-sites.md` — es la lista
+maestra de sitios de venta de autocaravanas en Europa (añadida 2026-07-28),
+organizada por país y con una sección "Best sites to search first" al principio.
+**Recórrela en el orden en que aparece en el fichero**: empieza por esa lista de
+prioridad (AutoScout24, mobile.de, Caraworld, TruckScout24, Motorhome Depot,
+Leboncoin, Milanuncios, AutoTrader UK, Marktplaats, Camping-Car.com) y después
+sigue por las secciones de país en el orden del fichero (Reino Unido/Irlanda,
+Francia, España/Portugal, Italia, Países Bajos/Bélgica, Alemania/Austria/Suiza,
+Escandinavia/Europa Central) hasta agotar el presupuesto de fetches de abajo — no
+lo reordenes ni lo saltees a tu criterio. Milanuncios/Coches.net/Autocasion (ES)
+ya están cubiertos en parte por el harvester (paso 1); repásalos aquí solo para
+lo que se les escape.
 
 **Términos de búsqueda por concepto e idioma:**
 
