@@ -1,44 +1,5 @@
 [
   {
-    "url": "https://www.leboncoin.fr/ad/caravaning/3149253718",
-    "source": "leboncoin",
-    "title": "Challenger 287 GA Special Edition (Ford Transit 2.0L 170cv) — camas gemelas traseras",
-    "price": 41990,
-    "year": 2018,
-    "km": 31962,
-    "country": "Francia",
-    "location": "Sardan (Gard)",
-    "photo": "https://campingcar-caravane.cdn-rivamedia.com/clients/6396/normal/escc_challenger-287-ga-special-edition_8798186.jpg",
-    "dealer_or_private": "concesionario",
-    "vat_status": "a confirmar con el vendedor",
-    "checked_at": "2026-07-28",
-    "score": 90,
-    "verdict": "El mejor precio con muchísima diferencia (41.990 €, entre 18.000 y 23.000 € por debajo de los otros tres finalistas) y aun así cumple hoy, con datos confirmados directamente en el anuncio, los 5 filtros eliminatorios: PTAC 3.500 kg, 6,99 m, 4 plazas homologadas, camas gemelas traseras ('Lit Jumeaux') y garaje pasante ('grande soute traversante'). El pero: el baño separado que confirmó una investigación anterior sobre la ficha técnica del modelo no vuelve a aparecer en el texto de este anuncio, y el concesionario HORDE D'OR no indica el IVA — hay que confirmar ambas cosas antes de ir a recogerlo a Sardan.",
-    "flags": [
-      "Baño separado confirmado en la ficha técnica del modelo en una investigación previa, pero no aparece explícitamente en el texto de este anuncio — confirmar con el vendedor.",
-      "Volante izquierdo no confirmado con una cita literal del anuncio; se asume por tratarse de un vehículo de mercado francés (sin excepciones RHD en ventas domésticas francesas).",
-      "IVA no indicado en el anuncio — a confirmar con HORDE D'OR.",
-      "leboncoin.fr bloqueó el acceso directo (403); los datos de hoy se confirmaron vía el espejo netcampers.fr, que replica el mismo anuncio (mismo precio, km, año y concesionario)."
-    ],
-    "specs": {
-      "seatbelts": 4,
-      "berths": 4,
-      "layout": "camas gemelas traseras con kit de relleno de fábrica de serie (confirmado en ficha técnica del modelo) + cama pabellón eléctrica delantera de 2 plazas",
-      "bathroom_type": "separate",
-      "mma_kg": 3500,
-      "length_m": 6.99,
-      "garage": true,
-      "drive_side": "left",
-      "bed_infill": "incluido",
-      "payload_kg": null
-    },
-    "id": "netcampers_fr-de4813bc",
-    "rank": 1,
-    "is_new_today": false,
-    "status": "new",
-    "added_at": "2026-07-26"
-  },
-  {
     "url": "https://www.coches.net/etrusco-7400sb-130cv-viajan-y-duermen-5-aireador-viesa-en-sta-c-tenerife-71044577-arvo.aspx",
     "source": "coches_net",
     "title": "Etrusco 7400SB — viajan y duermen 5, camas gemelas + baño y ducha independientes",
@@ -74,7 +35,7 @@
       "payload_kg": null
     },
     "id": "coches_net-0caa3cc4",
-    "rank": 2,
+    "rank": 1,
     "is_new_today": false,
     "status": "new",
     "added_at": "2026-07-26"
@@ -116,8 +77,8 @@
       "payload_kg": null
     },
     "id": "marktplaats-9caa3b2f",
-    "rank": 3,
-    "is_new_today": true,
+    "rank": 2,
+    "is_new_today": false,
     "status": "new",
     "added_at": "2026-07-28"
   },
@@ -156,7 +117,7 @@
       "payload_kg": null
     },
     "id": "milanuncios-3547d9cc",
-    "rank": 4,
+    "rank": 3,
     "is_new_today": false,
     "status": "new",
     "added_at": "2026-07-27"
