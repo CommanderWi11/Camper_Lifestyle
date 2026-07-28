@@ -31,11 +31,12 @@ from harvest import make_id, fetch_og_image  # noqa: E402
 
 HISTORY_FILE = Path(__file__).parent.parent / "docs" / "history.json"
 
-# 2026-07-24 / 07-25 / 07-27: three dated Top-5 shortlists pasted by Luis,
+# 2026-07-24 / 07-25 / 07-27 / 07-28: dated Top-5 shortlists pasted by Luis,
 # transcribed here. Rows carried over unchanged across dates (Dethleffs Just Go
-# T7055 EB in all three; Etrusco T7400 SBC and Sunlight T680 in 07-25+07-27)
-# reuse the exact same URL each time, on purpose -- make_id() then produces the
-# same id, so starring/deleting one instance collapses across every date.
+# T7055 EB in all four; Etrusco T7400 SBC, Sunlight T680, McLouis MC4 865 and
+# Rapido 666F unchanged 07-27->07-28) reuse the exact same URL each time, on
+# purpose -- make_id() then produces the same id, so starring/deleting one
+# instance collapses across every date.
 SHORTLISTS = {
     "2026-07-24": [
         {
@@ -115,6 +116,33 @@ SHORTLISTS = {
         {
             "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/autocaravana-perfilada-rapido-666f-cam-527648454.htm",
             "title": "Rapido 666F (2025) - primer concesionario espanol encontrado en 3 semanas",
+            "price": 81471, "km": None, "location": "Irun, Gipuzkoa, Espana", "length_m": 7.49,
+        },
+    ],
+    "2026-07-28": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "Etrusco T 7400 SBC (2023) - lider en relacion calidad-precio 5 semanas seguidas",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "McLouis MC4 865 (2026) - la mas barata bien equipada, sin cambios",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "Dethleffs Just Go T 7055 EB (2023) - cuarta semana sin cambios de precio",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/sunlight-t-680-adventure-edition/384817.html",
+            "title": "Sunlight T 680 Adventure Edition (2024) - mejor encaje familiar, sin cambios",
+            "price": 67900, "km": 10436, "location": "Niort (79), Francia", "length_m": 7.36,
+        },
+        {
+            "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/autocaravana-perfilada-rapido-666f-cam-527648454.htm",
+            "title": "Rapido 666F (2025) - unico concesionario espanol encontrado, sin cambios",
             "price": 81471, "km": None, "location": "Irun, Gipuzkoa, Espana", "length_m": 7.49,
         },
     ],
