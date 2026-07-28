@@ -15,15 +15,36 @@ from pathlib import Path
 import board
 from harvest import (
     BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
-    load_listings, load_starred, make_id, same_vehicle,
+    load_candidates, load_listings, load_starred, make_id, same_vehicle,
 )
 
 WINNERS_FILE = Path(__file__).parent / "winners.json"
+HISTORY_FILE = Path(__file__).parent.parent / "docs" / "history.json"
 MAX_WINNERS = 5
 
 
 class Invalid(Exception):
     """The model's output cannot be trusted. Abort rather than publish it."""
+
+
+def blocked_listings(blocked: set[str]) -> list:
+    """Full dicts (title/year/source) for every discarded id we have a record of,
+    drawn from everywhere the family could have discarded it: the board, the
+    harvester's own candidate pool, and manually-ingested history snapshots.
+
+    Used with same_vehicle() below for CROSS-SOURCE matching — a discard on one
+    portal (e.g. netcampers_fr) must also catch Stage B relisting the identical
+    vehicle under a different portal (e.g. leboncoin), which has a different id
+    (id = md5 of URL) and would never match on id alone. 2026-07-28: this exact
+    scenario happened for real — same van (Challenger 287 GA Special Edition,
+    same price/year/km/location), same discard, different portal, two runs in a
+    row, before this existed.
+    """
+    known = load_candidates() + load_listings()
+    if HISTORY_FILE.exists():
+        for snapshot in json.loads(HISTORY_FILE.read_text()):
+            known.extend(snapshot.get("entries", []))
+    return [l for l in known if l.get("id") in blocked]
 
 
 def validate(raw: object, blocked: set[str]) -> list:
@@ -32,9 +53,11 @@ def validate(raw: object, blocked: set[str]) -> list:
     if len(raw) > MAX_WINNERS:
         raise Invalid(f"{len(raw)} winners — the board takes at most {MAX_WINNERS}")
 
+    blocked_vehicles = blocked_listings(blocked)
+
     seen_ids: set[str] = set()
-    seen_ranks: set[int] = set()
-    winners = []
+    winners = []  # survivors, original Stage B rank still attached — renumbered below
+    dropped = 0
 
     for i, w in enumerate(raw):
         if not isinstance(w, dict):
@@ -53,8 +76,25 @@ def validate(raw: object, blocked: set[str]) -> list:
         wid = (w.get("id") or "").strip() or make_id(source, url)
         if wid in seen_ids:
             raise Invalid(f"duplicate winner id {wid}")
-        if wid in blocked:
-            raise Invalid(f"{wid} was discarded by the family but came back as a winner")
+
+        # A discarded vehicle reappearing is NOT a trust problem with Stage B's
+        # output the way a malformed field is — research-prompt.md tells Stage B
+        # to check this itself, but that's prompt-following, not a guarantee (see
+        # 2026-07-28: the Challenger 287 GA / netcampers_fr-de4813bc collision hit
+        # this twice in a row even with the check in place — the SECOND time under
+        # a different id entirely, relisted on leboncoin instead of netcampers_fr,
+        # which is why this also checks same_vehicle() against every known blocked
+        # listing, not just exact id equality). Dropping it here and continuing
+        # means one bad entry costs a rank slot, not the whole ~12min Stage B run
+        # and the day's board update.
+        relisted_match = next((bv for bv in blocked_vehicles if same_vehicle(w, bv)), None)
+        if wid in blocked or relisted_match:
+            reason = wid if wid in blocked else f"same vehicle as blocked {relisted_match['id']}"
+            print(f"  dropping {wid or '(no id)'} — discarded by the family "
+                  f"({reason}), Stage B should not have re-included it", file=sys.stderr)
+            dropped += 1
+            continue
+
         for prev in winners:
             if same_vehicle(w, prev):
                 raise Invalid(
@@ -67,9 +107,6 @@ def validate(raw: object, blocked: set[str]) -> list:
         rank = w.get("rank")
         if not isinstance(rank, int) or not 1 <= rank <= MAX_WINNERS:
             raise Invalid(f"winner {wid} has rank {rank!r}, expected 1..{MAX_WINNERS}")
-        if rank in seen_ranks:
-            raise Invalid(f"rank {rank} assigned twice")
-        seen_ranks.add(rank)
 
         score = w.get("score")
         if not isinstance(score, (int, float)) or not 0 <= score <= 100:
@@ -91,9 +128,19 @@ def validate(raw: object, blocked: set[str]) -> list:
 
         winners.append(w)
 
-    # Ranks must be 1..n with no gaps, otherwise the ordering is a lie.
-    if seen_ranks and sorted(seen_ranks) != list(range(1, len(winners) + 1)):
-        raise Invalid(f"ranks are not consecutive from 1: {sorted(seen_ranks)}")
+    # Original ranks must always be unique. If nothing was dropped above, they
+    # must also be consecutive from 1 — that's a real Stage B numbering mistake.
+    # A gap caused BY a drop (e.g. {1,2,4,5} after rank 3 gets dropped) is
+    # expected and fine — sort by Stage B's original rank to preserve its
+    # relative ordering, then renumber 1..n so the published board has no gaps.
+    orig_ranks = [w["rank"] for w in winners]
+    if len(set(orig_ranks)) != len(orig_ranks):
+        raise Invalid(f"rank assigned twice: {sorted(orig_ranks)}")
+    if not dropped and orig_ranks and sorted(orig_ranks) != list(range(1, len(winners) + 1)):
+        raise Invalid(f"ranks are not consecutive from 1: {sorted(orig_ranks)}")
+    winners.sort(key=lambda w: w["rank"])
+    for idx, w in enumerate(winners, start=1):
+        w["rank"] = idx
 
     return winners
 

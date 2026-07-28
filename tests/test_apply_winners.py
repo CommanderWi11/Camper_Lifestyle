@@ -6,6 +6,7 @@ a run could go wrong and asserts that we refuse to publish rather than corrupt t
 """
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -48,10 +49,44 @@ def test_fewer_than_five_is_fine():
     assert len(got) == 3
 
 
-def test_a_discarded_listing_cannot_come_back_as_a_winner():
-    """The whole point of the 🗑 button. If this ever passes, the feature is a lie."""
-    with pytest.raises(Invalid, match="discarded"):
-        validate([ok(id="rejected")], blocked={"rejected"})
+def test_a_discarded_listing_is_dropped_not_fatal():
+    """The whole point of the 🗑 button. 2026-07-28: research-prompt.md tells Stage
+    B to check the discard list itself, but that's prompt-following, not a
+    guarantee — it re-included a discarded listing twice in a row regardless. One
+    bad entry should cost a rank slot, not fail the whole run and leave the board
+    untouched for a full retry."""
+    got = validate([ok(id="rejected")], blocked={"rejected"})
+    assert got == []
+
+
+def test_a_relisted_discarded_vehicle_is_dropped_via_same_vehicle():
+    """2026-07-28, the second collision of the same day: the discarded Challenger
+    287 GA reappeared under a *different* id entirely — Stage B found it relisted
+    on leboncoin instead of netcampers_fr, so id-only blocking (the fix above)
+    didn't catch it. Cross-checking same_vehicle() against every known blocked
+    listing (title/year overlap, not just id) is what catches a relist."""
+    blocked_van = {
+        "id": "netcampers_fr-de4813bc", "source": "netcampers_fr",
+        "title": "Challenger 287 GA Special Edition - camas gemelas con kit de relleno",
+        "year": 2018,
+    }
+    relisted = ok(
+        id="", source="leboncoin", rank=1,
+        title="Challenger 287 GA Special Edition Ford Transit - camas gemelas traseras",
+    )
+    relisted["year"] = 2018
+    with patch("apply_winners.blocked_listings", return_value=[blocked_van]):
+        got = validate([relisted], blocked=set())
+    assert got == []
+
+
+def test_dropping_a_discarded_winner_renumbers_the_survivors():
+    got = validate(
+        [ok(id="a", rank=1), ok(id="rejected", rank=2), ok(id="c", rank=3)],
+        blocked={"rejected"},
+    )
+    assert [w["id"] for w in got] == ["a", "c"]
+    assert [w["rank"] for w in got] == [1, 2], "rank 3 must not survive as a gap"
 
 
 def test_duplicate_ids_are_refused():
@@ -60,7 +95,7 @@ def test_duplicate_ids_are_refused():
 
 
 def test_duplicate_ranks_are_refused():
-    with pytest.raises(Invalid, match="rank 1 assigned twice"):
+    with pytest.raises(Invalid, match="rank assigned twice"):
         validate([ok(id="a", rank=1), ok(id="b", rank=1)], blocked=set())
 
 

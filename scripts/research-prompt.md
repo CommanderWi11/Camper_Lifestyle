@@ -160,8 +160,26 @@ curl -s "$SUPA_URL/rest/v1/camper_hidden?select=listing_id" -H "apikey: $SUPA_KE
 ```
 
 Si falla (Supabase caído, sin red), sigue sin ese filtro extra — no es fatal.
-Si funciona, descarta de tus finalistas cualquier candidato cuyo `id` (el de
-`candidates.json`) o cuya URL coincida con uno de esos ids descartados —
+
+Si funciona, tienes una lista de **ids** (hashes, no URLs — un `id` y una URL
+nunca se pueden comparar directamente). Para cada finalista que vengas a
+incluir en `winners.json`:
+- Si viene de `candidates.json` con su `id` ya puesto, compara ese `id` tal
+  cual contra la lista.
+- **Si lo encontraste tú mismo (fuera de `candidates.json`, `id` vacío),
+  calcula el id que le correspondería con el mismo esquema del harvester**
+  (`fuente-primeros8charsdelhashmd5delaURL`) antes de compararlo, así:
+  ```bash
+  python3 -c "import hashlib; print('FUENTE-' + hashlib.md5('URL_COMPLETA'.encode()).hexdigest()[:8])"
+  ```
+  sustituyendo `FUENTE` por el nombre del portal en minúsculas con guiones
+  bajos (p.ej. `netcampers_fr`, `mobile_de`) y `URL_COMPLETA` por la URL
+  exacta del anuncio. Sin este paso, un descarte de un vehículo que tú mismo
+  vuelves a encontrar en tu búsqueda en vivo (en vez de vía `candidates.json`)
+  **no se detecta nunca** — ya ha pasado (Challenger 287 GA Special Edition,
+  netcampers.fr, 2026-07-28).
+
+Descarta cualquier finalista cuyo id (puesto o calculado) esté en la lista —
 **aunque sea, objetivamente, el mejor hallazgo de la ejecución.** Más abajo
 (paso 4) se dice que "repetir ganadores de ejecuciones anteriores es
 correcto" — eso NO aplica a un vehículo descartado desde entonces: un
