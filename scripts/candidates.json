@@ -1054,5 +1054,53 @@
     "status": "new",
     "added_at": "2026-07-30",
     "fingerprint": "custom|2020"
+  },
+  {
+    "id": "milanuncios-619186d3",
+    "title": "FIAT MC LOUIS MENFYS S LINE 5 FURGON CAM",
+    "price": 54990,
+    "year": 2020,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas de Gran Canaria (Las Palmas)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/fiat-mc-louis-menfys-s-line-5-furgon-cam-607603897.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/c6ae8510-9486-45b0-b8fe-53494f717b76?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-07-30",
+    "fingerprint": "cam-furgon-line-louis-mc-menfys|2020"
+  },
+  {
+    "id": "coches_net-4c7a209b",
+    "title": "FORD TOURNEO CUSTOM 2.0 ECOBLUE HYBRID",
+    "price": 36900,
+    "year": 2020,
+    "km": 38000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas",
+    "source": "coches_net",
+    "url": "https://www.coches.net/ford-tourneo-custom-20-ecoblue-hybrid-185cv-en-las-palmas-71193165-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-07-30",
+    "fingerprint": "custom-ecoblue-hybrid-tourneo|2020"
+  },
+  {
+    "id": "coches_net-4c667401",
+    "title": "VOLKSWAGEN MULTIVAN T6.1 2.0TDI DSG",
+    "price": 41900,
+    "year": 2021,
+    "km": 48000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas",
+    "source": "coches_net",
+    "url": "https://www.coches.net/volkswagen-multivan-t61-20tdi-150cv-dsg-en-las-palmas-71181443-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-07-30",
+    "fingerprint": "dsg-multivan|2021"
   }
 ]
