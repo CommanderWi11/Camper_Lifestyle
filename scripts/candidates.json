@@ -1022,5 +1022,37 @@
     "status": "new",
     "added_at": "2026-07-29",
     "fingerprint": "404-430-al-desde-hymer-mes|2013"
+  },
+  {
+    "id": "coches_net-d37d60a7",
+    "title": "MC Louis Glamys 326G Citroen autocaravana 6 plazas 140cv. Año 2020. KM: 33.973. Etiq. C",
+    "price": 59890,
+    "year": 2020,
+    "km": 33973,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/mc-louis-glamys-326g-citroen-autocaravana-6-plazas-140cv-ano-2020-km-33973-etiq-c-en-alicante-70294586-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/19754403/b09c3bf9-8435-48ee-ae5d-e8770bb5fe20.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-07-30",
+    "fingerprint": "140-2020-326-33-973-ano-etiq-glamys-louis-mc|2020"
+  },
+  {
+    "id": "coches_net-a6a4bfa2",
+    "title": "Ford Transit Custom Camper",
+    "price": 42990,
+    "year": 2020,
+    "km": 72570,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/ford-transit-custom-camper-en-barcelona-71024188-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20374379/77fb2861-0327-486c-a04c-540dd075b426.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-07-30",
+    "fingerprint": "custom|2020"
   }
 ]
