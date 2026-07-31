@@ -1102,5 +1102,37 @@
     "status": "new",
     "added_at": "2026-07-30",
     "fingerprint": "dsg-multivan|2021"
+  },
+  {
+    "id": "milanuncios-90e349a7",
+    "title": "FORD TOURNEO CUSTOM 2.0 ECOBLUE HYBRID 1",
+    "price": 36900,
+    "year": 2020,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas de Gran Canaria (Las Palmas)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/ford-tourneo-custom-2-0-ecoblue-hybrid-1-607961405.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/72b7d76d-3c83-4855-928a-69ad19983684?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-07-31",
+    "fingerprint": "custom-ecoblue-hybrid-tourneo|2020"
+  },
+  {
+    "id": "coches_net-a651b1c0",
+    "title": "AUTOCARAVANA INTEGRAL FLEURETTE DISCOVER 73",
+    "price": 46900,
+    "year": 2008,
+    "km": 122000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/autocaravana-integral-fleurette-discover-73-en-granada-62375226-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/19284888/5b833c5c-fe17-4370-960d-e0e50cb7c324.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-07-31",
+    "fingerprint": "73-discover-fleurette|2008"
   }
 ]
