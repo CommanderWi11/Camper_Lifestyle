@@ -146,6 +146,33 @@ SHORTLISTS = {
             "price": 81471, "km": None, "location": "Irun, Gipuzkoa, Espana", "length_m": 7.49,
         },
     ],
+    "2026-07-31": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "Etrusco T 7400 SBC (2023) - lider en relacion calidad-precio, sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "McLouis MC4 865 (2026) - sin cambios, posible alquiler desde octubre (a confirmar con el concesionario)",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "Dethleffs Just Go T 7055 EB (2023) - sin cambios, relleno de camas aun por confirmar",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/sunlight-t-680-adventure-edition/384817.html",
+            "title": "Sunlight T 680 Adventure Edition (2024) - 5 plazas, bano separado, sin cambios",
+            "price": 67900, "km": 10436, "location": "Niort (79), Francia", "length_m": 7.36,
+        },
+        {
+            "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/autocaravana-perfilada-rapido-666f-cam-527648454.htm",
+            "title": "Rapido 666F 65 anos (2025) - bano separado ahora confirmado por escrito, la mas cara",
+            "price": 81471, "km": None, "location": "Irun, Gipuzkoa, Espana", "length_m": 7.49,
+        },
+    ],
 }
 
 

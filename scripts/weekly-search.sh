@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Motorhome Lifestyle — refreshes the current week's Top 5, daily.
-# Schedule: every day 07:00/13:00/19:00 local, via
+# Motorhome Lifestyle — refreshes today's Top 5, once a day.
+# Schedule: 03:00 local, via
 # ~/Library/LaunchAgents/com.openbob.motorhome-search-daily.plist
 #
 #   Stage A  harvest.py        scrape every source -> candidates.json   (deterministic)
@@ -8,14 +8,19 @@
 #   Stage C  apply_winners.py  validate + fold into the board           (the gate)
 #   Stage D  git push          GitHub Pages redeploys in ~60s
 #
-# If Stage B or C fails, NOTHING is committed. Last week's board stays up. A stale
+# If Stage B or C fails, NOTHING is committed. Last board stays up. A stale
 # board is fine; a corrupted one is not.
 #
 # The board is Top 5 (today) + Favorites (starred) — no week-by-week archive. Winners
 # that don't repeat and aren't starred simply drop off; a day with nothing new
 # re-picks the same winners, and Stage D's `git diff --cached --quiet` check means
 # that publishes no new commit — a quiet day is a no-op, not noise. 2026-07-21:
-# switched from Monday-only to daily at Luis's request; see MEMORY.md.
+# switched from Monday-only to daily at Luis's request; see MEMORY.md. 2026-07-30:
+# refocused search scope to the Canary Islands only (used + new) and dropped the
+# 07:00/13:00/19:00 retry slots down to a single 03:00 run at Luis's request — a
+# Stage B failure (session limit, hang, flaky site) now has no same-day retry, the
+# next attempt is tomorrow's 03:00. See MEMORY.md for the tradeoff and the known
+# 03:20 Atlantic/Canary session-limit-reset timing risk.
 
 set -uo pipefail
 
@@ -39,10 +44,11 @@ MARKER="$STATE_DIR/$TODAY.done"
 echo ""
 echo "======== $(date '+%Y-%m-%d %H:%M:%S')  daily search ========"
 
-# If the Mac was asleep at 07:00, launchd fires this on wake — possibly more than
-# once. One publish per CALENDAR DAY, so bail if today is already done; 13:00/19:00
-# are same-day retries if the 07:00 attempt failed (session limit, flaky site, no
-# network on wake — none of which are code bugs, all of which happened for real).
+# If the Mac was asleep at 03:00, launchd fires this on wake. One publish per
+# CALENDAR DAY, so bail if today is already done. Since 2026-07-30 there is only
+# one scheduled slot (no more 13:00/19:00 retries) — a failure (session limit,
+# flaky site, no network on wake — none of which are code bugs, all of which
+# happened for real) just means no fresh board until tomorrow's 03:00.
 if [ -f "$MARKER" ]; then
   echo "$TODAY already published. Nothing to do."
   exit 0
@@ -112,14 +118,14 @@ cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
 # before finalizing winners, see research-prompt.md step 1.
 cp docs/config.js "$STAGE_B_SCRATCH/docs/config.js"
 # The master portal list (research-prompt.md step 2 tells Stage B to work through
-# it in order) — added 2026-07-28.
-cp Resources/europe-motorhome-selling-sites.md "$STAGE_B_SCRATCH/Resources/europe-motorhome-selling-sites.md"
+# it in order) — added 2026-07-28, replaced 2026-07-30 with the Canary-only list.
+cp Resources/canary-motorhome-selling-sites.md "$STAGE_B_SCRATCH/Resources/canary-motorhome-selling-sites.md"
 
 # macOS has no `timeout`/`gtimeout` binary installed, so this is a plain-bash
 # watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on expiry,
 # degrading a hang to the same "no winners.json" path as a real failure below —
 # which the existing 13:00/19:00 retry slots already recover from unattended.
-STAGE_B_TIMEOUT=1500  # 25 min; re-tune once real Europe-wide runs show actual wall-clock time
+STAGE_B_TIMEOUT=1500  # 25 min; the Canary-only source list (2026-07-30) is much shorter than the old Europe-wide one, so this should be generous — re-tune down if real runs consistently finish in a fraction of it
 STAGE_B_START=$(date +%s)
 
 # `exec` replaces this subshell with the claude process itself (no extra process

@@ -1,11 +1,12 @@
 # Motorhome Lifestyle
 
-**Top 5** de hoy — autocaravanas en venta por toda Europa para una familia de 4 (2
-adultos + 2 peques), buscadas y valoradas a diario.
+**Top 5** de hoy — autocaravanas **nuevas y de segunda mano** en venta en las
+**Islas Canarias** para una familia de 4 (2 adultos + 2 peques), buscadas y
+valoradas a diario.
 
 **Dashboard:** https://commanderwi11.github.io/Motorhome_Search/
 
-Cada día a las 07:00 el pipeline busca en todas las fuentes, investiga a fondo los
+Cada día a las 03:00 el pipeline busca en todas las fuentes, investiga a fondo los
 candidatos serios, y publica las 5 mejores **de hoy**. No hay archivo por semanas: un
 ganador que deja de estar en el Top 5 desaparece, salvo que esté marcado como
 favorito ★ — en ese caso se queda en la sección de Favoritos aunque ya no gane.
@@ -14,8 +15,8 @@ favorito ★ — en ese caso se queda en la sección de Favoritos aunque ya no g
 
 | Etapa | Qué hace | Salida |
 |---|---|---|
-| **A · Harvest** (`scripts/harvest.py`) | Rastrea Milanuncios y Coches.net (España, nacional). Determinista, sin IA. | `scripts/candidates.json` |
-| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca por toda Europa (mobile.de, AutoScout24, leboncoin, Subito.it, etc.), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
+| **A · Harvest** (`scripts/harvest.py`) | Rastrea Milanuncios y Coches.net filtrados a Canarias. Determinista, sin IA. | `scripts/candidates.json` |
+| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca de forma extensiva en toda Canarias (nuevas y de segunda mano), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
 | **C · Validación** (`scripts/apply_winners.py`) | Comprueba la salida y la integra en el tablero (Top 5 + Favoritos). Si algo no cuadra, **no publica**. | `docs/listings.json` |
 | **D · Publicación** | `git push` → GitHub Pages en ~60s. | |
 
@@ -24,9 +25,9 @@ Orquestado por `scripts/weekly-search.sh`, programado con
 
 ## La rúbrica
 
-Familia de 4 (2 adultos, un niño de 2,5 años y un bebé de 3 meses). Búsqueda por toda
-Europa — la vuelta hasta el sur de España es un viaje por carretera que la familia
-hace por gusto, así que solo el ferry a Canarias cuenta como coste real de logística.
+Familia de 4 (2 adultos, un niño de 2,5 años y un bebé de 3 meses). Búsqueda
+**solo dentro de las Islas Canarias** (2026-07-30: refocado desde el periodo
+Europa-wide) — **nuevas (0km/concesionario) y de segunda mano por igual**.
 
 Filtros innegociables: MMA ≤3.500 kg (carnet B), **longitud ≥ 6,90 m**, camas gemelas
 traseras convertibles en doble vía kit de fábrica, **volante a la izquierda**, ≥4
@@ -37,19 +38,13 @@ Rúbrica completa: `scripts/research-prompt.md`.
 
 ## Fuentes
 
-Exactamente las que pide el encargo (`scripts/research-prompt.md` §5) — nada más.
-2026-07-26: se eliminaron 5 fuentes (Wallapop, Autocaravanas DM, Mundo
-Autocaravanas, Campermax, caravanas.net) y 2 fetches obligatorios en Stage B
-(RentCamper Canarias, Autocaravanas Canarias) — ninguna estaba en el encargo; eran
-herencia de un proyecto anterior, solo-Canarias, ajeno a este.
-
 **Deterministas (Stage A)** — Milanuncios y Coches.net, vía Playwright (con
-anti-bot en Coches.net), a nivel nacional (no solo Canarias).
+anti-bot en Coches.net), filtrados a Canarias.
 
-**Europa (Stage B, en vivo)** — mobile.de, AutoScout24 (DE/AT/NL/BE), Marktplaats,
-leboncoin, La Centrale, Subito.it, CamperOnLine, Autocasion, OLX (PL/PT), páginas de
-stock de fabricantes. Sin scraper dedicado todavía — es la fase 2 pendiente (ver
-`scripts/harvest.py`, docstring del módulo).
+**Canarias, en vivo (Stage B)** — Wallapop, Autocasion, AutoScout24 España, y los
+concesionarios canarios conocidos (RentCamper Canarias, Autocaravanas Canarias),
+más búsqueda activa de concesionarios de vehículos nuevos por isla. Sin scraper
+dedicado todavía — lista completa en `Resources/canary-motorhome-selling-sites.md`.
 
 ## Uso
 
@@ -75,9 +70,9 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openbob.motorhome-se
 
 Corre en el Mac a propósito: **GitHub Actions tiene la IP bloqueada** por estas webs.
 
-**Reintentos:** el agente se dispara todos los días a las 07:00, 13:00 y 19:00. Solo se
-escribe `.state/<fecha>.done` cuando la publicación ha salido bien, así que si el run
-de las 07:00 funciona, los otros dos salen inmediatamente sin hacer nada.
+**Horario:** el agente se dispara una vez al día, a las 03:00 (2026-07-30: antes
+eran 07:00 + reintentos a las 13:00/19:00; ahora solo hay un intento — si falla,
+no hay tablero nuevo hasta el 03:00 del día siguiente).
 
 ## Búsquedas manuales (historial)
 

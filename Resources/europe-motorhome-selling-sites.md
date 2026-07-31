@@ -1,5 +1,10 @@
 # Europe Motorhome Selling Sites
 
+**SUPERSEDED 2026-07-30** — Luis refocused the project to the Canary Islands
+only (used + new). This file is no longer read by `weekly-search.sh` or
+`research-prompt.md`; see `canary-motorhome-selling-sites.md` instead. Left
+here for reference only in case the Europe-wide scope ever comes back.
+
 This is a practical Europe-wide list of established websites for buying and selling motorhomes, campervans and caravans. “New” means dealer or manufacturer stock; “Used” means second-hand listings; “Both” means both are commonly available.
 
 ## Europe-wide and multi-country sites

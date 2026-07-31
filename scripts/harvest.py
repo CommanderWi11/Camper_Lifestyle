@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage A of the daily pipeline: harvest Spain motorhome candidates.
+"""Stage A of the daily pipeline: harvest Canary Islands motorhome candidates.
 
 This script is deliberately DUMB. It casts a wide net and writes every plausible
 candidate it finds to candidates.json — no body-type filtering, no age filtering,
@@ -7,16 +7,13 @@ no price filtering. It does not rank, score, or pick winners — that is Stage B
 (`claude -p`, driven by research-prompt.md), which reads the detail pages and
 judges every candidate against the family's actual brief.
 
-2026-07-26: trimmed to match the brief's own §5 portal list exactly. The brief
-names, for Spain, only "Milanuncios / Coches.net / Autocasion" — so those are the
-only two sources scraped here (Autocasion has no deterministic scraper yet; Stage B
-covers it, and every other European country, via live WebSearch/WebFetch). Five
-other sources (Wallapop, Autocaravanas DM, Mundo Autocaravanas, Campermax,
-caravanas.net) and two mandatory Stage-B fetch targets (RentCamper Canarias,
-Autocaravanas Canarias) were removed — none of them are named anywhere in the
-brief; they were leftover from an older, unrelated Canary-only project. If you're
-tempted to re-add a "good" source later, check it's actually in the brief's §5
-list first, not just a site that happens to carry motorhome listings.
+2026-07-30: refocused to the Canary Islands only (used + new), reverting the
+2026-07-26 Europe-wide detour. Milanuncios and Coches.net are scraped here with
+their Canarias-filtered URLs (not nationwide Spain) — deterministic Stage A
+coverage. Everything else — Wallapop, Autocasion, AutoScout24 Spain, known local
+dealers (RentCamper Canarias, Autocaravanas Canarias), and live search for new
+(0km) dealer stock — has no deterministic scraper and is Stage B's job via live
+WebSearch/WebFetch, per `Resources/canary-motorhome-selling-sites.md`.
 
 Discarded listings (the 🗑 button -> Supabase `camper_hidden`) are excluded here,
 so a discard means "never searched again", not merely "hidden in the UI".
@@ -381,18 +378,20 @@ def _passes_weight(text: str, max_kg: int) -> bool:
 
 
 def fetch_milanuncios(params: dict) -> list:
-    """Scrape Milanuncios autocaravanas listings (nationwide Spain) via Playwright.
+    """Scrape Milanuncios autocaravanas listings (Canary Islands only) via Playwright.
 
     Playwright is required because most cards are JS-rendered; plain requests only
     sees the 3 "destacado" cards.
 
     If selectors break, inspect article[data-testid="AD_CARD"] on
-    milanuncios.com/autocaravanas-de-segunda-mano/ and update below.
+    milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm and update below.
+    2026-07-30: reinstated the canarias.htm suffix (verified live, 200 + real
+    "Canarias" content) after the 2026-07-26 detour had widened this to nationwide.
     """
     max_weight = params.get("max_weight_kg", 99999)
     results = []
 
-    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/"
+    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/canarias.htm"
 
     try:
         with sync_playwright() as p:
@@ -485,7 +484,7 @@ def _humanlike_context(p):
 
 
 def fetch_coches_net(params: dict) -> list:
-    """Scrape coches.net autocaravanas listings (nationwide Spain) via Playwright.
+    """Scrape coches.net autocaravanas listings (Canary Islands only) via Playwright.
 
     Bot-detection on coches.net is aggressive: requests that look headless get
     served an "Ups! Parece que algo no va bien..." stub page with zero cards.
@@ -496,14 +495,18 @@ def fetch_coches_net(params: dict) -> list:
     when the total count is higher), so we only scrape page 1.
 
     If selectors break, inspect div.mt-CardAd on
-    coches.net/autocaravanas-y-remolques/ and update below. (2026-07-26: the
-    category slug was renamed from autocaravanas-segunda-mano; the old path
-    still redirects today but don't rely on that.)
+    coches.net/autocaravanas-y-remolques/canarias/ and update below. (2026-07-26:
+    the category slug was renamed from autocaravanas-segunda-mano; the old path
+    still redirects today but don't rely on that. 2026-07-30: reinstated the
+    /canarias/ path segment — verified live, 200 + real "Canarias"/"provincia"
+    content — after the 2026-07-26 detour had widened this to nationwide. This
+    category carries dealer/0km stock alongside used listings, so it also covers
+    part of the "new" side of the refocused brief.)
     """
     max_weight = params.get("max_weight_kg", 99999)
     results = []
 
-    url = "https://www.coches.net/autocaravanas-y-remolques/?page=1"
+    url = "https://www.coches.net/autocaravanas-y-remolques/canarias/?page=1"
 
     try:
         with sync_playwright() as p:
