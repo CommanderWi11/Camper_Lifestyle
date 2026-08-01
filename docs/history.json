@@ -1,5 +1,101 @@
 [
   {
+    "date": "2026-08-01",
+    "entries": [
+      {
+        "id": "voyenvan_com-b79f8ade",
+        "url": "https://voyenvan.com/autocaravanas_challenger_canarias/autocaravana-challenger-317/",
+        "source": "voyenvan_com",
+        "title": "#1 Challenger 317 (2026, nueva) - perfilada ~7,36-7,39m, camas gemelas 90cm, precio a consultar - la mejor opcion nueva SI el concesionario confirma <=75.000EUR todo incluido",
+        "price": null,
+        "km": 0,
+        "location": "Tenerife",
+        "photo": "https://voyenvan.com/wp-content/uploads/2026/06/challenger_317_ultimate_ext_2026-1-1080-600-crop-1.webp",
+        "specs": {
+          "length_m": 7.37
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-e0855817",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/benimar-mileo-261/826td",
+        "source": "rentcampercanarias_com",
+        "title": "#2 Benimar Mileo M261 - RESERVADA/en transporte - 75.850EUR, Fiat 140cv, la mejor calidad del lote - ofrecer 75.000EUR todo incluido para la proxima unidad",
+        "price": 75850,
+        "km": null,
+        "location": "Canarias (RentCamper)",
+        "photo": "https://static.wixstatic.com/media/12a356_a56f7eb528fe44918d601da43f02334d~mv2.jpg/v1/fill/w_2000,h_1333,al_c,q_90/M261_ext2.jpg",
+        "specs": {
+          "length_m": 6.99
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-7ebc0a12",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/benimar-463up/210ge",
+        "source": "rentcampercanarias_com",
+        "title": "#3 Benimar Tessoro T463 UP - RESERVADA - 68.999EUR, Ford 165cv, solar 200W - pedir que repitan el precio en la proxima unidad",
+        "price": 68999,
+        "km": null,
+        "location": "Tenerife",
+        "photo": "https://static.wixstatic.com/media/7d99f1_6af3e687518d44bcba34def25d85dec9~mv2.jpg/v1/fill/w_5712,h_4284,al_c,q_90/TESSORO%20463up%20202615.JPG",
+        "specs": {
+          "length_m": 7.45
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-99578dba",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/itineo-pj700-5-plazas-camas-separadas/944ud",
+        "source": "rentcampercanarias_com",
+        "title": "#4 Itineo PJ700 - DISPONIBLE - 60.850EUR, perfilada 6,99m, camas gemelares, matriculada ago-2024 (pocos km, no 0km) - mejor relacion calidad-precio confirmada hoy, pendiente inspeccion independiente de humedad/peso/garantia",
+        "price": 60850,
+        "km": null,
+        "location": "Fuerteventura",
+        "photo": "https://static.wixstatic.com/media/7d99f1_41f3f58f2d5644a486c1f4297f90e84d~mv2.jpg/v1/fill/w_1536,h_2048,al_c,q_90/PJ700%20.1.JPG",
+        "specs": {
+          "length_m": 6.99
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-9188ee8a",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/benimar-tessoro-463-/07287",
+        "source": "rentcampercanarias_com",
+        "title": "Benimar Tessoro T463 - VENDIDA - 71.380EUR, Ford 165cv, solar 400W - referencia de precio para negociar la proxima unidad identica",
+        "price": 71380,
+        "km": null,
+        "location": "Gran Canaria",
+        "photo": "https://static.wixstatic.com/media/7d99f1_5bc3cb1cf9094d438294dd7b9f3ce0fb~mv2.jpg/v1/fill/w_1126,h_1500,al_c,q_85/Tessoro-2026_T26.jpg",
+        "specs": {
+          "length_m": 7.43
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-81d37454",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/giottiline-compact-cx66-camas-gemelas/987lt",
+        "source": "rentcampercanarias_com",
+        "title": "Giottiline Compact CX66 - en transporte - 69.750EUR - NO reservar hasta que el concesionario confirme longitud >=6,99m por ficha COC",
+        "price": 69750,
+        "km": null,
+        "location": "Canarias (en transporte)",
+        "photo": "",
+        "specs": {
+          "length_m": null
+        }
+      },
+      {
+        "id": "rentcampercanarias_com-bf740e32",
+        "url": "https://www.rentcampercanarias.com/ficha-autocaravana/giottiline-485/839lr",
+        "source": "rentcampercanarias_com",
+        "title": "Giottiline 485 - 69.500EUR, Tenerife - cumple longitud y camas gemelas pero es capuchina, no perfilada (tipo de carroceria no preferido)",
+        "price": 69500,
+        "km": null,
+        "location": "Tenerife",
+        "photo": "https://static.wixstatic.com/media/7d99f1_c84620672095400aaf2d1193f2f8a0b0~mv2.jpg/v1/fill/w_5712,h_4284,al_c,q_90/IMG_6725.JPG",
+        "specs": {
+          "length_m": 6.99
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-07-31",
     "entries": [
       {

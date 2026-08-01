@@ -154,21 +154,23 @@ function formatDateEs(isoDate) {
   return `${d} ${MONTHS_ES[m - 1]} ${y}`;
 }
 
-/** Manual research snapshots (history.json), one section per date. A listing
- *  already shown in Favoritos (starred) or discarded is skipped here so it
- *  isn't shown twice — starring/deleting collapses across every date that
- *  mentions the same listing, since they share the same id. */
+/** Manual research snapshots (history.json), one dated sub-section per batch,
+ *  all nested under a single "Manual Searches" umbrella section (just below
+ *  Favoritos). A listing already shown in Favoritos (starred) or discarded is
+ *  skipped here so it isn't shown twice — starring/deleting collapses across
+ *  every date that mentions the same listing, since they share the same id. */
 function renderHistory() {
   if (!historySnapshots.length) return '';
-  let html = '';
+  let body = '';
   for (const snapshot of historySnapshots) {
     const entries = snapshot.entries.filter(e => !hiddenSet.has(e.id) && !starredSet.has(e.id));
     if (!entries.length) continue;
-    html += `<section><h2 class="history-heading">Búsqueda manual — ${formatDateEs(snapshot.date)}</h2>`;
-    html += `<div class="grid">${entries.map(renderCard).join('')}</div>`;
-    html += '</section>';
+    body += `<div class="history-batch"><h3 class="history-heading">${formatDateEs(snapshot.date)}</h3>`;
+    body += `<div class="grid">${entries.map(renderCard).join('')}</div>`;
+    body += '</div>';
   }
-  return html;
+  if (!body) return '';
+  return `<section><h2 class="manual-heading">Búsquedas manuales</h2>${body}</section>`;
 }
 
 function renderCard(listing) {

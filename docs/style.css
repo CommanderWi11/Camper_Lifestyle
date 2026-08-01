@@ -51,7 +51,17 @@ h2 {
 
 .favorites-heading { color: #b1465a; }
 
-.history-heading { color: #8a8580; font-weight: 600; }
+.manual-heading { color: #6b5aa8; }
+
+.history-batch { margin-top: 1.5rem; }
+.history-batch:first-child { margin-top: 0; }
+
+.history-heading {
+  color: #8a8580;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
 
 .msg { color: #a39e97; padding: 1rem 0; font-size: 0.9rem; }
 
