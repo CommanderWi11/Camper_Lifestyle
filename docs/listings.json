@@ -196,5 +196,43 @@
     "is_new_today": true,
     "status": "new",
     "added_at": "2026-07-31"
+  },
+  {
+    "url": "https://www.yakartautocaravanas.com/ocasion/2221/autocaravana-integral-roller-team-zefiro-plus-284-de-ocasion",
+    "source": "yakart",
+    "title": "Roller Team Zefiro Plus 284 — integral, camas gemelas + basculante (Yakart, A Coruña)",
+    "price": 71900,
+    "year": 2020,
+    "km": 93000,
+    "country": "España",
+    "location": "A Coruña (península — añadido manualmente por Luis, fuera del alcance Canarias)",
+    "photo": "https://cdn.yakartautocaravanas.com/s/c/vehiculos/images/2221/zoom/44439.jpg",
+    "dealer_or_private": "concesionario",
+    "vat_status": "no especificado en el anuncio — a confirmar con el vendedor (IVA peninsular, no IGIC)",
+    "checked_at": "2026-08-01",
+    "score": null,
+    "verdict": "Añadido manualmente por Luis (hallazgo peninsular, fuera de la búsqueda automática Canarias-only). Integral 2020 con 93.000 km, 5 plazas de viaje/comer, camas gemelas traseras + basculante delantero, baño con ducha independiente, 7,45 m, MMA 3.500 kg, motor Fiat 2.3 160cv. Sin verificar por el pipeline de investigación — tratar como favorito manual, no como ganador puntuado.",
+    "flags": [
+      "Añadido manualmente, no pasó por el pipeline de validación/puntuación automático",
+      "Ubicado en A Coruña (península) — logística de transporte a Canarias a valorar aparte",
+      "Kilometraje relativamente alto (93.000 km) para un 2020 — confirmar historial de mantenimiento"
+    ],
+    "specs": {
+      "seatbelts": 5,
+      "berths": 5,
+      "layout": "camas gemelas traseras + cama basculante delantera + cama abatible de mesa de comedor",
+      "bathroom_type": "separate",
+      "mma_kg": 3500,
+      "length_m": 7.45,
+      "garage": null,
+      "drive_side": "left",
+      "bed_infill": null,
+      "payload_kg": null
+    },
+    "id": "yakart-eb24d763",
+    "rank": null,
+    "is_new_today": false,
+    "status": "new",
+    "added_at": "2026-08-01"
   }
 ]
