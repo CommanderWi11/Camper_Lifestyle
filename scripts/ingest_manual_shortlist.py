@@ -217,6 +217,42 @@ SHORTLISTS = {
             "price": 69500, "km": None, "location": "Tenerife", "length_m": 6.99,
         },
     ],
+    # 2026-08-03: Luis-pasted daily re-check + fresh round, Top 5 only (the
+    # report's Held/Weaker-leads/Rejected tiers are context, not board cards --
+    # matches the per-date Top-5-table pattern this file has followed since
+    # 2026-07-24). Two promotions today: Chausson 627 Titanium and Benimar
+    # Mileo M263 in; Sunlight T 680 and Rapido 666F dropped to held (not
+    # re-added here since only Top 5 is ingested). One URL arrived corrupted,
+    # same paste-corruption class flagged in this file's docstring -- fixed
+    # against the previously-verified-working URL already on file:
+    #   Dethleffs Just Go: "...mobilh702399-dethleffs..." -> .../mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat
+    "2026-08-03": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - lider en relacion calidad-precio, sin debilidad identificada, sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#2 McLouis MC4 865 (2026) - sin cambios, restriccion de flota de alquiler persiste (disponible octubre, reservable ya), bano combinado",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#3 Dethleffs Just Go T 7055 EB (2023) - sin cambios, inclusion del kit de relleno en la venta aun por confirmar con el vendedor",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#4 PROMOVIDA HOY Chausson 627 Titanium (2026, ex-demo) - 6,99m y 3.500kg confirmados hoy, 5 plazas, kit a cama king confirmado - bano combinado, km de entrega incierto (12.000-25.000km segun el concesionario)",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.autocaravanasnorte.com/vehiculos-detalle/benimar-mileo-mileo-263-192452/",
+            "title": "#5 NUEVA Benimar Mileo M263 (2023) - cumple todos los requisitos duros Y ambas preferencias fuertes (bano separado + 4a/5a plaza), confirmado con ficha de fabricante - la mas cara del top 5 (72.490EUR financiado / 78.990EUR al contado, aclarar con el concesionario)",
+            "price": 72490, "km": 29292, "location": "Campillos, Malaga, Espana", "length_m": 7.39,
+        },
+    ],
 }
 
 
