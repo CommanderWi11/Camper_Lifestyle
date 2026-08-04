@@ -253,6 +253,20 @@ SHORTLISTS = {
             "price": 72490, "km": 29292, "location": "Campillos, Malaga, Espana", "length_m": 7.39,
         },
     ],
+    # Manually starred by Luis on 2026-08-04, found on RentCamper Canarias directly
+    # (not via a Stage B research pass). Confirmed live on the vehicle's own page:
+    # 6.61m, well under the 6.90m hard length gate, and the rear layout is factory
+    # bunk beds (literas) with two configurations (twin singles w/ games table, or
+    # bunk-over-fixed-double) -- not the twin-beds-convertible-via-infill-kit layout
+    # the rubric requires. Flagged INCUMPLE in the title since it fails 2 hard gates;
+    # starred anyway per explicit request.
+    "2026-08-04": [
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/itineo-cs660-/0990mhw",
+            "title": "Itineo CS660 Integral 5pl (2023) - INCUMPLE longitud minima (6.61m < 6.90m) e INCUMPLE camas traseras (literas, no cama doble con kit de relleno) - bano DUO'SPACE",
+            "price": 59900, "km": 32575, "location": "Fuerteventura, Espana", "length_m": 6.61,
+        },
+    ],
 }
 
 
