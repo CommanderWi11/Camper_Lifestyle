@@ -14,6 +14,19 @@
         "specs": {
           "length_m": 6.61
         }
+      },
+      {
+        "id": "mundoautocaravanas_com-e47b99df",
+        "url": "https://mundoautocaravanas.com/producto/fiat-ducato-2-2-td-mclouis-mc4-865-temporada-2026/",
+        "source": "mundoautocaravanas_com",
+        "title": "McLouis MC4 865 (2025, 0km, temporada 2026) - NUEVO y ya en Canarias, mismo modelo validado en investigacion manual del 03 ago (Italia, con restriccion de flota de alquiler) - MMA 3.500kg confirmado (ficha fabricante) - kit de relleno a cama doble SIN CONFIRMAR con el concesionario",
+        "price": 77900,
+        "km": 0,
+        "location": "Tenerife, Espana",
+        "photo": "https://mundoautocaravanas.com/segunda_version/wp-content/uploads/2025/09/mundoautocaravanas-canarias-venta-FIAT-DUCATO-2.2TD-MCLOUIS-MC4-865-exterior-angulo-frontal-izquierdo.jpeg",
+        "specs": {
+          "length_m": 6.99
+        }
       }
     ]
   },
@@ -150,7 +163,7 @@
         "price": 71380,
         "km": null,
         "location": "Gran Canaria",
-        "photo": "https://static.wixstatic.com/media/7d99f1_5bc3cb1cf9094d438294dd7b9f3ce0fb~mv2.jpg/v1/fill/w_1126,h_1500,al_c,q_85/Tessoro-2026_T26.jpg",
+        "photo": "",
         "specs": {
           "length_m": 7.43
         }

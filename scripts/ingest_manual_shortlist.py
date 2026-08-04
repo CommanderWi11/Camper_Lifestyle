@@ -266,6 +266,20 @@ SHORTLISTS = {
             "title": "Itineo CS660 Integral 5pl (2023) - INCUMPLE longitud minima (6.61m < 6.90m) e INCUMPLE camas traseras (literas, no cama doble con kit de relleno) - bano DUO'SPACE",
             "price": 59900, "km": 32575, "location": "Fuerteventura, Espana", "length_m": 6.61,
         },
+        # Found via a full-site scan of mundoautocaravanas.com (Tenerife dealer),
+        # requested by Luis after the RentCamper Canarias check above. Same model
+        # already vetted in the 2026-08-03 manual research (Italy, blocked by a
+        # rental-fleet restriction) -- this unit is NEW (0km, temporada 2026) and
+        # already in the Canaries. MMA 3.500kg confirmed via McLouis's own spec
+        # sheet (not on the dealer page). One gap: neither the dealer listing nor
+        # the manufacturer spec confirms the rear twin beds join into a double via
+        # a factory infill kit -- needs confirming with the dealer, same open item
+        # as the Chausson 627 Titanium on 2026-08-03.
+        {
+            "url": "https://mundoautocaravanas.com/producto/fiat-ducato-2-2-td-mclouis-mc4-865-temporada-2026/",
+            "title": "McLouis MC4 865 (2025, 0km, temporada 2026) - NUEVO y ya en Canarias, mismo modelo validado en investigacion manual del 03 ago (Italia, con restriccion de flota de alquiler) - MMA 3.500kg confirmado (ficha fabricante) - kit de relleno a cama doble SIN CONFIRMAR con el concesionario",
+            "price": 77900, "km": 0, "location": "Tenerife, Espana", "length_m": 6.99,
+        },
     ],
 }
 
