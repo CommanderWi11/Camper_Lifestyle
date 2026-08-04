@@ -1134,5 +1134,37 @@
     "status": "new",
     "added_at": "2026-07-31",
     "fingerprint": "73-discover-fleurette|2008"
+  },
+  {
+    "id": "coches_net-988368a9",
+    "title": "CAMPER BURSTNER ELISEO C540",
+    "price": 67900,
+    "year": 2024,
+    "km": 51000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/camper-burstner-eliseo-c540-en-granada-71187939-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20525070/852f9b0c-6c91-4aeb-be30-bbc380fe1442.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-08-04",
+    "fingerprint": "540-burstner-eliseo|2024"
+  },
+  {
+    "id": "coches_net-852b80e2",
+    "title": "CITROEN GIOTTILINE",
+    "price": 65990,
+    "year": 2023,
+    "km": 84547,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas",
+    "source": "coches_net",
+    "url": "https://www.coches.net/citroen-giottiline-en-las-palmas-71083971-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-08-04",
+    "fingerprint": "giottiline|2023"
   }
 ]
