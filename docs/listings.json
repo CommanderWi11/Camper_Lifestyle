@@ -233,5 +233,44 @@
     "is_new_today": false,
     "status": "new",
     "added_at": "2026-08-01"
+  },
+  {
+    "url": "https://www.rentcampercanarias.com/ficha-autocaravana/giottiline-siena-396/450hl",
+    "source": "rentcampercanarias_com",
+    "title": "Giottiline Siena 396 \"Familias\" con literas — RentCamper Canarias",
+    "price": 72500,
+    "year": null,
+    "km": null,
+    "country": "España",
+    "location": "Tenerife",
+    "photo": "https://static.wixstatic.com/media/7d99f1_64a8fa58fc9448358834c6c9babecdff~mv2.jpg/v1/fill/w_5712,h_4284,al_c,q_90/Giottiline%20396%20.5.JPG",
+    "dealer_or_private": "concesionario",
+    "vat_status": "IGIC y gastos de matriculación DGT incluidos (indicado explícitamente en el anuncio)",
+    "checked_at": "2026-08-04",
+    "score": null,
+    "verdict": "Añadido manualmente por Luis. 72.500 € con IGIC y matriculación incluidos, 7,40 m, chasis Citroën 140cv, 5 plazas de viaje/comer, camas gemelas traseras (77×210 cm cada una) más cama basculante suspendida sobre el comedor (125/145×187 cm) para el 5º/6º ocupante. Sin verificar por el pipeline de investigación — tratar como favorito manual, no como ganador puntuado.",
+    "flags": [
+      "Añadido manualmente, no pasó por el pipeline de validación/puntuación automático",
+      "MMA/peso, año, kilometraje y tipo de baño no publicados en el anuncio — a confirmar con el vendedor",
+      "Solo la web de inicio (homepage) y las fichas /ficha-autocaravana/ renderizan correctamente en este sitio; otras páginas devuelven en blanco",
+      "Volante a la izquierda no confirmado explícitamente — inferido por ser vehículo de mercado español"
+    ],
+    "specs": {
+      "seatbelts": 5,
+      "berths": 5,
+      "layout": "camas gemelas traseras (77×210 cm cada una) + cama basculante suspendida sobre el comedor (125/145×187 cm)",
+      "bathroom_type": null,
+      "mma_kg": null,
+      "length_m": 7.4,
+      "garage": null,
+      "drive_side": "left",
+      "bed_infill": null,
+      "payload_kg": null
+    },
+    "id": "rentcampercanarias_com-9c7f8552",
+    "rank": null,
+    "is_new_today": false,
+    "status": "new",
+    "added_at": "2026-08-04"
   }
 ]
