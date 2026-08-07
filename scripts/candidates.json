@@ -18,7 +18,7 @@
   {
     "id": "milanuncios-a824f72e",
     "title": "SUNLIGHT V69 ADVENTURE 140CV CAMA EN ISL",
-    "price": 62900,
+    "price": 60900,
     "year": null,
     "km": null,
     "sleeping": null,
@@ -1166,5 +1166,53 @@
     "status": "new",
     "added_at": "2026-08-04",
     "fingerprint": "giottiline|2023"
+  },
+  {
+    "id": "coches_net-b3ba61f9",
+    "title": "RAPIDO R 896 F AUTOMÁTICO, CAMA EN ISLA Y SALON FACE TO FACE",
+    "price": 85900,
+    "year": 2022,
+    "km": 59000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Sta. C. Tenerife",
+    "source": "coches_net",
+    "url": "https://www.coches.net/rapido-r-896-f-165cv-automatico-cama-en-isla-y-salon-face-to-face-en-sta-c-tenerife-71249713-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-08-07",
+    "fingerprint": "896-automatico-face-isla-rapido-salon-to|2022"
+  },
+  {
+    "id": "coches_net-a354a887",
+    "title": "RAPIDO R 896 F AUTOMÁTICO, CAMA EN ISLA Y SALON FACE TO FACE",
+    "price": 85900,
+    "year": 2022,
+    "km": 59000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas",
+    "source": "coches_net",
+    "url": "https://www.coches.net/rapido-r-896-f-165cv-automatico-cama-en-isla-y-salon-face-to-face-en-las-palmas-71249674-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-08-07",
+    "fingerprint": "896-automatico-face-isla-rapido-salon-to|2022"
+  },
+  {
+    "id": "coches_net-03e6dbd8",
+    "title": "BENIMAR TESSORO 496 VIAJAN Y DUERMEN 5, CAMA EN ISLA",
+    "price": 59900,
+    "year": 2020,
+    "km": 16000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Sta. C. Tenerife",
+    "source": "coches_net",
+    "url": "https://www.coches.net/benimar-tessoro-496-170cv-viajan-y-duermen-5-cama-en-isla-en-sta-c-tenerife-71233919-arvo.aspx",
+    "photo": "",
+    "status": "new",
+    "added_at": "2026-08-07",
+    "fingerprint": "496-benimar-duermen-isla-tessoro-viajan|2020"
   }
 ]
