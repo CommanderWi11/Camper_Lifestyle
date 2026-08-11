@@ -281,6 +281,232 @@ SHORTLISTS = {
             "price": 77900, "km": 0, "location": "Tenerife, Espana", "length_m": 6.99,
         },
     ],
+    # 2026-08-05 -> 2026-08-11: Luis-pasted daily deep-research Top 5, ingested
+    # as a full 7-day batch on 2026-08-11 from a combined export. The Top 5
+    # itself barely moved all week (only change: Benimar Sport 363 promoted in
+    # at #2 on 08-05 after its MAM blocker resolved, replacing the delisted
+    # Benimar Mileo M263) -- same carry-forward-by-URL pattern as 07-27->07-31.
+    # Per Luis's request, the 08-11 snapshot also folds in the strongest
+    # "potential but not 100% confirmed" open items/held leads from that week's
+    # reports (Sunlight Adventure T68C, both Bürstner Lyseo TD 728 leads,
+    # Etrusco T6900 SB Girona, Rimor Seal 695) -- flagged as such in their
+    # titles since none has passed full unit-level verification yet.
+    "2026-08-05": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - lider en relacion calidad-precio, sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 PROMOVIDA HOY Benimar Sport 363 (2020) - bloqueo de MMA resuelto (3.500kg confirmado por ficha de fabricante, longitud 7.43m exacta) - ya en Gran Canaria, sin coste de transporte - ducha separada confirmada, WC separado sin confirmar",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - sin cambios, restriccion de flota de alquiler persiste (disponible octubre, reservable ya), bano combinado",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios, inclusion del kit de relleno aun por confirmar con el vendedor",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios, km de entrega incierto (12.000-25.000km segun el concesionario)",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-06": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - sin cambios",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-07": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - NO reverificada hoy (5 intentos fallidos, timeouts/403 en mirror) - datos del 06 ago, pendiente revision manual",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios, ventana de entrega septiembre-octubre 2026",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-08": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - NO reverificada hoy, ahora 8 intentos fallidos seguidos (bloqueo tipo robots.txt) - datos del 06 ago",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-09": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria - posible alternativa mas barata en Tenerife bajo verificacion (ver Burstner Lyseo TD 728 Privilege en items abiertos)",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - cargo correctamente hoy via WebFetch por primera vez tras 8 fallos seguidos - tratar como reconfirmado provisionalmente",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-10": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - segundo exito seguido via WebFetch, tendencia a estable",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios, entrega inmediata (sofort)",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+    ],
+    "2026-08-11": [
+        {
+            "url": "https://www.annonces-caravaning.com/annonce-camping-car/etrusco-t-7400-sbc/394671.html",
+            "title": "#1 Etrusco T 7400 SBC (2023) - sin cambios, dia limpio sin bloqueos de scraping en todo el lote",
+            "price": 58900, "km": 6500, "location": "Brens (81), Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.rentcampercanarias.com/autocaravana-ocasion/benimar-363/142fb",
+            "title": "#2 Benimar Sport 363 (2020) - sin cambios, ya en Gran Canaria, EN STOCK",
+            "price": 61000, "km": 14000, "location": "Gran Canaria, Espana", "length_m": 7.43,
+        },
+        {
+            "url": "https://massa-carrara.usato.it/mclouis-mc4-865-70267738",
+            "title": "#3 McLouis MC4 865 (2026) - tercer exito seguido via WebFetch, bloqueo de robots.txt parece resuelto",
+            "price": 60900, "km": 12000, "location": "Pallerone, Italia", "length_m": 6.99,
+        },
+        {
+            "url": "https://www.2dehands.be/v/caravans-en-kamperen/mobilhomes/m2423702399-dethleffs-just-go-7055-eb-155-pk-automaat",
+            "title": "#4 Dethleffs Just Go T 7055 EB (2023) - sin cambios",
+            "price": 62950, "km": 29897, "location": "Best, Paises Bajos", "length_m": 7.36,
+        },
+        {
+            "url": "https://ms-reisemobile.de/fahrzeug/chausson-627-titanium-2026-165ps-8g-einzelbetten/",
+            "title": "#5 Chausson 627 Titanium (2026, ex-demo) - sin cambios",
+            "price": 63778, "km": 12000, "location": "Munster, Alemania", "length_m": 6.99,
+        },
+        # --- Leads abiertos / POTENCIALES, NO confirmados al 100% (a peticion
+        # de Luis) -- ninguno ha pasado verificacion completa a nivel de unidad.
+        {
+            "url": "https://www.leboncoin.fr/ad/caravaning/3140406512",
+            "title": "POTENCIAL, NO CONFIRMADO - Sunlight Adventure T68C (2026, nuevo) - encaje de ficha de fabricante perfecto en todos los requisitos duros + ambas preferencias fuertes (bano separado, 4a/5a plaza abatible) - anuncio de Leboncoin bloqueado para fetch directo, sin verificar a nivel de unidad ni opciones instaladas",
+            "price": 72330, "km": 1, "location": "Luc-la-Primaube, Francia", "length_m": 7.40,
+        },
+        {
+            "url": "https://www.coches.net/burstner-lyseo-td-728-privilege---lyseo-en-sta_c_tenerife-52241550-arvo.aspx",
+            "title": "POTENCIAL, NO CONFIRMADO - Burstner Lyseo TD 728 Privilege - ya en Tenerife (sin transporte), seria la mas barata del Top 5 si se confirma - coches.net/milanuncios bloquean el fetch automatico desde hace 5 dias seguidos - kilometraje/ano/tipo de vendedor sin confirmar, requiere revision manual o llamada directa",
+            "price": 58500, "km": None, "location": "Santa Cruz de Tenerife, Espana", "length_m": 7.49,
+        },
+        {
+            "url": "https://www.autoscout24.de/haendler/caravan-center-suna",
+            "title": "POTENCIAL, NO CONFIRMADO - Burstner Lyseo TD 728 G Harmony (2020) - datos cruzados y confirmados via mobile.de y AutoScout24 (63.990EUR, 68.213km, matriculado 05/2020) pero SIN enlace directo a la ficha tras 6 intentos (portal renderiza el permalink via JS) - enlace es la pagina del concesionario, no la ficha individual - requiere clic manual",
+            "price": 63990, "km": 68213, "location": "Mulheim an der Ruhr, Alemania", "length_m": 7.49,
+        },
+        {
+            "url": "https://www.coches.net/-autocaravana-etrusco-t6900-sb-abril-2023-en-girona-56800770-arvo.aspx",
+            "title": "POTENCIAL, NO CONFIRMADO - Etrusco T6900 SB - MMA 3.499kg confirmado por ficha de fabricante, longitud y plazas ok, pero bano es wet-room COMBINADO (no separado) - compromiso, no encaje limpio",
+            "price": 73500, "km": None, "location": "Girona, Espana", "length_m": 7.0,
+        },
+        {
+            "url": "https://www.trovocamper.it/rimor-seal-695-mansardato-letti-gemelli-e-garage-ampio-annuncio-254379",
+            "title": "POTENCIAL, NO CONFIRMADO - Rimor Seal 695 mansardato - MMA 3.500kg confirmado via review independiente de CamperOnLine (no la ficha del fabricante, que estaba de pago), bano integrado en la zona de cama (wet-room, compromiso) - precio por debajo de todo el Top 5 actual, plazas homologadas a confirmar (anuncio dice 6 asientos, ambiguo)",
+            "price": 54000, "km": None, "location": "Anzola dell'Emilia (Bologna), Italia", "length_m": 7.35,
+        },
+    ],
 }
 
 
