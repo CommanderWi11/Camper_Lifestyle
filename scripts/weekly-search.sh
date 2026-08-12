@@ -20,7 +20,10 @@
 # 07:00/13:00/19:00 retry slots down to a single 03:00 run at Luis's request — a
 # Stage B failure (session limit, hang, flaky site) now has no same-day retry, the
 # next attempt is tomorrow's 03:00. See MEMORY.md for the tradeoff and the known
-# 03:20 Atlantic/Canary session-limit-reset timing risk.
+# 03:20 Atlantic/Canary session-limit-reset timing risk. 2026-08-11: search scope
+# restored to Europe-wide (see MEMORY.md) — the single-03:00 schedule and its
+# no-same-day-retry tradeoff are unchanged, only the portal file Stage B reads
+# (below) and harvest.py's scrape URLs changed.
 
 set -uo pipefail
 
@@ -118,14 +121,15 @@ cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
 # before finalizing winners, see research-prompt.md step 1.
 cp docs/config.js "$STAGE_B_SCRATCH/docs/config.js"
 # The master portal list (research-prompt.md step 2 tells Stage B to work through
-# it in order) — added 2026-07-28, replaced 2026-07-30 with the Canary-only list.
-cp Resources/canary-motorhome-selling-sites.md "$STAGE_B_SCRATCH/Resources/canary-motorhome-selling-sites.md"
+# it in order) — added 2026-07-28, briefly replaced 2026-07-30 with a Canary-only
+# list, restored 2026-08-11 to the Europe-wide list.
+cp Resources/europe-motorhome-selling-sites.md "$STAGE_B_SCRATCH/Resources/europe-motorhome-selling-sites.md"
 
 # macOS has no `timeout`/`gtimeout` binary installed, so this is a plain-bash
 # watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on expiry,
 # degrading a hang to the same "no winners.json" path as a real failure below —
 # which the existing 13:00/19:00 retry slots already recover from unattended.
-STAGE_B_TIMEOUT=1500  # 25 min; the Canary-only source list (2026-07-30) is much shorter than the old Europe-wide one, so this should be generous — re-tune down if real runs consistently finish in a fraction of it
+STAGE_B_TIMEOUT=1500  # 25 min; unchanged by the 2026-08-11 Europe-wide restore (explicitly not widening the fetch budget) — re-tune if real runs start timing out against the larger portal list
 STAGE_B_START=$(date +%s)
 
 # `exec` replaces this subshell with the claude process itself (no extra process
