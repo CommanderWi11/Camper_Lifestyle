@@ -84,6 +84,13 @@ contrapartida en `flags`, no lo descartes.
   que separe completamente cuenta como separado. Un baño combinado (todo en el mismo
   espacio) es aceptable solo si el resto del trato es excelente — márcalo como
   compromiso en `flags`.
+- **Carrocería integral (Clase A) preferida sobre perfilada** — a igualdad del resto
+  (precio, estado, distribución, kilometraje), prefiere un integral. Esto no es un
+  filtro: una perfilada que sea claramente un buen chollo (precio muy por debajo de
+  mercado, estado excelente, cumple todo lo demás) no debe descartarse ni penalizarse
+  solo por su carrocería — sigue siendo un candidato tan válido como antes. Capuchinas
+  y camper vans no ganan ni pierden puntos por este criterio; es una preferencia
+  integral-vs-perfilada específicamente.
 - **4ª y 5ª plaza para los niños** — cama abatible delantera o dinette convertible.
 - **Historial de mantenimiento completo, sin antecedentes de humedad.**
 - **IVA** — ver "Logística y coste real" más abajo.
@@ -102,13 +109,13 @@ habitáculo.
 Ordena por **valor global** — así lo pide la familia, sin fórmula ni porcentajes
 fijos. No hay pesos predefinidos: usa tu juicio, comparando cada candidato contra
 las preferencias fuertes y los extras de arriba (camas gemelas + kit, baño separado,
-4ª/5ª plaza, historial de mantenimiento y sin humedad, IVA/tipo de vendedor) y contra
-lo que ese modelo/año realmente vale en el **mercado europeo real** (no solo en el
-país donde está publicado — busca ese mismo modelo/año a la venta en otros países o
-en un concesionario nuevo, aplicando la regla de kilometraje de arriba a las
-unidades de ocasión). Ningún factor individual manda sobre
-los demás — es una valoración de conjunto, igual que pediría la familia si mirara los
-anuncios ella misma.
+tipo de carrocería (integral preferido), 4ª/5ª plaza, historial de mantenimiento y
+sin humedad, IVA/tipo de vendedor) y contra lo que ese modelo/año realmente vale en
+el **mercado europeo real** (no solo en el país donde está publicado — busca ese
+mismo modelo/año a la venta en otros países o en un concesionario nuevo, aplicando
+la regla de kilometraje de arriba a las unidades de ocasión). Ningún factor
+individual manda sobre los demás — es una valoración de conjunto, igual que pediría
+la familia si mirara los anuncios ella misma.
 
 Para cada candidato, además de lo anterior, comprueba:
 - Historial de mantenimiento y humedades — el asesino nº1 de las autocaravanas de
