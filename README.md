@@ -1,7 +1,7 @@
 # Motorhome Lifestyle
 
-**Top 5** de hoy — autocaravanas **nuevas y de segunda mano** en venta en las
-**Islas Canarias** para una familia de 4 (2 adultos + 2 peques), buscadas y
+**Top 5** de hoy — autocaravanas **nuevas y de segunda mano** en venta en
+**toda Europa** para una familia de 4 (2 adultos + 2 peques), buscadas y
 valoradas a diario.
 
 **Dashboard:** https://commanderwi11.github.io/Motorhome_Search/
@@ -15,8 +15,8 @@ favorito ★ — en ese caso se queda en la sección de Favoritos aunque ya no g
 
 | Etapa | Qué hace | Salida |
 |---|---|---|
-| **A · Harvest** (`scripts/harvest.py`) | Rastrea Milanuncios y Coches.net filtrados a Canarias. Determinista, sin IA. | `scripts/candidates.json` |
-| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca de forma extensiva en toda Canarias (nuevas y de segunda mano), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
+| **A · Harvest** (`scripts/harvest.py`) | Rastrea Milanuncios y Coches.net a nivel nacional (España). Determinista, sin IA. | `scripts/candidates.json` |
+| **B · Investigación** (`claude -p` + `scripts/research-prompt.md`) | Abre cada anuncio, busca de forma extensiva por toda Europa (nuevas y de segunda mano), compara con el mercado real, y puntúa contra la rúbrica familiar. | `scripts/winners.json` |
 | **C · Validación** (`scripts/apply_winners.py`) | Comprueba la salida y la integra en el tablero (Top 5 + Favoritos). Si algo no cuadra, **no publica**. | `docs/listings.json` |
 | **D · Publicación** | `git push` → GitHub Pages en ~60s. | |
 
@@ -26,8 +26,8 @@ Orquestado por `scripts/weekly-search.sh`, programado con
 ## La rúbrica
 
 Familia de 4 (2 adultos, un niño de 2,5 años y un bebé de 3 meses). Búsqueda
-**solo dentro de las Islas Canarias** (2026-07-30: refocado desde el periodo
-Europa-wide) — **nuevas (0km/concesionario) y de segunda mano por igual**.
+**por toda Europa** (2026-08-11: restaurada tras un breve paréntesis
+Canarias-only) — **nuevas (0km/concesionario) y de segunda mano por igual**.
 
 Filtros innegociables: MMA ≤3.500 kg (carnet B), **longitud ≥ 6,90 m**, camas gemelas
 traseras convertibles en doble vía kit de fábrica, **volante a la izquierda**, ≥4
@@ -39,12 +39,12 @@ Rúbrica completa: `scripts/research-prompt.md`.
 ## Fuentes
 
 **Deterministas (Stage A)** — Milanuncios y Coches.net, vía Playwright (con
-anti-bot en Coches.net), filtrados a Canarias.
+anti-bot en Coches.net), a nivel nacional (España).
 
-**Canarias, en vivo (Stage B)** — Wallapop, Autocasion, AutoScout24 España, y los
-concesionarios canarios conocidos (RentCamper Canarias, Autocaravanas Canarias),
-más búsqueda activa de concesionarios de vehículos nuevos por isla. Sin scraper
-dedicado todavía — lista completa en `Resources/canary-motorhome-selling-sites.md`.
+**Europa, en vivo (Stage B)** — el resto de portales europeos (mobile.de,
+AutoScout24, leboncoin, Marktplaats, Subito, Autocasion...) más búsqueda activa
+de concesionarios de vehículos nuevos por país. Sin scraper dedicado todavía —
+lista completa en `Resources/europe-motorhome-selling-sites.md`.
 
 ## Uso
 
