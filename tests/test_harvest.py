@@ -211,3 +211,16 @@ def test_fetch_og_image_is_best_effort_and_swallows_errors():
     assert harvest.fetch_og_image("not-a-url") == ""
     with patch("harvest.requests.get", side_effect=OSError("network down")):
         assert harvest.fetch_og_image("https://site/ad") == ""
+
+
+def test_scrape_urls_are_nationwide_spain_not_canarias_filtered():
+    """2026-08-11: scope restored to Europe-wide; Stage A's two deterministic
+    scrapers cover nationwide Spain again, not the Canarias-filtered URLs from
+    the 2026-07-30 detour."""
+    import inspect
+    mila_src = inspect.getsource(harvest.fetch_milanuncios)
+    coches_src = inspect.getsource(harvest.fetch_coches_net)
+    assert "canarias.htm" not in mila_src
+    assert "https://www.milanuncios.com/autocaravanas-de-segunda-mano/\"" in mila_src
+    assert "/canarias/" not in coches_src
+    assert "https://www.coches.net/autocaravanas-y-remolques/?page=1\"" in coches_src
