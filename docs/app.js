@@ -143,7 +143,8 @@ function render() {
     : '<p class="msg">Pulsa ★ en una autocaravana para guardarla aquí.</p>';
   html += '</section>';
 
-  html += renderHistory();
+  const top5Ids = new Set(top5.map(l => l.id));
+  html += renderHistory(top5Ids);
 
   grid.innerHTML = html;
 }
@@ -156,20 +157,22 @@ function formatDateEs(isoDate) {
 
 /** Manual research snapshots (history.json), one dated sub-section per batch,
  *  all nested under a single "Manual Searches" umbrella section (just below
- *  Favoritos). A listing already shown in Favoritos (starred) or discarded is
- *  skipped here so it isn't shown twice — starring/deleting collapses across
- *  every date that mentions the same listing, since they share the same id. */
-function renderHistory() {
+ *  Favoritos). A listing already shown in Top 5, Favoritos (starred), or
+ *  discarded is excluded here so it isn't shown twice. Across dates, each
+ *  vehicle (by id) is shown at most once, under its most recent date — see
+ *  dedupeHistoryByLatest in history-dedup.js. docs/history.json itself keeps
+ *  every dated mention; only rendering is deduped. */
+function renderHistory(top5Ids) {
   if (!historySnapshots.length) return '';
+  const excludeIds = new Set([...hiddenSet, ...starredSet, ...top5Ids]);
+  const deduped = dedupeHistoryByLatest(historySnapshots, excludeIds);
+  if (!deduped.length) return '';
   let body = '';
-  for (const snapshot of historySnapshots) {
-    const entries = snapshot.entries.filter(e => !hiddenSet.has(e.id) && !starredSet.has(e.id));
-    if (!entries.length) continue;
+  for (const snapshot of deduped) {
     body += `<div class="history-batch"><h3 class="history-heading">${formatDateEs(snapshot.date)}</h3>`;
-    body += `<div class="grid">${entries.map(renderCard).join('')}</div>`;
+    body += `<div class="grid">${snapshot.entries.map(renderCard).join('')}</div>`;
     body += '</div>';
   }
-  if (!body) return '';
   return `<section><h2 class="manual-heading">Búsquedas manuales</h2>${body}</section>`;
 }
 
