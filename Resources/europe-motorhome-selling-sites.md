@@ -144,9 +144,10 @@ across Europe, and one would go stale fast. Every run, Stage B must actively
   Bürstner, Rapido, Chausson, Challenger, Knaus, Carado, Sunlight, Dethleffs,
   Elnagh, Roller Team, Etrusco, etc.) — many manufacturers publish an online
   dealer locator that can be filtered by country.
-- Coches.net and Autocasion (Spain/Portugal section above) both carry
-  dealer/0km stock alongside used listings — don't skip them assuming they're
-  used-only.
+- Coches.net (Spain/Portugal section above) carries dealer/0km stock alongside
+  used listings — don't skip it assuming it's used-only. Autocasion
+  (autocasion.com/autocaravanas, has a dedicated "nuevas" filter) isn't in the
+  table above but is a real dealer/0km source — check it too.
 - CamperOnline (Italy) and YpoCamp/Hunyvers/CLC Loisirs (France) are
   dealer-network sites that list new stock directly.
 
