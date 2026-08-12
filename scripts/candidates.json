@@ -1214,5 +1214,37 @@
     "status": "new",
     "added_at": "2026-08-07",
     "fingerprint": "496-benimar-duermen-isla-tessoro-viajan|2020"
+  },
+  {
+    "id": "milanuncios-f3c31686",
+    "title": "FIAT - DUCATO",
+    "price": 24800,
+    "year": 2005,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Las Palmas de Gran Canaria (Las Palmas)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/fiat-ducato-563125719.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/829d990f-e9fc-4a56-bf1d-d102c6ad5932?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-08-12",
+    "fingerprint": "|2005"
+  },
+  {
+    "id": "coches_net-be50730d",
+    "title": "INTEGRAL BURSTNER ELEGANCE I729 AUTOCARAVANA DE OCASIÓN",
+    "price": 51900,
+    "year": 2011,
+    "km": 121000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/integral-burstner-elegance-i729-autocaravana-de-ocasion-en-granada-71145208-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20486897/42b81ffb-71a4-4372-aba4-0cacc76bd1e5.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-08-12",
+    "fingerprint": "729-burstner-elegance|2011"
   }
 ]
