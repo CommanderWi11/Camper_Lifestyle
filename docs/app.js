@@ -176,22 +176,38 @@ function renderHistory(top5Ids) {
   return `<section><h2 class="manual-heading">Búsquedas manuales</h2>${body}</section>`;
 }
 
-function renderCard(listing) {
+// Bespoke line-art camper mark shown when a listing has no photo (~1 in 5 in
+// practice — og:image backfill fails often enough that a bare emoji reads as
+// clip-art at that frequency). Single inline SVG, no external asset.
+const CAMPER_ICON = `<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M2 22V9a2 2 0 0 1 2-2h21l10 8v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/>
+  <path d="M25 7v10h10"/>
+  <path d="M2 15h23"/>
+  <circle cx="12" cy="25.5" r="3.2"/>
+  <circle cx="33" cy="25.5" r="3.2"/>
+</svg>`;
+
+function renderCard(listing, index) {
   const price = listing.price > 0 ? `${listing.price.toLocaleString('es-ES')} €` : '—';
   const isStarred = starredSet.has(listing.id);
   const size = listing.specs?.length_m ? `${String(listing.specs.length_m).replace('.', ',')} m` : null;
   const km = listing.km != null ? `${listing.km.toLocaleString('es-ES')} km` : null;
+  const rankBadge = listing.rank ? `<span class="rank-badge">${String(listing.rank).padStart(2, '0')}</span>` : '';
+  const titleText = escapeHtml(listing.title);
 
   return `
-    <article class="card" data-id="${listing.id}">
-      <a class="photo-link" href="${listing.url}" target="_blank" rel="noopener noreferrer">
-        ${listing.photo
-          ? `<img class="photo" src="${listing.photo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-          : ''}
-        <div class="photo photo--empty"${listing.photo ? ' style="display:none"' : ''}>🚐</div>
-      </a>
+    <article class="card" style="--stagger:${index || 0}" data-id="${listing.id}">
+      <div class="photo-frame">
+        ${rankBadge}
+        <a class="photo-link" href="${listing.url}" target="_blank" rel="noopener noreferrer">
+          ${listing.photo
+            ? `<img class="photo" src="${listing.photo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            : ''}
+          <div class="photo photo--empty"${listing.photo ? ' style="display:none"' : ''}>${CAMPER_ICON}</div>
+        </a>
+      </div>
       <div class="card-body">
-        <a class="title" href="${listing.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(listing.title)}</a>
+        <a class="title" href="${listing.url}" target="_blank" rel="noopener noreferrer" title="${titleText}">${titleText}</a>
         <div class="price">${price}</div>
         <div class="meta">
           ${listing.location ? `<span>📍 ${escapeHtml(listing.location)}</span>` : ''}
