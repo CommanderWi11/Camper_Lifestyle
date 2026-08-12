@@ -205,19 +205,20 @@ en estos portales, con los términos nativos de cada idioma (el layout es lo dif
 de buscar, así que usa el término local, no la traducción literal):
 
 **Portales:** abre `Resources/europe-motorhome-selling-sites.md` — es la lista
-maestra de sitios de venta de autocaravanas en Europa. **Recórrela en el orden en
-que aparece en el fichero**: empieza por la lista de prioridad (AutoScout24,
-mobile.de, Caraworld, TruckScout24, Motorhome Depot, Leboncoin, Milanuncios,
-AutoTrader UK, Marktplaats, Camping-Car.com) y después sigue por las secciones de
-país en el orden del fichero (Reino Unido/Irlanda, Francia, España/Portugal, Italia,
-Países Bajos/Bélgica, Alemania/Austria/Suiza, Escandinavia/Europa Central) hasta
-agotar el presupuesto de fetches de abajo — no lo reordenes ni lo saltees a tu
+maestra de sitios de venta de autocaravanas en Europa. **Recórrela en este
+orden**: empieza por su lista de prioridad ('Best sites to search first')
+(AutoScout24, mobile.de, Caraworld, TruckScout24, Motorhome Depot, Leboncoin,
+Milanuncios, AutoTrader UK, Marktplaats, Camping-Car.com) y después sigue por las
+secciones de país en el orden del fichero (Reino Unido/Irlanda, Francia,
+España/Portugal, Italia, Países Bajos/Bélgica, Alemania/Austria/Suiza,
+Escandinavia/Europa Central) hasta agotar el presupuesto de fetches de abajo — no
+lo reordenes ni lo saltees a tu
 criterio. Al final de esas secciones, incluye también las búsquedas activas de
 vehículos **nuevos (0km)** de la sección "New (0km) motorhomes" del fichero — esta
 parte no es opcional: no asumas que "nuevo" solo aparecerá si te lo encuentras por
-casualidad, búscalo explícitamente en cada país relevante. Milanuncios/Coches.net/
-Autocasion (ES) ya están cubiertos en parte por el harvester (paso 1); repásalos
-aquí solo para lo que se les escape.
+casualidad, búscalo explícitamente en cada país relevante.
+Milanuncios/Coches.net (ES) ya están cubiertos en parte por el harvester (paso 1);
+repásalos aquí solo para lo que se les escape.
 
 **Términos de búsqueda por concepto e idioma:**
 
