@@ -1,9 +1,11 @@
 # Europe Motorhome Selling Sites
 
-**SUPERSEDED 2026-07-30** — Luis refocused the project to the Canary Islands
-only (used + new). This file is no longer read by `weekly-search.sh` or
-`research-prompt.md`; see `canary-motorhome-selling-sites.md` instead. Left
-here for reference only in case the Europe-wide scope ever comes back.
+**Restored 2026-08-11** — active again as the master portal list for
+`weekly-search.sh` / `research-prompt.md`, after a brief 2026-07-30 Canary-only
+detour (see `canary-motorhome-selling-sites.md`, now itself marked
+superseded). Also now covers new (0km/concesionario) stock, not just used —
+see the “New (0km) motorhomes” section below, an addition from the detour
+carried forward since it isn't geography-specific.
 
 This is a practical Europe-wide list of established websites for buying and selling motorhomes, campervans and caravans. “New” means dealer or manufacturer stock; “Used” means second-hand listings; “Both” means both are commonly available.
 
@@ -130,6 +132,23 @@ For the widest selection, start with:
 8. [AutoTrader UK](https://www.autotrader.co.uk/motorhomes)
 9. [Marktplaats](https://www.marktplaats.nl/l/caravans-en-kamperen/campers/)
 10. [Camping-Car.com](https://www.camping-car.com/occasion/annonces/)
+
+## New (0km) motorhomes — active search required
+
+There is no single reliable static list of every authorized new-vehicle dealer
+across Europe, and one would go stale fast. Every run, Stage B must actively
+**WebSearch** for current dealers rather than relying only on the tables above:
+
+- `[marca] concesionario` / `[marca] Händler` / `[marca] dealer` for each brand
+  in the model-family list in `research-prompt.md` (Benimar, Adria, Hymer,
+  Bürstner, Rapido, Chausson, Challenger, Knaus, Carado, Sunlight, Dethleffs,
+  Elnagh, Roller Team, Etrusco, etc.) — many manufacturers publish an online
+  dealer locator that can be filtered by country.
+- Coches.net and Autocasion (Spain/Portugal section above) both carry
+  dealer/0km stock alongside used listings — don't skip them assuming they're
+  used-only.
+- CamperOnline (Italy) and YpoCamp/Hunyvers/CLC Loisirs (France) are
+  dealer-network sites that list new stock directly.
 
 ## Important checks when buying cross-border
 

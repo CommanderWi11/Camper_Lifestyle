@@ -1,5 +1,10 @@
 # Canary Islands Motorhome Selling Sites
 
+**SUPERSEDED 2026-08-11** — Luis restored the project to Europe-wide scope
+(used + new). This file is no longer read by `weekly-search.sh` or
+`research-prompt.md`; see `europe-motorhome-selling-sites.md` instead. Left
+here for reference only in case the Canary-only scope ever comes back.
+
 Added 2026-07-30, replacing `europe-motorhome-selling-sites.md` in the active
 pipeline: Luis refocused the project to the Canary Islands only (Gran Canaria,
 Tenerife, Lanzarote, Fuerteventura, La Palma, La Gomera, El Hierro, La
