@@ -46,7 +46,9 @@ Canarias o la península.)
    para las dos sillitas infantiles; ISOFIX NO es obligatorio (anótalo si existe).
 
 **Ya NO son requisitos eliminatorios** (antes lo eran en este proyecto):
-- **Baño** — ahora es preferencia fuerte, no filtro (ver abajo).
+- **Baño** — ya no es filtro, y desde 2026-08-13 el tipo de baño (separado vs
+  combinado) tampoco es preferencia: no puntúes ni premies ni penalices por él.
+  Sigue anotando `specs.bathroom_type` como dato informativo, nada más.
 - **Ubicación en Canarias** — el alcance es toda Europa; un candidato en
   Canarias o en la península sigue siendo bienvenido, simplemente ya no es
   obligatorio.
@@ -80,10 +82,6 @@ contrapartida en `flags`, no lo descartes.
 
 ### Preferencias fuertes (no eliminan, pero pesan mucho)
 
-- **Baño y ducha separados** (WC independiente de la ducha). Un *Raumbad* convertible
-  que separe completamente cuenta como separado. Un baño combinado (todo en el mismo
-  espacio) es aceptable solo si el resto del trato es excelente — márcalo como
-  compromiso en `flags`.
 - **Carrocería integral (Clase A) preferida sobre perfilada** — a igualdad del resto
   (precio, estado, distribución, kilometraje), prefiere un integral. Esto no es un
   filtro: una perfilada que sea claramente un buen chollo (precio muy por debajo de
@@ -108,7 +106,7 @@ habitáculo.
 
 Ordena por **valor global** — así lo pide la familia, sin fórmula ni porcentajes
 fijos. No hay pesos predefinidos: usa tu juicio, comparando cada candidato contra
-las preferencias fuertes y los extras de arriba (camas gemelas + kit, baño separado,
+las preferencias fuertes y los extras de arriba (camas gemelas + kit,
 tipo de carrocería (integral preferido), 4ª/5ª plaza, historial de mantenimiento y
 sin humedad, IVA/tipo de vendedor) y contra lo que ese modelo/año realmente vale en
 el **mercado europeo real** (no solo en el país donde está publicado — busca ese
@@ -233,7 +231,6 @@ repásalos aquí solo para lo que se les escape.
 |---|---|---|---|---|---|
 | Camas gemelas traseras | Einzelbetten | lits jumeaux | letti gemelli | eenpersoonsbedden | camas gemelas |
 | Kit de relleno / conversión | Bettverbreiterung, Mittelteil | kit de conversion lit central | kit trasformazione letti | tussenstuk | módulo central |
-| Baño separado | separate Dusche, Raumbad | douche séparée | doccia separata | aparte douche | ducha separada |
 | Integral/perfilada | Teilintegriert / Integriert | profilé / intégral | semintegrale / motorhome | halfintegraal | perfilada / integral |
 | Vehículo nuevo/0km | Neufahrzeug | neuf | nuovo | nieuw | nuevo / 0km |
 
