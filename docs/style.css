@@ -107,6 +107,37 @@ header h1::after {
   content: '';
 }
 
+.header-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-link {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.page-link:hover { border-color: var(--accent); background: var(--accent-wash); }
+
+.page-link--manual { color: var(--manual); }
+.page-link--manual:hover { border-color: var(--manual); background: var(--manual-wash); }
+
+.manual-title { color: var(--manual); }
+.manual-title .rule { background: var(--manual); }
+
 #last-updated {
   font-family: var(--font-body);
   font-size: 0.78rem;
