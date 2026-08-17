@@ -562,7 +562,7 @@
   {
     "id": "milanuncios-d41d8cd9",
     "title": "VW T3 VANAGON TD - CALIFORNIA TD",
-    "price": 2000,
+    "price": 21900,
     "year": null,
     "km": null,
     "sleeping": null,
@@ -570,7 +570,7 @@
     "location": "Bilbao (Bizkaia)",
     "source": "milanuncios",
     "url": "",
-    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/ca8b3a19-8fed-4383-8573-49916320bc1c?rule=hw396_70",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/45f7350a-18b4-4650-93e0-7b4d8ac4cfe8?rule=hw396_70",
     "status": "new",
     "added_at": "2026-07-28",
     "fingerprint": "california-vanagon|"
@@ -1806,5 +1806,53 @@
     "status": "new",
     "added_at": "2026-08-16",
     "fingerprint": "69-adventure-isla-menos-sunlight|2023"
+  },
+  {
+    "id": "milanuncios-c99b87d0",
+    "title": "HYMER - B544",
+    "price": 41500,
+    "year": 2004,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Ontinyent/Onteniente (Valencia)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/hymer-b544-610330137.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/75a5ecdb-89f7-474c-b768-d3253f1dedca?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-08-17",
+    "fingerprint": "544-hymer|2004"
+  },
+  {
+    "id": "milanuncios-f65b2335",
+    "title": "FIAT DUCATO - MCLOUIS GLAMYS 220",
+    "price": 59500,
+    "year": 2020,
+    "km": null,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "Inca (Baleares)",
+    "source": "milanuncios",
+    "url": "https://www.milanuncios.com/autocaravanas-de-segunda-mano/fiat-ducato-mclouis-glamys-220-610327798.htm",
+    "photo": "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/127fd72c-8f2c-43e4-aebd-fbb9f95f1dbd?rule=hw396_70",
+    "status": "new",
+    "added_at": "2026-08-17",
+    "fingerprint": "220-glamys-mclouis|2020"
+  },
+  {
+    "id": "coches_net-2312d1d9",
+    "title": "Camper Livingstone 5 2023 · 4 plazas · -5.100€ DESCUENTO",
+    "price": 5100,
+    "year": 2023,
+    "km": 72000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/furgoneta-camper-livingstone-5-sport-en-lleida-70157251-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/19644197/e10c5006-2328-47d2-b945-8793e96005a5.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-08-17",
+    "fingerprint": "100-2023-descuento-livingstone|2023"
   }
 ]
