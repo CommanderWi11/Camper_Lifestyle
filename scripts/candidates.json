@@ -2238,5 +2238,37 @@
     "status": "new",
     "added_at": "2026-08-21",
     "fingerprint": "2026-elnagh-next-van|2026"
+  },
+  {
+    "id": "coches_net-dee1d47c",
+    "title": "Ford reller-team",
+    "price": 35000,
+    "year": 2009,
+    "km": 50000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/ford-reller-team-en-guipuzcoa-71242074-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20220943/71a18b2a-c22d-4519-a0b8-67879f97fc0d.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-08-22",
+    "fingerprint": "reller-team|2009"
+  },
+  {
+    "id": "coches_net-74eb1364",
+    "title": "AUTOCARAVANA RAPIDO 8094 DF DESDE 603€ AL MES",
+    "price": 68500,
+    "year": 2018,
+    "km": 119000,
+    "sleeping": null,
+    "bathroom": null,
+    "location": "",
+    "source": "coches_net",
+    "url": "https://www.coches.net/autocaravana-rapido-8094-df-desde-603-al-mes-en-baleares-71284439-arvo.aspx",
+    "photo": "https://a.ccdn.es/cnet/vehicles/20603063/1fee5c18-d846-4a0c-ad46-f17940982d9e.jpg/560x421cut/",
+    "status": "new",
+    "added_at": "2026-08-22",
+    "fingerprint": "603-8094-al-desde-df-mes-rapido|2018"
   }
 ]
