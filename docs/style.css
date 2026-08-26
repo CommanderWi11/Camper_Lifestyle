@@ -334,6 +334,11 @@ h2::before {
   border-bottom: 1px solid var(--line-soft);
 }
 
+.badge-outside-area {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;

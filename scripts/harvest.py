@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-"""Stage A of the daily pipeline: harvest Europe-wide motorhome candidates.
+"""Stage A of the daily pipeline: harvest Idealista.es house-listing candidates.
 
-This script is deliberately DUMB. It casts a wide net and writes every plausible
-candidate it finds to candidates.json — no body-type filtering, no age filtering,
-no price filtering. It does not rank, score, or pick winners — that is Stage B
-(`claude -p`, driven by research-prompt.md), which reads the detail pages and
-judges every candidate against the family's actual brief.
+This script is deliberately DUMB. It casts a wide net over Idealista's
+venta-viviendas search for Tafira / Las Palmas de Gran Canaria and writes every
+plausible candidate it finds to candidates.json. It does not rank, score, or pick
+winners — that is Stage B (`claude -p`, driven by research-prompt.md), which reads
+the detail pages and judges every candidate against the family's actual brief
+(budget <=EUR500k, >=3 bedrooms, private garden, home-office space).
 
-2026-08-11: restored Europe-wide scope (used + new), reverting the 2026-07-30
-Canary-only detour — ported forward, not `git revert`ed, so the new+used search
-and hang/discard fixes added since stay intact. Milanuncios and Coches.net are
-scraped here with their nationwide-Spain URLs (not Canarias-filtered) —
-deterministic Stage A coverage for Spain only. Everything else — every other
-European country, Autocasion, AutoScout24, and live search for new (0km) dealer
-stock anywhere in Europe — has no deterministic scraper and is Stage B's job via
-live WebSearch/WebFetch, per `Resources/europe-motorhome-selling-sites.md`.
+2026-08-26: repurposed from the Motorhome_Search project's two-source Playwright
+scraper (Milanuncios + Coches.net) to a single-source Idealista scraper for this
+project's house search. Idealista's DataDome protection is aggressive, so this
+connects to an already-authenticated Chrome session over CDP (see
+`_connect_idealista_browser`) rather than launching a fresh headless context —
+mirroring the working pattern in the sibling project `Assets_HQ/BSA_Options`.
 
-Discarded listings (the 🗑 button -> Supabase `camper_hidden`) are excluded here,
-so a discard means "never searched again", not merely "hidden in the UI".
+Discarded listings (the trash-can button -> Supabase `house_hidden`) are excluded
+here, so a discard means "never searched again", not merely "hidden in the UI".
 """
 
 import json
@@ -53,19 +52,6 @@ HEADERS = {
     # Letting urllib3 negotiate (gzip/deflate) is correct and safe.
 }
 
-CANARY_KEYWORDS = {
-    "canarias", "las palmas", "tenerife", "gran canaria",
-    "la palma", "lanzarote", "fuerteventura", "la gomera",
-    "el hierro", "la graciosa",
-}
-
-# Patterns that indicate weight is mentioned in the title/text.
-_WEIGHT_RE = re.compile(
-    r"(\d[\d.,]*)\s*(?:t\b|tn\b|ton\b)|"
-    r"(?:MMA|MTM|PMA|PTMA)\s*:?\s*(\d{3,5})\s*(?:kg)?",
-    re.IGNORECASE,
-)
-
 
 def load_params() -> dict:
     return json.loads(PARAMS_FILE.read_text())
@@ -100,10 +86,10 @@ def fetch_og_image(url: str) -> str:
     """Best-effort thumbnail for a detail page, via its Open Graph / Twitter card.
 
     Search cards often carry a lazy-load placeholder in <img src>, so a harvested
-    listing can reach the board with no photo (coches.net does this). Every real
-    listing page, though, declares an `og:image` for social sharing — that is the
-    canonical hero shot. Used by Stage C to backfill winners with an empty photo,
-    so the board never shows a bare placeholder for a vehicle that has a picture.
+    listing can reach the board with no photo. Every real listing page, though,
+    declares an `og:image` for social sharing — that is the canonical hero shot.
+    Used by Stage C to backfill winners with an empty photo, so the board never
+    shows a bare placeholder for a house that has a picture.
     Returns "" on any failure; the caller keeps its existing (empty) value.
     """
     if not url or not url.startswith("http"):
@@ -129,40 +115,18 @@ def fetch_og_image(url: str) -> str:
     return ""
 
 
-# Words that carry no identifying signal — they appear in almost every Canary
-# dealer's SEO-stuffed title ("AUTOCARAVANA SEGUNDA MANO EN CANARIAS TENERIFE").
+# Words that carry no identifying signal — they appear in almost every Idealista
+# listing title ("Piso en venta en Tafira Alta, reformado, con jardín y terraza").
 _FP_STOPWORDS = {
-    "autocaravana", "autocaravanas", "caravana", "caravanas", "camper", "motorhome",
-    "segunda", "mano", "ocasion", "venta", "vende", "vendo", "en", "de", "del", "la",
-    "el", "los", "las", "y", "con", "por", "para", "canarias", "canaria", "gran",
-    "tenerife", "palmas", "lanzarote", "fuerteventura", "palma", "gomera", "hierro",
-    "islas", "nueva", "nuevo", "km", "plazas", "ref", "oferta", "oportunidad",
-    # Body type is a property of the van, not part of its identity. One source
-    # writes "Benimar Tessoro 496", another "Benimar Tessoro 496 perfilada" — the
-    # same vehicle, and a discard on one must carry to the other.
-    "perfilada", "perfilado", "perfiladas", "perfilados", "integral", "integrales",
-    "capuchina", "capuchinas",
-    # Base chassis — nearly every European integral/perfilada is built on one of
-    # these, so the chassis brand is noise, not identity (the coachbuilder brand
-    # + model is). Also engine/trim codes and sale-status words, equally generic.
-    "fiat", "ducato", "ford", "transit", "iveco", "daily", "mercedes", "mercedesbenz",
-    "sprinter", "peugeot", "boxer", "citroen", "jumper", "renault", "master",
-    "vw", "volkswagen", "crafter",
-    "td", "jtd", "tdi", "hdi", "dci", "cdti", "multijet", "cv",
-    "reservada", "reservado", "oportunidad",
-    # 2026-07-26: the Europe-wide brief's titles all describe the same shared
-    # layout vocabulary (twin beds, separate shower, brand new) — a real
-    # collision surfaced these as a false-positive same_vehicle match between a
-    # Giottiline and an unrelated Challenger that merely shared "camas",
-    # "gemelas", "estrenar". These describe the van's configuration, not its
-    # identity, same reasoning as the body-type words above.
-    "camas", "cama", "gemelas", "gemelo", "individuales", "traseras", "trasera",
-    "delantera", "delanteras", "basculante", "convertible", "convertibles",
-    "fija", "fijas", "fijo", "fijos", "dobles", "doble", "litera", "literas",
-    "garaje", "ducha", "bano", "separado", "separada", "separados", "separadas",
-    "combinado", "combinada", "kit", "relleno", "incluido", "opcional",
-    "estrenar", "homologadas", "homologada", "plaza", "viajar", "dormir",
-    "izquierda", "izquierdo", "volante",
+    "piso", "pisos", "casa", "casas", "chalet", "chalets", "vivienda", "viviendas",
+    "duplex", "atico", "aticos", "planta", "plantas",
+    "dormitorio", "dormitorios", "habitacion", "habitaciones", "bano", "banos",
+    "reformado", "reformada", "reformados", "reformadas", "obra", "nueva", "nuevo",
+    "nuevos", "nuevas", "oportunidad", "oportunidades", "m2",
+    "venta", "vende", "se", "garaje", "garajes", "jardin", "jardines",
+    "terraza", "terrazas",
+    # Generic connectors/articles — no identifying signal in any Spanish title.
+    "con", "de", "del", "en", "para", "la", "el", "los", "las", "a", "y", "por",
 }
 
 
@@ -180,39 +144,39 @@ def _slug_tokens(text: str) -> list[str]:
 
 
 def fingerprint(listing: dict) -> str:
-    """Stable cross-source identity for the *same physical vehicle*.
+    """Stable cross-source identity for the *same physical house*.
 
-    `id` is md5(url), so the same van listed on two sites gets two different ids
-    — and discarding one would not blocklist the other. The fingerprint is
-    brand+model tokens + year, which survives the URL change.
+    `id` is md5(url), so the same house listed on two sites gets two different
+    ids — and discarding one would not blocklist the other. The fingerprint is
+    descriptive-title tokens + year (year is rarely present for houses and
+    defaults to "", which is fine — the token set carries the real signal).
 
     Price is deliberately excluded: sellers drop it, and a price cut must not
-    resurrect a vehicle the family already rejected.
+    resurrect a house the family already rejected.
 
     This stays a strict, exact-match identity — used for blocklist propagation,
-    where a false match would silently re-suppress an unrelated van. For "is this
-    a duplicate CARD on the board", see the looser `same_vehicle()` below: two
-    real listings of the same van rarely share every descriptive word (one site's
-    "camas gemelas fijas" vs another's "garaje grande"), so exact-set equality
-    under-catches there.
+    where a false match would silently re-suppress an unrelated house. For "is
+    this a duplicate CARD on the board", see the looser `same_house()` below: two
+    real listings of the same house rarely share every descriptive word, so
+    exact-set equality under-catches there.
     """
     tokens = sorted(set(_slug_tokens(listing.get("title", ""))))
     year = listing.get("year") or ""
     return f"{'-'.join(tokens)}|{year}"
 
 
-def same_vehicle(a: dict, b: dict) -> bool:
+def same_house(a: dict, b: dict) -> bool:
     """True if two listings from DIFFERENT sources are almost certainly the same
-    physical vehicle relisted (e.g. the dealer's own site AND a marketplace).
+    physical house relisted (e.g. the agency's own site AND a marketplace).
 
-    Deliberately cross-source only: a dealer's own catalog can legitimately carry
-    two units of the identical model (a same-source near-duplicate is the
-    dealer's data, not our scraper's problem to collapse), so same-source pairs
-    are never merged no matter how similar their titles are. Cross-source plus a
-    real token overlap (>=3 shared brand/model tokens, calibrated against a real
-    false-positive-heavy dataset of shared-chassis titles) is what actually tells
-    "same van seen twice" apart from "two different vans that happen to share a
-    chassis and engine code".
+    Deliberately cross-source only: an agency's own catalog can legitimately
+    carry two similar units (a same-source near-duplicate is the agency's data,
+    not our scraper's problem to collapse), so same-source pairs are never merged
+    no matter how similar their titles are. Cross-source plus a real token
+    overlap (>=3 shared descriptive tokens, calibrated the same way the original
+    motorhome-search version of this function was) is what actually tells "same
+    house seen twice" apart from "two different houses that happen to share
+    generic listing vocabulary".
     """
     src_a, src_b = a.get("source"), b.get("source")
     if not src_a or not src_b or src_a == src_b:
@@ -243,14 +207,14 @@ def _supabase_config() -> tuple[str, str] | None:
 
 
 def _supabase_blocklist() -> set[str]:
-    """Discarded ids from Supabase `camper_hidden`, or empty if it is unreachable."""
+    """Discarded ids from Supabase `house_hidden`, or empty if it is unreachable."""
     cfg = _supabase_config()
     if not cfg:
         return set()
     url, key = cfg
     try:
         resp = requests.get(
-            f"{url}/rest/v1/camper_hidden",
+            f"{url}/rest/v1/house_hidden",
             params={"select": "listing_id"},
             headers={"apikey": key, "Authorization": f"Bearer {key}"},
             timeout=20,
@@ -259,7 +223,7 @@ def _supabase_blocklist() -> set[str]:
         return {row["listing_id"] for row in resp.json() if row.get("listing_id")}
     except Exception as exc:
         # Fail OPEN, loudly. A dead Supabase must not abort the daily run, but a
-        # silent failure that quietly resurrects rejected vans is worse than noise.
+        # silent failure that quietly resurrects a rejected house is worse than noise.
         print(f"[blocklist] Supabase unreachable ({type(exc).__name__}) — "
               f"falling back to {BLOCKLIST_FILE.name} only", file=sys.stderr)
         return set()
@@ -269,7 +233,8 @@ def load_blocklist() -> set[str]:
     """Every listing id the family has discarded, from both stores.
 
     Two stores on purpose:
-      * Supabase `camper_hidden` — what the 🗑 button writes; syncs across devices.
+      * Supabase `house_hidden` — what the trash-can button writes; syncs across
+        devices.
       * scripts/blocklist.json  — committed to the repo; works with no backend at
         all, survives a Supabase outage, and is reviewable in a diff.
 
@@ -293,7 +258,7 @@ def blocked_fingerprints(blocked_ids: set[str]) -> set[str]:
 
 
 def _supabase_starred() -> dict[str, str] | None:
-    """Starred ids -> `created_at` from Supabase `camper_stars`, or None if unreachable.
+    """Starred ids -> `created_at` from Supabase `house_stars`, or None if unreachable.
 
     None (not {}) on failure, so the caller can fall back to the last-known-good
     local cache instead of silently wiping the Favorites section on a Supabase outage.
@@ -304,7 +269,7 @@ def _supabase_starred() -> dict[str, str] | None:
     url, key = cfg
     try:
         resp = requests.get(
-            f"{url}/rest/v1/camper_stars",
+            f"{url}/rest/v1/house_stars",
             params={"select": "listing_id,created_at"},
             headers={"apikey": key, "Authorization": f"Bearer {key}"},
             timeout=20,
@@ -342,7 +307,13 @@ def load_starred() -> dict[str, str]:
 
 
 def _extract_year(text: str) -> int | None:
-    """Find the first plausible 4-digit vehicle year in a free-text blob."""
+    """Find the first plausible 4-digit year (e.g. construction year) in a free-text blob.
+
+    Not currently called by `fetch_idealista` (search cards rarely surface a
+    build year — that lives on the detail page, which is Stage B's job), but
+    kept as a generic, reusable helper in case a future selector fix surfaces
+    one on the card itself.
+    """
     if not text:
         return None
     # Prefer explicit "Año: YYYY" label when present.
@@ -358,255 +329,263 @@ def _extract_year(text: str) -> int | None:
     return None
 
 
-def _passes_weight(text: str, max_kg: int) -> bool:
-    """Return True if no weight is found in text, or if found weight is within limit.
+# CDP endpoint for the dedicated, already-authenticated Idealista Chrome profile.
+# See this project's CLAUDE.md -> "Idealista access (CDP session)" for the launch
+# command (~/.chrome-home-quest-cdp, port 9223) and why 127.0.0.1 not localhost.
+IDEALISTA_CDP_URL = "http://127.0.0.1:9223"
 
-    Weight in tonnes is converted to kg (e.g. 3.5t → 3500 kg). This is the one
-    brief hard-requirement (MAM ≤3,500 kg) that's cheaply checkable from a
-    title/card text, so it's the only gate Stage A still enforces. Listings
-    without any weight mention always pass through — Stage B confirms weight
-    from the actual spec/plate.
+# LIVE-VERIFIED 2026-08-26 against idealista.com (logged-in CDP session) via the
+# site's own location autocomplete — the originally-guessed
+# ".../venta-viviendas/las-palmas-de-gran-canaria/tafira/" 404s; these are the
+# real per-district "geo" URLs. Tafira Alta/Baja are the true target zone; the
+# city-wide URL is the explicit fallback research-prompt.md asks for when Tafira
+# alone is too thin (it is: ~1-2 matching listings on a given day) — Stage B
+# decides `is_target_area` per listing from `location`, harvest.py just casts
+# the net over all three.
+IDEALISTA_SEARCH_AREAS = [
+    ("Tafira Alta", "https://www.idealista.com/geo/venta-viviendas/tafira-alta-gran-canaria/"),
+    ("Tafira Baja", "https://www.idealista.com/geo/venta-viviendas/tafira-baja-gran-canaria/"),
+    ("Las Palmas de Gran Canaria (fallback)",
+     "https://www.idealista.com/venta-viviendas/las-palmas-de-gran-canaria-las-palmas/"),
+]
+
+# LIVE-VERIFIED 2026-08-26: idealista's filter-URL router is picky — a lone
+# amenity/room segment (e.g. "jardin/" or "de-tres-dormitorios-en-adelante/" by
+# itself) 404s, and the "-en-adelante" ("or more") suffix guessed originally is
+# wrong. The combo actually confirmed working (via Luis's own saved-search URL
+# and direct navigation) is "con-precio-hasta_<N>,de-tres-dormitorios,jardin/",
+# in that order. Only min_bedrooms=3 is confirmed; other counts are left
+# unmapped (falls back to client-side-only filtering, which already exists as
+# a safety net below) rather than guessing an unverified slug.
+_BEDROOM_FILTER_SLUGS = {
+    3: "de-tres-dormitorios",
+}
+
+# ---------------------------------------------------------------------------
+# LIVE-VERIFIED 2026-08-26 against a real listing card on idealista.com
+# (Chalet pareado, Tafira Alta). One correction from the original guess: there
+# is no separate location element on a card — `.item-detail-char` is the
+# amenity/room-count row (garage/bedrooms/m²), not a location. The address is
+# only present inside the title, so location is now derived from it (see
+# `_location_from_title`) instead of a second selector.
+# ---------------------------------------------------------------------------
+_CARD_SELECTOR = "article.item"
+_TITLE_SELECTOR = "a.item-link"
+_PRICE_SELECTOR = "span.item-price"
+_DETAIL_SELECTOR = "span.item-detail"
+_IMAGE_SELECTOR = "picture img, img"
+
+
+def _location_from_title(title: str) -> str:
+    """Idealista card titles are "<tipo> en <dirección>" (e.g. "Chalet pareado en
+    CL Cantonera, 15, Tafira, Las Palmas de Gran Canaria") — there is no separate
+    location element on the card (see comment above `_CARD_SELECTOR`). Splits off
+    everything after the first " en " as the address; falls back to the full
+    title if that marker isn't present rather than returning nothing.
     """
-    m = _WEIGHT_RE.search(text)
-    if not m:
-        return True
-    tonnes_str, kg_str = m.group(1), m.group(2)
-    if tonnes_str:
-        weight_kg = int(float(tonnes_str.replace(",", ".")) * 1000)
-    else:
-        weight_kg = int(re.sub(r"[^\d]", "", kg_str))
-    return weight_kg <= max_kg
+    parts = title.split(" en ", 1)
+    return parts[1].strip() if len(parts) == 2 else title
 
 
-def fetch_milanuncios(params: dict) -> list:
-    """Scrape Milanuncios autocaravanas listings (nationwide Spain) via Playwright.
-
-    Playwright is required because most cards are JS-rendered; plain requests only
-    sees the 3 "destacado" cards.
-
-    If selectors break, inspect article[data-testid="AD_CARD"] on
-    milanuncios.com/autocaravanas-de-segunda-mano/ and update below.
-    2026-08-11: restored to nationwide Spain URLs (verified live via curl, 200 +
-    real listing content) for Europe-wide scope — Spain is still the only
-    country with a deterministic scraper; the rest of Europe is Stage B's job.
+def _build_idealista_search_url(base_url: str, params: dict) -> str:
+    """Compose an Idealista search URL for one area, per the live-verified facet
+    scheme (see module-level comment above `_BEDROOM_FILTER_SLUGS`). Garden is a
+    fixed hard requirement of this project's brief (not parametrized in
+    params.json like price/bedrooms are), so "jardin" is always appended.
+    Results are also re-checked client-side in `fetch_idealista` against
+    `params`, so an unmapped/no-op facet here degrades to "harvests too much"
+    rather than "silently harvests the wrong thing".
     """
-    max_weight = params.get("max_weight_kg", 99999)
-    results = []
+    filters = []
+    max_price = params.get("max_price")
+    if max_price:
+        filters.append(f"con-precio-hasta_{int(max_price)}")
+    min_bedrooms = params.get("min_bedrooms")
+    if min_bedrooms:
+        slug = _BEDROOM_FILTER_SLUGS.get(int(min_bedrooms))
+        if slug:
+            filters.append(slug)
+        else:
+            print(f"[idealista] no bedroom-filter slug mapped for "
+                  f"min_bedrooms={min_bedrooms}; relying on client-side filtering only",
+                  file=sys.stderr)
+    filters.append("jardin")
+    return base_url + ",".join(filters) + "/"
 
-    url = "https://www.milanuncios.com/autocaravanas-de-segunda-mano/"
 
+def _connect_idealista_browser(p):
+    """Connect to the dedicated, already-authenticated Idealista Chrome profile.
+
+    Reuses a real logged-in session (started manually via the command documented
+    in this project's CLAUDE.md) instead of a fresh headless context — a fresh
+    context gets blocked by DataDome outright, per the sibling project
+    BSA_Options's documented experience. Fails loudly if that Chrome isn't
+    running with the expected profile/port; never silently falls back to a
+    headless launch.
+
+    Returns (browser, page). The caller must NOT call `browser.close()` — that
+    would close Luis's real, persistent Chrome window, not just this automation's
+    tab. Do NOT close the `page` (tab) this function opens/reuses, even when
+    done with it — if it's the profile's only open tab, closing it leaves the
+    browser with zero contexts, which breaks the *next* `connect_over_cdp` call
+    outright (live-verified 2026-08-26; see the comment in `fetch_idealista`'s
+    finally block for the reproduction).
+    """
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            ctx = browser.new_context(
-                locale="es-ES",
-                user_agent=HEADERS["User-Agent"],
-            )
-            page = ctx.new_page()
-            page.goto(url, timeout=30000)
-            page.wait_for_timeout(5000)
-            # Scroll once to trigger lazy-loaded cards lower in the list.
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            page.wait_for_timeout(2000)
+        browser = p.chromium.connect_over_cdp(IDEALISTA_CDP_URL)
+    except Exception as exc:
+        raise RuntimeError(
+            "Cannot connect to the Idealista CDP Chrome profile at "
+            f"{IDEALISTA_CDP_URL} ({type(exc).__name__}: {exc}). Start it first:\n"
+            "  /Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome \\\n"
+            "    --remote-debugging-port=9223 \\\n"
+            '    --user-data-dir="$HOME/.chrome-home-quest-cdp"\n'
+            "then log into idealista.com manually in that window if the session "
+            "has expired. This does not fall back to a fresh headless browser — "
+            "that would just get blocked by DataDome."
+        ) from exc
 
-            cards = page.query_selector_all('article[data-testid="AD_CARD"]')
-            print(f"[milanuncios] found {len(cards)} raw cards", file=sys.stderr)
+    ctx = browser.contexts[0] if browser.contexts else browser.new_context()
+    page = ctx.pages[0] if ctx.pages else ctx.new_page()
+    return browser, page
 
-            for card in cards:
-                title_el = card.query_selector(".ma-AdCardV2-title")
-                price_el = card.query_selector(".ma-AdPrice-value")
-                location_el = card.query_selector(".ma-AdLocation-text")
-                link_el = card.query_selector("a.ma-AdCardListingV2-TitleLink")
-                img_el = card.query_selector("img.ma-AdCardV2-photo") or card.query_selector("img")
 
-                if not title_el or not link_el:
-                    continue
+def _parse_idealista_cards(page) -> list:
+    """Parse every listing card on the current search-results page.
 
-                title = title_el.inner_text().strip()
-                if not _passes_weight(title, max_weight):
-                    continue
+    Each card is parsed defensively: a card that doesn't match the expected
+    shape is logged and skipped, not allowed to crash the whole harvest.
+    """
+    out = []
+    cards = page.query_selector_all(_CARD_SELECTOR)
+    print(f"[idealista] found {len(cards)} raw cards", file=sys.stderr)
 
-                price_str = (
-                    price_el.inner_text().strip()
-                    .replace(".", "").replace(",", "").replace("€", "").replace("\xa0", "").strip()
-                ) if price_el else "0"
+    for card in cards:
+        try:
+            link_el = card.query_selector(_TITLE_SELECTOR)
+            if not link_el:
+                continue
+            href = link_el.get_attribute("href") or ""
+            if not href:
+                continue
+            full_url = f"https://www.idealista.com{href}" if href.startswith("/") else href
+
+            title = (link_el.get_attribute("title") or link_el.inner_text() or "").strip()
+            if not title:
+                continue
+
+            price_el = card.query_selector(_PRICE_SELECTOR)
+            price_text = price_el.inner_text() if price_el else ""
+            price = 0
+            m = re.search(r"([\d.,]+)\s*€?", price_text)
+            if m:
                 try:
-                    price = int(price_str)
+                    price = int(re.sub(r"[.,]", "", m.group(1)))
                 except ValueError:
                     price = 0
 
-                href = link_el.get_attribute("href") or ""
-                full_url = f"https://www.milanuncios.com{href}" if href.startswith("/") else href
-                location = location_el.inner_text().strip() if location_el else ""
+            detail_text = " ".join(
+                el.inner_text() for el in card.query_selector_all(_DETAIL_SELECTOR)
+            )
+            bedrooms = None
+            m = re.search(r"(\d+)\s*hab", detail_text, re.IGNORECASE)
+            if m:
+                bedrooms = int(m.group(1))
 
-                year = _extract_year(card.inner_text())
+            img_el = card.query_selector(_IMAGE_SELECTOR)
+            photo = ""
+            if img_el:
+                for attr in ("src", "data-src"):
+                    val = img_el.get_attribute(attr) or ""
+                    if val.startswith("http"):
+                        photo = val
+                        break
 
-                results.append({
-                    "id": make_id("milanuncios", full_url),
-                    "title": title,
-                    "price": price,
-                    "year": year,
-                    "km": None,
-                    "sleeping": None,
-                    "bathroom": None,
-                    "location": location,
-                    "source": "milanuncios",
-                    "url": full_url,
-                    "photo": img_el.get_attribute("src") if img_el else "",
-                    "status": "new",
-                    "added_at": str(date.today()),
-                })
-            browser.close()
-    except Exception as exc:
-        print(f"[milanuncios] error: {exc}", file=sys.stderr)
-
-    return results
+            out.append({
+                "id": make_id("idealista", full_url),
+                "title": title,
+                "price": price,
+                "bedrooms": bedrooms,
+                "year": _extract_year(detail_text),
+                "location": _location_from_title(title),
+                "source": "idealista",
+                "url": full_url,
+                "photo": photo,
+                "status": "new",
+                "added_at": str(date.today()),
+            })
+        except Exception as exc:
+            print(f"[idealista] error parsing card: {exc}", file=sys.stderr)
+    return out
 
 
-def _humanlike_context(p):
-    """Return a Playwright context tuned to look less like a headless bot.
+def fetch_idealista(params: dict) -> list:
+    """Scrape Idealista.es venta-viviendas listings across Tafira Alta, Tafira
+    Baja, and — as the explicit fallback research-prompt.md asks for — the wider
+    Las Palmas de Gran Canaria city (see `IDEALISTA_SEARCH_AREAS`). Tafira alone
+    is thin (1-2 live matches on a given day), which is exactly why the fallback
+    area exists; Stage B is what actually decides `is_target_area` per listing,
+    from `location`, not this harvester.
 
-    Used for sources with bot-detection (Coches.net) that return "Ups!" or
-    block the listing UI when the request looks automated.
+    Connects via CDP to an already-authenticated Chrome session (see
+    `_connect_idealista_browser`) rather than launching a fresh context, since
+    Idealista's DataDome protection blocks headless/automated browsers outright.
+
+    The search URL applies the live-verified price/bedroom/garden facets (see
+    `_build_idealista_search_url`); results are also re-checked client-side
+    against `params` below as a safety net for any area/count not covered by a
+    known facet mapping.
     """
-    browser = p.chromium.launch(
-        headless=True,
-        args=["--disable-blink-features=AutomationControlled"],
-    )
-    ctx = browser.new_context(
-        locale="es-ES",
-        timezone_id="Europe/Madrid",
-        user_agent=HEADERS["User-Agent"],
-        viewport={"width": 1440, "height": 900},
-    )
-    ctx.add_init_script(
-        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-    )
-    return browser, ctx
-
-
-def fetch_coches_net(params: dict) -> list:
-    """Scrape coches.net autocaravanas listings (nationwide Spain) via Playwright.
-
-    Bot-detection on coches.net is aggressive: requests that look headless get
-    served an "Ups! Parece que algo no va bien..." stub page with zero cards.
-    We use a humanlike browser context (locale, timezone, viewport, UA hint
-    spoofing) which reliably yields cards on first-page load.
-
-    Pagination via ?page=N is unreliable (typically returns 0 on page 2 even
-    when the total count is higher), so we only scrape page 1.
-
-    If selectors break, inspect div.mt-CardAd on
-    coches.net/autocaravanas-y-remolques/ and update below. (2026-07-26: the
-    category slug was renamed from autocaravanas-segunda-mano; the old path still
-    redirects today but don't rely on that. 2026-08-11: restored to nationwide
-    Spain URLs — verified live via curl, 200 + real listing content — for
-    Europe-wide scope. This category carries dealer/0km stock alongside
-    used listings, so it also covers part of the "new" side of the brief.)
-    """
-    max_weight = params.get("max_weight_kg", 99999)
+    min_bedrooms = int(params.get("min_bedrooms") or 0)
+    max_price = params.get("max_price") or None
+    min_price = params.get("min_price") or 0
     results = []
 
-    url = "https://www.coches.net/autocaravanas-y-remolques/?page=1"
-
-    try:
-        with sync_playwright() as p:
-            browser, ctx = _humanlike_context(p)
-            page = ctx.new_page()
-            page.goto(url, timeout=45000)
-            page.wait_for_timeout(7000)
-            # One scroll to nudge any lazy-loaded cards into view.
-            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            page.wait_for_timeout(2000)
-
-            # Detect the bot-block stub page and bail cleanly.
-            if "algo no va bien" in page.content().lower():
-                print("[coches_net] bot-block detected, returning empty", file=sys.stderr)
-                browser.close()
-                return []
-
-            cards = page.query_selector_all('div.mt-CardAd')
-            print(f"[coches_net] found {len(cards)} raw cards", file=sys.stderr)
-
-            for card in cards:
+    with sync_playwright() as p:
+        browser, page = _connect_idealista_browser(p)
+        try:
+            for label, base_url in IDEALISTA_SEARCH_AREAS:
+                url = _build_idealista_search_url(base_url, params)
                 try:
-                    link_el = card.query_selector('a[href*="-arvo.aspx"]')
-                    if not link_el:
-                        continue
-                    href = link_el.get_attribute("href") or ""
-                    full_url = (
-                        f"https://www.coches.net{href}" if href.startswith("/") else href
-                    )
+                    page.goto(url, timeout=45000)
+                    page.wait_for_timeout(4000)
+                    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                    page.wait_for_timeout(2000)
 
-                    text = card.inner_text()
-                    title_el = card.query_selector('h2.mt-CardAd-infoHeaderTitle a') or link_el
-                    title = title_el.inner_text().strip()
-                    if not title:
-                        continue
-                    if not _passes_weight(text, max_weight):
-                        continue
+                    if "/login" in page.url:
+                        print("[idealista] session expired — redirected to /login; "
+                              "re-authenticate manually in the CDP Chrome window "
+                              f"({IDEALISTA_CDP_URL})", file=sys.stderr)
+                        break
 
-                    # Price: first "NN.NNN €" or "N.NNN €" in card text.
-                    price = 0
-                    m = re.search(r"(\d{1,3}(?:\.\d{3})+)\s*€", text)
-                    if m:
-                        price = int(m.group(1).replace(".", ""))
-
-                    year = _extract_year(text)
-
-                    # Km: "NN.NNN km" or "N.NNN km".
-                    km = None
-                    m = re.search(r"(\d{1,3}(?:\.\d{3})+)\s*km", text, re.IGNORECASE)
-                    if m:
-                        km = int(m.group(1).replace(".", ""))
-
-                    # Location: any line containing a Canary keyword. Nationwide
-                    # results often won't match this and leave location="" —
-                    # Stage B fills it in from the detail page.
-                    location = ""
-                    for line in text.split("\n"):
-                        if any(kw in line.lower() for kw in CANARY_KEYWORDS):
-                            location = line.strip()
-                            break
-
-                    # coches.net lazy-loads: the visible <img src> is a 1x1/blur
-                    # placeholder until scrolled into view, and the real URL sits in
-                    # data-src / srcset. Take the first thing that looks like a real
-                    # image; Stage C backfills via og:image if all of these are empty.
-                    img_el = card.query_selector("img")
-                    photo = ""
-                    if img_el:
-                        for attr in ("data-src", "src"):
-                            val = img_el.get_attribute(attr) or ""
-                            if val.startswith("http") and "data:image" not in val:
-                                photo = val
-                                break
-                        if not photo:
-                            srcset = img_el.get_attribute("srcset") or ""
-                            first = srcset.split(",")[0].strip().split(" ")[0]
-                            if first.startswith("http"):
-                                photo = first
-
-                    results.append({
-                        "id": make_id("coches_net", full_url),
-                        "title": title,
-                        "price": price,
-                        "year": year,
-                        "km": km,
-                        "sleeping": None,
-                        "bathroom": None,
-                        "location": location,
-                        "source": "coches_net",
-                        "url": full_url,
-                        "photo": photo,
-                        "status": "new",
-                        "added_at": str(date.today()),
-                    })
+                    print(f"[idealista] {label}: {url}", file=sys.stderr)
+                    for item in _parse_idealista_cards(page):
+                        price, bedrooms = item["price"], item["bedrooms"]
+                        # Client-side re-check: an area/count not covered by a
+                        # known facet mapping degrades to unfiltered, so don't
+                        # trust the URL alone to have filtered.
+                        if max_price and price and price > max_price:
+                            continue
+                        if min_price and price and price < min_price:
+                            continue
+                        if min_bedrooms and bedrooms is not None and bedrooms < min_bedrooms:
+                            continue
+                        results.append(item)
                 except Exception as exc:
-                    print(f"[coches_net] error parsing card: {exc}", file=sys.stderr)
-            browser.close()
-    except Exception as exc:
-        print(f"[coches_net] error: {exc}", file=sys.stderr)
+                    print(f"[idealista] error fetching {label}: {exc}", file=sys.stderr)
+        finally:
+            # Deliberately NOT closing `page` here, and never `browser.close()`.
+            # LIVE-VERIFIED 2026-08-26: closing the tab this run drove used to
+            # happen here — harmless-looking, but if it was the CDP profile's
+            # ONLY open tab, the browser is left with zero tabs/contexts, and
+            # Playwright's `connect_over_cdp` then fails outright on the *next*
+            # run ("Browser.setDownloadBehavior: Browser context management is
+            # not supported" — Playwright needs at least one existing context to
+            # attach to). Reproduced for real: the first harvest run closed the
+            # only tab, and the very next run couldn't connect at all. Leaving
+            # the tab open costs nothing (it's reused as `ctx.pages[0]` next
+            # time) and guarantees the profile always has a live context.
+            pass
 
     return results
 
@@ -617,10 +596,10 @@ def fetch_coches_net(params: dict) -> list:
 
 def merge_candidates(existing: list, new_results: list,
                      blocked_ids: set[str], blocked_fps: set[str]) -> list:
-    """Grow the candidate pool, never resurrecting a discarded vehicle.
+    """Grow the candidate pool, never resurrecting a discarded house.
 
     The pool is the dedupe ledger: it remembers everything we have ever seen so a
-    vehicle is not re-announced as 'new' every single run.
+    house is not re-announced as 'new' every single run.
     """
     by_id = {item["id"]: item for item in existing}
     added = skipped = 0
@@ -646,8 +625,7 @@ def merge_candidates(existing: list, new_results: list,
 
 
 SOURCES = [
-    ("milanuncios", fetch_milanuncios),
-    ("coches_net", fetch_coches_net),
+    ("idealista", fetch_idealista),
 ]
 
 
@@ -656,7 +634,7 @@ def main() -> None:
     blocked_ids = load_blocklist()
     blocked_fps = blocked_fingerprints(blocked_ids)
     if blocked_fps:
-        print(f"[blocklist] {len(blocked_fps)} vehicle fingerprints blocked cross-source")
+        print(f"[blocklist] {len(blocked_fps)} house fingerprints blocked cross-source")
 
     harvested: list = []
     for name, fetcher in SOURCES:

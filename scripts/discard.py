@@ -23,7 +23,7 @@ def save(ids: list[str]) -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Discard listings so the weekly search never resurfaces them.")
-    p.add_argument("listing_id", nargs="*", help="listing id(s), e.g. campermax-1a2b3c4d")
+    p.add_argument("listing_id", nargs="*", help="listing id(s), e.g. idealista-1a2b3c4d")
     p.add_argument("--undo", action="store_true", help="remove the id(s) from the blocklist")
     p.add_argument("--list", action="store_true", dest="show", help="print the current blocklist")
     args = p.parse_args()

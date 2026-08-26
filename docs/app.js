@@ -52,7 +52,7 @@ function render() {
   html += '<section><h2 class="favorites-heading">Favoritos</h2>';
   html += favorites.length
     ? `<div class="grid">${favorites.map(renderCard).join('')}</div>`
-    : '<p class="msg">Pulsa ★ en una autocaravana para guardarla aquí.</p>';
+    : '<p class="msg">Pulsa ★ en una vivienda para guardarla aquí.</p>';
   html += '</section>';
 
   grid.innerHTML = html;

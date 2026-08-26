@@ -1,4 +1,4 @@
--- Camper Lifestyle — Supabase schema.
+-- Home_Quest_QH — Supabase schema.
 --
 -- WHY THIS FILE EXISTS: on 2026-07-13 the project this dashboard pointed at
 -- (voirsxfjdayhhvwviaqt.supabase.co) had been deleted — the hostname returned
@@ -14,7 +14,7 @@
 --   4. Reload the dashboard — the "Sin conexión con Supabase" banner should vanish.
 --
 -- Until then the dashboard falls back to localStorage, and scripts/blocklist.json
--- keeps the weekly search honouring discards. Nothing is broken; it just doesn't
+-- keeps the daily search honouring discards. Nothing is broken; it just doesn't
 -- sync across devices.
 --
 -- On RLS: there is no auth here. The anon key is public (it ships in config.js to
@@ -23,45 +23,26 @@
 -- mean anyone who finds the URL could write to these tables. Don't put anything
 -- sensitive in a comment.
 
--- Comments on a listing.
-create table if not exists camper_comments (
-  id          uuid primary key default gen_random_uuid(),
-  listing_id  text        not null,
-  author      text        not null,
-  body        text        not null check (char_length(body) between 1 and 500),
-  created_at  timestamptz not null default now()
-);
-create index if not exists camper_comments_listing_idx on camper_comments (listing_id);
-
 -- Favourites (the ★ button).
-create table if not exists camper_stars (
+create table if not exists house_stars (
   listing_id  text primary key,
   created_at  timestamptz not null default now()
 );
 
 -- Discards (the 🗑 button). harvest.py READS this before it scrapes, so a row here
--- means the vehicle is never surfaced again — not merely hidden in the UI.
-create table if not exists camper_hidden (
+-- means the property is never surfaced again — not merely hidden in the UI.
+create table if not exists house_hidden (
   listing_id  text primary key,
   created_at  timestamptz not null default now()
 );
 
--- Triage state (Nuevo / Siguiendo / Contactado).
-create table if not exists camper_status (
-  listing_id  text primary key,
-  status      text        not null check (status in ('new','watching','contacted','discarded')),
-  updated_at  timestamptz not null default now()
-);
-
-alter table camper_comments enable row level security;
-alter table camper_stars    enable row level security;
-alter table camper_hidden   enable row level security;
-alter table camper_status   enable row level security;
+alter table house_stars  enable row level security;
+alter table house_hidden enable row level security;
 
 do $$
 declare t text;
 begin
-  foreach t in array array['camper_comments','camper_stars','camper_hidden','camper_status']
+  foreach t in array array['house_stars','house_hidden']
   loop
     execute format('drop policy if exists anon_all on %I', t);
     execute format(

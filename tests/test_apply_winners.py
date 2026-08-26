@@ -18,14 +18,15 @@ from apply_winners import Invalid, validate
 
 def ok(**over):
     w = {
-        "id": "mundo_autocaravanas-1a2b3c4d",
-        "url": "https://mundoautocaravanas.com/producto/roller-team-zefiro/",
-        "source": "mundo_autocaravanas",
-        "title": "Roller Team Zefiro — literas traseras",
-        "price": 59900,
+        "id": "idealista-1a2b3c4d",
+        "url": "https://www.idealista.com/inmueble/12345678/",
+        "source": "idealista",
+        "title": "Chalet con jardín en Tafira, 4 dormitorios",
+        "price": 420000,
         "rank": 1,
         "score": 87,
-        "verdict": "Literas traseras fijas y 4 cinturones de 3 puntos confirmados.",
+        "verdict": "Parcela con jardín privado y despacho independiente confirmados.",
+        "specs": {"bedrooms": 4, "has_garden": True},
     }
     w.update(over)
     return w
@@ -33,9 +34,9 @@ def ok(**over):
 
 def test_a_good_run_validates():
     got = validate([ok()], blocked=set())
-    assert got[0]["id"] == "mundo_autocaravanas-1a2b3c4d"
+    assert got[0]["id"] == "idealista-1a2b3c4d"
     assert got[0]["flags"] == []
-    assert got[0]["specs"] == {}
+    assert got[0]["specs"] == {"bedrooms": 4, "has_garden": True}
 
 
 def test_more_than_five_winners_is_refused():
@@ -44,38 +45,34 @@ def test_more_than_five_winners_is_refused():
 
 
 def test_fewer_than_five_is_fine():
-    """The Canary market is tiny. Three good vans beats five with two duds."""
+    """The Tafira market is small. Three good houses beats five with two duds."""
     got = validate([ok(id="a", rank=1), ok(id="b", rank=2), ok(id="c", rank=3)], blocked=set())
     assert len(got) == 3
 
 
 def test_a_discarded_listing_is_dropped_not_fatal():
-    """The whole point of the 🗑 button. 2026-07-28: research-prompt.md tells Stage
-    B to check the discard list itself, but that's prompt-following, not a
-    guarantee — it re-included a discarded listing twice in a row regardless. One
-    bad entry should cost a rank slot, not fail the whole run and leave the board
+    """The whole point of the 🗑 button. research-prompt.md tells Stage B to check
+    the discard list itself, but that's prompt-following, not a guarantee — one bad
+    entry should cost a rank slot, not fail the whole run and leave the board
     untouched for a full retry."""
     got = validate([ok(id="rejected")], blocked={"rejected"})
     assert got == []
 
 
-def test_a_relisted_discarded_vehicle_is_dropped_via_same_vehicle():
-    """2026-07-28, the second collision of the same day: the discarded Challenger
-    287 GA reappeared under a *different* id entirely — Stage B found it relisted
-    on leboncoin instead of netcampers_fr, so id-only blocking (the fix above)
-    didn't catch it. Cross-checking same_vehicle() against every known blocked
-    listing (title/year overlap, not just id) is what catches a relist."""
-    blocked_van = {
-        "id": "netcampers_fr-de4813bc", "source": "netcampers_fr",
-        "title": "Challenger 287 GA Special Edition - camas gemelas con kit de relleno",
-        "year": 2018,
+def test_a_relisted_discarded_house_is_dropped_via_same_house():
+    """A discarded house can reappear under a *different* id entirely — relisted
+    on another portal, or rediscovered by Stage B's live search. Id-only blocking
+    would miss it, so this cross-checks same_house() (title/specs overlap) against
+    every known blocked listing, not just exact id equality."""
+    blocked_house = {
+        "id": "idealista-de4813bc", "source": "idealista",
+        "title": "Chalet independiente en Tafira con jardín privado, 4 dormitorios, garaje amplio",
     }
     relisted = ok(
-        id="", source="leboncoin", rank=1,
-        title="Challenger 287 GA Special Edition Ford Transit - camas gemelas traseras",
+        id="", source="fotocasa", rank=1,
+        title="Casa independiente en Tafira con jardín privado, 4 habitaciones, garaje amplio",
     )
-    relisted["year"] = 2018
-    with patch("apply_winners.blocked_listings", return_value=[blocked_van]):
+    with patch("apply_winners.blocked_listings", return_value=[blocked_house]):
         got = validate([relisted], blocked=set())
     assert got == []
 
@@ -121,11 +118,14 @@ def test_a_missing_url_is_refused():
 
 
 def test_an_id_is_derived_when_claude_found_the_listing_itself():
-    """Listings Claude discovers on RentCamper have no harvested id — derive one
+    """Listings Claude discovers directly (e.g. live search on Fotocasa/pisos.com,
+    not the deterministic Idealista harvester) have no harvested id — derive one
     the same way the harvester would, so stars and comments can attach to it."""
-    got = validate([ok(id="", source="rentcamper", url="https://rentcampercanarias.com/x")],
-                   blocked=set())
-    assert got[0]["id"] == apply_winners.make_id("rentcamper", "https://rentcampercanarias.com/x")
+    got = validate(
+        [ok(id="", source="fotocasa", url="https://www.fotocasa.es/es/comprar/vivienda/x")],
+        blocked=set(),
+    )
+    assert got[0]["id"] == apply_winners.make_id("fotocasa", "https://www.fotocasa.es/es/comprar/vivienda/x")
 
 
 def test_garbage_instead_of_a_list_is_refused():
@@ -133,25 +133,35 @@ def test_garbage_instead_of_a_list_is_refused():
         validate({"winners": []}, blocked=set())
 
 
-def test_right_hand_drive_is_refused():
-    """LHD is a hard requirement (research-prompt.md) — a machine-checked invariant,
-    not just prompt-trust."""
-    with pytest.raises(Invalid, match="right-hand drive"):
-        validate([ok(specs={"drive_side": "right"})], blocked=set())
+def test_price_over_budget_is_refused():
+    """Budget is a hard requirement (project CLAUDE.md) — a machine-checked
+    invariant, not just prompt-trust."""
+    with pytest.raises(Invalid, match="price"):
+        validate([ok(price=520000)], blocked=set())
 
 
-def test_left_hand_drive_passes():
-    got = validate([ok(specs={"drive_side": "left"})], blocked=set())
-    assert got[0]["specs"]["drive_side"] == "left"
+def test_fewer_than_three_bedrooms_is_refused():
+    with pytest.raises(Invalid, match="bedroom"):
+        validate([ok(specs={"bedrooms": 2, "has_garden": True})], blocked=set())
 
 
-def test_the_same_vehicle_ranked_twice_from_different_sources_is_refused():
-    """If the research pass picks up the same van from two different sites as
-    two separate 'winners', that is a research bug, not two real vehicles —
+def test_no_private_garden_is_refused():
+    with pytest.raises(Invalid, match="garden"):
+        validate([ok(specs={"bedrooms": 4, "has_garden": False})], blocked=set())
+
+
+def test_within_budget_with_garden_and_enough_bedrooms_passes():
+    got = validate([ok()], blocked=set())
+    assert got[0]["specs"]["has_garden"] is True
+
+
+def test_the_same_house_ranked_twice_from_different_sources_is_refused():
+    """If the research pass picks up the same house from two different portals as
+    two separate 'winners', that is a research bug, not two real properties —
     refuse to publish rather than show the family a duplicate card."""
-    coches_net = ok(id="coches_net-abc", rank=1, source="coches_net",
-                     title="Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande")
-    milanuncios = ok(id="milanuncios-xyz", rank=2, source="milanuncios",
-                      title="Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante")
+    idealista = ok(id="idealista-abc", rank=1, source="idealista",
+                    title="Chalet independiente en Tafira con jardín privado, 4 dormitorios, garaje amplio")
+    fotocasa = ok(id="fotocasa-xyz", rank=2, source="fotocasa",
+                   title="Casa independiente en Tafira con jardín privado, 4 habitaciones, garaje amplio")
     with pytest.raises(Invalid, match="same"):
-        validate([coches_net, milanuncios], blocked=set())
+        validate([idealista, fotocasa], blocked=set())

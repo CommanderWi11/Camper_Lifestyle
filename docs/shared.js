@@ -36,8 +36,8 @@ async function loadState() {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     try {
       const [stars, hidden] = await withTimeout(Promise.all([
-        supabaseClient.from('camper_stars').select('listing_id, created_at'),
-        supabaseClient.from('camper_hidden').select('listing_id'),
+        supabaseClient.from('house_stars').select('listing_id, created_at'),
+        supabaseClient.from('house_hidden').select('listing_id'),
       ]), 5000);
       if (stars.error || hidden.error) throw (stars.error || hidden.error);
       online = true;
@@ -50,21 +50,21 @@ async function loadState() {
   }
   online = false;
   document.getElementById('offline-banner').hidden = false;
-  local.get('camper_stars').forEach(id => starredSet.add(id));
-  local.get('camper_hidden').forEach(id => hiddenSet.add(id));
+  local.get('house_stars').forEach(id => starredSet.add(id));
+  local.get('house_hidden').forEach(id => hiddenSet.add(id));
 }
 
 async function persistStar(id, starred) {
-  if (!online) return local.set('camper_stars', [...starredSet]);
+  if (!online) return local.set('house_stars', [...starredSet]);
   const { error } = starred
-    ? await supabaseClient.from('camper_stars').insert({ listing_id: id })
-    : await supabaseClient.from('camper_stars').delete().eq('listing_id', id);
+    ? await supabaseClient.from('house_stars').insert({ listing_id: id })
+    : await supabaseClient.from('house_stars').delete().eq('listing_id', id);
   if (error) throw error;
 }
 
 async function persistHidden(id) {
-  if (!online) return local.set('camper_hidden', [...hiddenSet]);
-  const { error } = await supabaseClient.from('camper_hidden').insert({ listing_id: id });
+  if (!online) return local.set('house_hidden', [...hiddenSet]);
+  const { error } = await supabaseClient.from('house_hidden').insert({ listing_id: id });
   if (error) throw error;
 }
 
@@ -106,24 +106,26 @@ function formatDateEs(isoDate) {
   return `${d} ${MONTHS_ES[m - 1]} ${y}`;
 }
 
-// Bespoke line-art camper mark shown when a listing has no photo (~1 in 5 in
+// Bespoke line-art house mark shown when a listing has no photo (~1 in 5 in
 // practice — og:image backfill fails often enough that a bare emoji reads as
 // clip-art at that frequency). Single inline SVG, no external asset.
-const CAMPER_ICON = `<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
-  <path d="M2 22V9a2 2 0 0 1 2-2h21l10 8v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/>
-  <path d="M25 7v10h10"/>
-  <path d="M2 15h23"/>
-  <circle cx="12" cy="25.5" r="3.2"/>
-  <circle cx="33" cy="25.5" r="3.2"/>
+const HOUSE_ICON = `<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M6 16 24 4l18 12"/>
+  <path d="M9 14v14a2 2 0 0 0 2 2h26a2 2 0 0 0 2-2V14"/>
+  <path d="M20 30V20h8v10"/>
 </svg>`;
 
 function renderCard(listing, index) {
   const price = listing.price > 0 ? `${listing.price.toLocaleString('es-ES')} €` : '—';
   const isStarred = starredSet.has(listing.id);
-  const size = listing.specs?.length_m ? `${String(listing.specs.length_m).replace('.', ',')} m` : null;
-  const km = listing.km != null ? `${listing.km.toLocaleString('es-ES')} km` : null;
+  const bedrooms = listing.specs?.bedrooms != null ? `${listing.specs.bedrooms}` : null;
+  const size = listing.specs?.size_m2 != null ? `${listing.specs.size_m2} m²` : null;
+  const hasGarden = listing.specs?.has_garden === true;
+  const hasOffice = listing.specs?.has_office_room === true;
+  const hasDeskArea = !hasOffice && Boolean(listing.specs?.office_notes);
   const rankBadge = listing.rank ? `<span class="rank-badge">${String(listing.rank).padStart(2, '0')}</span>` : '';
   const titleText = escapeHtml(listing.title);
+  const outsideTafira = listing.is_target_area === false;
 
   return `
     <article class="card" style="--stagger:${index || 0}" data-id="${listing.id}">
@@ -133,7 +135,7 @@ function renderCard(listing, index) {
           ${listing.photo
             ? `<img class="photo" src="${listing.photo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
             : ''}
-          <div class="photo photo--empty"${listing.photo ? ' style="display:none"' : ''}>${CAMPER_ICON}</div>
+          <div class="photo photo--empty"${listing.photo ? ' style="display:none"' : ''}>${HOUSE_ICON}</div>
         </a>
       </div>
       <div class="card-body">
@@ -141,8 +143,11 @@ function renderCard(listing, index) {
         <div class="price">${price}</div>
         <div class="meta">
           ${listing.location ? `<span>📍 ${escapeHtml(listing.location)}</span>` : ''}
-          ${size ? `<span>📏 ${size}</span>` : ''}
-          ${km   ? `<span>🛣️ ${km}</span>` : ''}
+          ${outsideTafira ? `<span class="badge-outside-area">Fuera de Tafira</span>` : ''}
+          ${bedrooms ? `<span>🛏 ${bedrooms}</span>` : ''}
+          ${size ? `<span>📐 ${size}</span>` : ''}
+          ${hasGarden ? `<span>🌳 Jardín</span>` : ''}
+          ${hasOffice ? `<span>🏢 Despacho</span>` : hasDeskArea ? `<span>🖥 Zona de escritorio</span>` : ''}
         </div>
         <div class="actions">
           <button class="btn-star${isStarred ? ' active' : ''}" data-id="${listing.id}">${isStarred ? '★ Favorito' : '☆ Favorito'}</button>
@@ -184,7 +189,7 @@ async function handleDiscardToggle(e) {
   const id = btn.dataset.id;
   const listing = allListings.find(l => l.id === id)
     || historySnapshots.flatMap(s => s.entries).find(e => e.id === id);
-  if (!confirm(`¿Eliminar "${listing ? listing.title : 'esta autocaravana'}"? No volverá a aparecer.`)) return;
+  if (!confirm(`¿Eliminar "${listing ? listing.title : 'esta vivienda'}"? No volverá a aparecer.`)) return;
 
   btn.disabled = true;
   try {

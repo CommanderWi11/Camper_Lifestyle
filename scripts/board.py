@@ -8,31 +8,31 @@ One rule governs everything:
 
 From that single invariant you get all the behaviour the family asked for:
   * Today's Top 5 always reflects the latest research pass, refreshed daily.
-  * A van that wins again is *promoted* into today's Top 5 rather than duplicated.
-  * A van that gets replaced but is starred drops to the Favorites section
+  * A house that wins again is *promoted* into today's Top 5 rather than duplicated.
+  * A house that gets replaced but is starred drops to the Favorites section
     (rank=None) instead of vanishing or cluttering an archive.
-  * A van that gets replaced and was never starred simply disappears.
+  * A house that gets replaced and was never starred simply disappears.
 
 Never-won candidates never reach the board; they live in scripts/candidates.json.
 """
 
 from datetime import date
 
-from harvest import same_vehicle
+from harvest import same_house
 
 # Fields Stage B (the research pass) is allowed to write onto a board entry.
 # Anything else the model invents is ignored — the board schema stays ours.
 RESEARCH_FIELDS = (
-    "title", "price", "year", "km", "country", "location", "photo", "url", "source",
+    "title", "price", "country", "location", "photo", "url", "source",
     "score", "verdict", "flags", "specs", "dealer_or_private", "vat_status",
-    "checked_at",
+    "checked_at", "is_target_area",
 )
 
 
 def _sort_key(listing: dict) -> tuple:
     # Today's Top 5 first, in rank order; Favorites (rank None) after, stable by id
     # (the dashboard re-sorts Favorites by star recency client-side, using the
-    # `camper_stars.created_at` timestamp it already has — the board's own order
+    # `house_stars.created_at` timestamp it already has — the board's own order
     # only needs to be deterministic, not meaningful).
     rank = listing.get("rank")
     return (0, rank) if rank else (1, listing.get("id", ""))
@@ -69,13 +69,13 @@ def update_board(board: list, winners: list, starred_ids: set[str] | None = None
         # Promote in place if we've seen this exact id before, so history
         # (comments, stars, the id the Supabase tables key on) is preserved
         # rather than recreated. If it's a new id, check whether it's the same
-        # physical vehicle as an existing card under a DIFFERENT id (relisted on
-        # another source) — if so, promote that card instead of adding a second
-        # one for the same van.
+        # physical house as an existing card under a DIFFERENT id (relisted on
+        # another portal) — if so, promote that card instead of adding a second
+        # one for the same house.
         target_id = wid
         if wid not in by_id:
             for existing_id, existing in by_id.items():
-                if same_vehicle(w, existing):
+                if same_house(w, existing):
                     target_id = existing_id
                     break
 

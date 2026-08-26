@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Motorhome Lifestyle — refreshes today's Top 5, once a day.
+# Home_Quest_QH — refreshes today's Top 5 house listings, once a day.
 # Schedule: 03:00 local, via
-# ~/Library/LaunchAgents/com.openbob.motorhome-search-daily.plist
+# ~/Library/LaunchAgents/com.openbob.home-quest-qh-daily.plist
 #
-#   Stage A  harvest.py        scrape every source -> candidates.json   (deterministic)
+#   Stage A  harvest.py        scrape Idealista.es -> candidates.json   (deterministic)
 #   Stage B  claude -p         deep research + rank -> winners.json     (judgement)
 #   Stage C  apply_winners.py  validate + fold into the board           (the gate)
 #   Stage D  git push          GitHub Pages redeploys in ~60s
@@ -14,21 +14,19 @@
 # The board is Top 5 (today) + Favorites (starred) — no week-by-week archive. Winners
 # that don't repeat and aren't starred simply drop off; a day with nothing new
 # re-picks the same winners, and Stage D's `git diff --cached --quiet` check means
-# that publishes no new commit — a quiet day is a no-op, not noise. 2026-07-21:
-# switched from Monday-only to daily at Luis's request; see MEMORY.md. 2026-07-30:
-# refocused search scope to the Canary Islands only (used + new) and dropped the
-# 07:00/13:00/19:00 retry slots down to a single 03:00 run at Luis's request — a
-# Stage B failure (session limit, hang, flaky site) now has no same-day retry, the
-# next attempt is tomorrow's 03:00. See MEMORY.md for the tradeoff and the known
-# 03:20 Atlantic/Canary session-limit-reset timing risk. 2026-08-11: search scope
-# restored to Europe-wide (see MEMORY.md) — the single-03:00 schedule and its
-# no-same-day-retry tradeoff are unchanged, only the portal file Stage B reads
-# (below) and harvest.py's scrape URLs changed.
+# that publishes no new commit — a quiet day is a no-op, not noise.
+#
+# 2026-08-26: repurposed from the Motorhome_Search project (com.openbob.motorhome-
+# search-daily) into a house search for Luis's family. Schedule/retry history
+# (single 03:00 run, no same-day retries, the 3:20am Atlantic/Canary session-limit
+# risk) carried forward unchanged — see Resources/archive-motorhome-search/ for why.
+# Also requires the dedicated Idealista CDP Chrome profile (~/.chrome-home-quest-cdp,
+# port 9223) already running and logged in — see CLAUDE.md.
 
 set -uo pipefail
 
-REPO="/Users/openbob/Library/Mobile Documents/com~apple~CloudDocs/AI Coworking/01_Personal_HQ/Projects/Motorhome_HQ/Motorhome_Search"
-LOG="$HOME/Library/Logs/motorhome-daily.log"
+REPO="/Users/openbob/Library/Mobile Documents/com~apple~CloudDocs/AI Coworking/01_Personal_HQ/Projects/Home_HQ/Home_Quest_QH"
+LOG="$HOME/Library/Logs/home-quest-qh-daily.log"
 STATE_DIR="$REPO/.state"
 PY="$REPO/.venv/bin/python3"
 
@@ -112,7 +110,7 @@ rm -f scripts/winners.json
 # directory, so iCloud/FileProvider is out of the picture for the one process that's
 # actually been shown hanging. Stage A/C/D keep running from the iCloud repo path
 # exactly as before — they've never hung.
-STAGE_B_SCRATCH="$HOME/Library/Application Support/motorhome-search/stage-b-scratch"
+STAGE_B_SCRATCH="$HOME/Library/Application Support/home-quest-qh/stage-b-scratch"
 rm -rf "$STAGE_B_SCRATCH"
 mkdir -p "$STAGE_B_SCRATCH/scripts" "$STAGE_B_SCRATCH/docs" "$STAGE_B_SCRATCH/Resources"
 cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
@@ -120,10 +118,8 @@ cp scripts/candidates.json "$STAGE_B_SCRATCH/scripts/candidates.json"
 # dashboard visitor) — Stage B reads it to check the family's discard list
 # before finalizing winners, see research-prompt.md step 1.
 cp docs/config.js "$STAGE_B_SCRATCH/docs/config.js"
-# The master portal list (research-prompt.md step 2 tells Stage B to work through
-# it in order) — added 2026-07-28, briefly replaced 2026-07-30 with a Canary-only
-# list, restored 2026-08-11 to the Europe-wide list.
-cp Resources/europe-motorhome-selling-sites.md "$STAGE_B_SCRATCH/Resources/europe-motorhome-selling-sites.md"
+# The portal list (research-prompt.md tells Stage B to work through it in order).
+cp Resources/property-portals.md "$STAGE_B_SCRATCH/Resources/property-portals.md"
 
 # macOS has no `timeout`/`gtimeout` binary installed, so this is a plain-bash
 # watchdog: bound Stage B to STAGE_B_TIMEOUT seconds and kill it on expiry,

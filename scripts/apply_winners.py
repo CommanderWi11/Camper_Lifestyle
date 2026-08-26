@@ -15,7 +15,7 @@ from pathlib import Path
 import board
 from harvest import (
     BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
-    load_candidates, load_listings, load_starred, make_id, same_vehicle,
+    load_candidates, load_listings, load_starred, make_id, same_house,
 )
 
 WINNERS_FILE = Path(__file__).parent / "winners.json"
@@ -28,17 +28,14 @@ class Invalid(Exception):
 
 
 def blocked_listings(blocked: set[str]) -> list:
-    """Full dicts (title/year/source) for every discarded id we have a record of,
+    """Full dicts (title/specs/source) for every discarded id we have a record of,
     drawn from everywhere the family could have discarded it: the board, the
     harvester's own candidate pool, and manually-ingested history snapshots.
 
-    Used with same_vehicle() below for CROSS-SOURCE matching — a discard on one
-    portal (e.g. netcampers_fr) must also catch Stage B relisting the identical
-    vehicle under a different portal (e.g. leboncoin), which has a different id
-    (id = md5 of URL) and would never match on id alone. 2026-07-28: this exact
-    scenario happened for real — same van (Challenger 287 GA Special Edition,
-    same price/year/km/location), same discard, different portal, two runs in a
-    row, before this existed.
+    Used with same_house() below for CROSS-SOURCE matching — a discard on one
+    portal (e.g. idealista) must also catch Stage B relisting the identical
+    house under a different portal (e.g. fotocasa), which has a different id
+    (id = md5 of URL) and would never match on id alone.
     """
     known = load_candidates() + load_listings()
     if HISTORY_FILE.exists():
@@ -53,7 +50,7 @@ def validate(raw: object, blocked: set[str]) -> list:
     if len(raw) > MAX_WINNERS:
         raise Invalid(f"{len(raw)} winners — the board takes at most {MAX_WINNERS}")
 
-    blocked_vehicles = blocked_listings(blocked)
+    blocked_houses = blocked_listings(blocked)
 
     seen_ids: set[str] = set()
     winners = []  # survivors, original Stage B rank still attached — renumbered below
@@ -77,30 +74,28 @@ def validate(raw: object, blocked: set[str]) -> list:
         if wid in seen_ids:
             raise Invalid(f"duplicate winner id {wid}")
 
-        # A discarded vehicle reappearing is NOT a trust problem with Stage B's
+        # A discarded house reappearing is NOT a trust problem with Stage B's
         # output the way a malformed field is — research-prompt.md tells Stage B
-        # to check this itself, but that's prompt-following, not a guarantee (see
-        # 2026-07-28: the Challenger 287 GA / netcampers_fr-de4813bc collision hit
-        # this twice in a row even with the check in place — the SECOND time under
-        # a different id entirely, relisted on leboncoin instead of netcampers_fr,
-        # which is why this also checks same_vehicle() against every known blocked
-        # listing, not just exact id equality). Dropping it here and continuing
-        # means one bad entry costs a rank slot, not the whole ~12min Stage B run
-        # and the day's board update.
-        relisted_match = next((bv for bv in blocked_vehicles if same_vehicle(w, bv)), None)
+        # to check this itself, but that's prompt-following, not a guarantee. A
+        # relist under a brand-new id (a different portal, or the same listing
+        # re-posted) would never match on id alone, which is why this also checks
+        # same_house() against every known blocked listing, not just exact id
+        # equality. Dropping it here and continuing means one bad entry costs a
+        # rank slot, not the whole Stage B run and the day's board update.
+        relisted_match = next((bv for bv in blocked_houses if same_house(w, bv)), None)
         if wid in blocked or relisted_match:
-            reason = wid if wid in blocked else f"same vehicle as blocked {relisted_match['id']}"
+            reason = wid if wid in blocked else f"same house as blocked {relisted_match['id']}"
             print(f"  dropping {wid or '(no id)'} — discarded by the family "
                   f"({reason}), Stage B should not have re-included it", file=sys.stderr)
             dropped += 1
             continue
 
         for prev in winners:
-            if same_vehicle(w, prev):
+            if same_house(w, prev):
                 raise Invalid(
                     f"winner {wid} and winner {prev['id']} look like the same "
-                    f"vehicle from two different sources — the research pass "
-                    f"ranked one van as two separate winners"
+                    f"house from two different sources — the research pass "
+                    f"ranked one house as two separate winners"
                 )
         seen_ids.add(wid)
 
@@ -121,10 +116,20 @@ def validate(raw: object, blocked: set[str]) -> list:
         w.setdefault("flags", [])
         w.setdefault("specs", {})
 
-        # Left-hand drive is a hard requirement (research-prompt.md) — make it a
-        # machine-checked invariant like rank/score, not just prompt-trust.
-        if w["specs"].get("drive_side") == "right":
-            raise Invalid(f"winner {wid} has right-hand drive — hard requirement is LHD")
+        # Budget, bedroom count, and a private garden are hard requirements
+        # (project CLAUDE.md) — machine-checked invariants like rank/score, not
+        # just prompt-trust. Stage B is told to enforce these itself, but that's
+        # prompt-following, not a guarantee, so Stage C re-checks them here.
+        price = w.get("price")
+        if not isinstance(price, (int, float)) or price > 500000:
+            raise Invalid(f"winner {wid} has price {price!r}, expected a number <=500000")
+
+        bedrooms = w["specs"].get("bedrooms")
+        if not isinstance(bedrooms, int) or bedrooms < 3:
+            raise Invalid(f"winner {wid} has {bedrooms!r} bedrooms, expected >=3")
+
+        if w["specs"].get("has_garden") is not True:
+            raise Invalid(f"winner {wid} has no private garden — hard requirement is a garden")
 
         winners.append(w)
 

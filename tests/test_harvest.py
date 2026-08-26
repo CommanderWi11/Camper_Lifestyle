@@ -1,14 +1,14 @@
 """Harvester tests.
 
-A note on what is deliberately NOT tested here: the Playwright fetchers (Wallapop,
-Milanuncios, Coches.net) drive a real headless browser. The previous version of this
-file "tested" them by patching `search.requests.get` — which those fetchers stopped
-calling when they moved to Playwright. The patches were no-ops, so those tests either
-hit the live network or asserted nothing at all. Fake coverage is worse than none, so
-they are gone.
+A note on what is deliberately NOT tested here: the Idealista scraper drives a real
+browser session over an already-authenticated Chrome CDP connection (see the project
+CLAUDE.md's "Idealista access" section) — there is no meaningful way to unit test
+that without hitting the live, DataDome-protected site. Fake coverage is worse than
+none, so it isn't attempted here.
 
-What is covered is the part that actually decides what the family sees: the filters,
-the fingerprint, and the blocklist. Those are pure, fast, and worth pinning down.
+What is covered is the part that actually decides what the family sees: the
+fingerprint, same_house(), and the blocklist. Those are pure, fast, and worth
+pinning down.
 """
 import sys
 from pathlib import Path
@@ -22,154 +22,142 @@ import harvest
 # --------------------------------------------------------------------- identity
 
 def test_make_id_is_stable_for_the_same_url():
-    a = harvest.make_id("wallapop", "https://example.com/item/1")
-    b = harvest.make_id("wallapop", "https://example.com/item/1")
+    a = harvest.make_id("idealista", "https://example.com/item/1")
+    b = harvest.make_id("idealista", "https://example.com/item/1")
     assert a == b
-    assert a.startswith("wallapop-")
+    assert a.startswith("idealista-")
 
 
 def test_make_id_differs_by_url():
-    assert harvest.make_id("wallapop", "https://x.com/1") != harvest.make_id("wallapop", "https://x.com/2")
+    assert harvest.make_id("idealista", "https://x.com/1") != harvest.make_id("idealista", "https://x.com/2")
 
 
 def test_make_id_differs_by_source():
     url = "https://x.com/1"
-    assert harvest.make_id("wallapop", url) != harvest.make_id("milanuncios", url)
+    assert harvest.make_id("idealista", url) != harvest.make_id("fotocasa", url)
 
 
 # ------------------------------------------------------------------ fingerprint
 
-def test_fingerprint_matches_the_same_van_across_two_sources():
+def test_fingerprint_matches_the_same_house_across_two_sources():
     """The point of the fingerprint: discard it once, it stays discarded everywhere.
 
-    The same vehicle listed by a dealer and on Wallapop has different URLs, hence
-    different ids. The dealer's SEO noise ("AUTOCARAVANA SEGUNDA MANO EN CANARIAS")
-    must not make them look like two different vans.
+    The same house listed on Idealista and rediscovered on Fotocasa has different
+    URLs, hence different ids. The portal's SEO noise ("EN VENTA EN TAFIRA ALTA")
+    must not make them look like two different houses.
     """
-    dealer = {"title": "AUTOCARAVANA SEGUNDA MANO BENIMAR TESSORO 496 EN CANARIAS", "year": 2020}
-    wallapop = {"title": "Benimar Tessoro 496 perfilada", "year": 2020}
-    assert harvest.fingerprint(dealer) == harvest.fingerprint(wallapop)
+    idealista = {"title": "CHALET INDEPENDIENTE CON JARDIN PRIVADO EN VENTA EN TAFIRA ALTA"}
+    fotocasa = {"title": "Chalet independiente jardín privado Tafira Alta"}
+    assert harvest.fingerprint(idealista) == harvest.fingerprint(fotocasa)
 
 
-def test_fingerprint_separates_different_model_years():
-    a = {"title": "Benimar Tessoro 496", "year": 2020}
-    b = {"title": "Benimar Tessoro 496", "year": 2016}
+def test_fingerprint_separates_different_addresses():
+    a = {"title": "Chalet en Tafira, Calle Drago 12, jardín privado"}
+    b = {"title": "Chalet en Tafira, Calle Laurisilva 8, jardín privado"}
     assert harvest.fingerprint(a) != harvest.fingerprint(b)
 
 
 def test_fingerprint_ignores_price_so_a_discount_cannot_resurrect_a_reject():
-    a = {"title": "Benimar Tessoro 496", "year": 2020, "price": 58000}
-    b = {"title": "Benimar Tessoro 496", "year": 2020, "price": 51000}
+    a = {"title": "Chalet en Tafira, Calle Drago 12, jardín privado", "price": 480000}
+    b = {"title": "Chalet en Tafira, Calle Drago 12, jardín privado", "price": 410000}
     assert harvest.fingerprint(a) == harvest.fingerprint(b)
 
 
-def test_fingerprint_splits_letters_from_digits_in_model_codes():
-    """A real bug: coches.net wrote '7400 SB', milanuncios wrote '7400SB' — one
-    token in one title, two in the other. Without splitting, the fingerprints
-    (and therefore the board dedup) never matched and the same van showed up as
-    two separate cards."""
-    a = {"title": "Etrusco T 7400 SB, viajan y duermen 5"}
-    b = {"title": "Etrusco 7400SB 130cv"}
-    assert "7400" in harvest._slug_tokens(a["title"])
-    assert "sb" in harvest._slug_tokens(a["title"])
-    assert "7400" in harvest._slug_tokens(b["title"])
-    assert "sb" in harvest._slug_tokens(b["title"])
+def test_fingerprint_splits_letters_from_digits_in_reference_codes():
+    """A real-shape bug: one portal writes a plot reference as '34521 VC', another
+    writes '34521VC' with no space — one token in one title, two in the other.
+    Without splitting, the fingerprints (and therefore the board dedup) never
+    matched and the same house showed up as two separate cards."""
+    a = {"title": "Chalet en Tafira, Ref. 34521 VC, jardín privado"}
+    b = {"title": "Chalet en Tafira Ref 34521VC jardín privado"}
+    assert "34521" in harvest._slug_tokens(a["title"])
+    assert "vc" in harvest._slug_tokens(a["title"])
+    assert "34521" in harvest._slug_tokens(b["title"])
+    assert "vc" in harvest._slug_tokens(b["title"])
 
 
-# -------------------------------------------------------------------- same_vehicle
+# -------------------------------------------------------------------- same_house
 
-def test_same_vehicle_matches_the_real_etrusco_duplicate():
-    """The actual duplicate found live on the board 2026-07-20: same van, same
-    model code, different sites, different description wording."""
-    coches_net = {"source": "coches_net",
-                  "title": "Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande"}
-    milanuncios = {"source": "milanuncios",
-                   "title": "Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante"}
-    assert harvest.same_vehicle(coches_net, milanuncios)
-
-
-def test_same_vehicle_requires_different_sources():
-    """A dealer's own catalog can legitimately carry two units of the identical
-    model — that is real stock, not a scraping duplicate, so same-source near-
-    identical titles must never be merged."""
-    a = {"source": "mundo_autocaravanas", "title": "MCLOUIS TANDY PLUS 640 (Ref. 1548)"}
-    b = {"source": "mundo_autocaravanas", "title": "MCLOUIS TANDY PLUS 640 (Ref. 1325)"}
-    assert not harvest.same_vehicle(a, b)
+def test_same_house_matches_a_cross_source_duplicate():
+    """The kind of duplicate same_house() exists to catch: same house, same
+    description, different portals, different wording."""
+    idealista = {"source": "idealista",
+                 "title": "Chalet independiente en Tafira con jardín privado, 4 dormitorios, garaje amplio"}
+    fotocasa = {"source": "fotocasa",
+                "title": "Casa independiente en Tafira con jardín privado, 4 habitaciones, garaje amplio"}
+    assert harvest.same_house(idealista, fotocasa)
 
 
-def test_same_vehicle_rejects_shared_chassis_as_a_false_positive():
-    """Two totally different coachbuilder models that merely share a Fiat Ducato
-    base chassis and diesel engine code must not be treated as the same van —
-    this was the dominant false-positive source before chassis/engine words were
-    added to the stopword list."""
-    a = {"source": "mundo_autocaravanas", "title": "Fiat Ducato 2.8 JTD – ADRIA CORAL 660 SP G – ¡Reservada!"}
-    b = {"source": "autocaravanas_dm", "title": "Fiat Ducato 2.8 JTD – ELNAGH JOXY 10- ¡Reservada!"}
-    assert not harvest.same_vehicle(a, b)
+def test_same_house_respects_conflicting_construction_years():
+    """Even with high title-token overlap, a conflicting construction year means
+    these are two different houses, not the same one relisted."""
+    a = {"source": "idealista", "year": 1998,
+         "title": "Chalet independiente en Tafira con jardín privado, 4 dormitorios, garaje amplio"}
+    b = {"source": "fotocasa", "year": 2015,
+         "title": "Casa independiente en Tafira con jardín privado, 4 habitaciones, garaje amplio"}
+    assert not harvest.same_house(a, b)
 
 
-def test_same_vehicle_requires_real_token_overlap():
-    a = {"source": "wallapop", "title": "Hymer B-Klasse ModernComfort I 580"}
-    b = {"source": "milanuncios", "title": "Chausson Titanium 720"}
-    assert not harvest.same_vehicle(a, b)
+def test_same_house_requires_different_sources():
+    """A developer's own listings page can legitimately carry two units of the
+    identical model in a new-build development — that is real stock, not a
+    scraping duplicate, so same-source near-identical titles must never merge."""
+    a = {"source": "idealista", "title": "Chalet pareado Residencial Tafira Verde (Unidad 12)"}
+    b = {"source": "idealista", "title": "Chalet pareado Residencial Tafira Verde (Unidad 14)"}
+    assert not harvest.same_house(a, b)
 
 
-def test_same_vehicle_respects_conflicting_years():
-    a = {"source": "coches_net", "title": "Etrusco T 7400 SB, viajan y duermen 5", "year": 2015}
-    b = {"source": "milanuncios", "title": "Etrusco 7400SB 130cv, viajan y duermen 5", "year": 2019}
-    assert not harvest.same_vehicle(a, b)
+def test_same_house_rejects_a_shared_neighborhood_as_a_false_positive():
+    """Two totally different houses that merely share the same neighborhood name
+    must not be treated as the same property just because the neighborhood word
+    survives the stopword filter — real token overlap needs 3+ shared words,
+    not one shared place name."""
+    a = {"source": "idealista",
+         "title": "Chalet en Tafira Alta con piscina, cerca del colegio, 5 dormitorios"}
+    b = {"source": "fotocasa",
+         "title": "Chalet en Tafira Alta con vistas al mar, junto al parque, 3 dormitorios"}
+    assert not harvest.same_house(a, b)
 
 
-# -------------------------------------------------------------------- filtering
-#
-# 2026-07-26: the redesign to use only the family's brief removed every Stage-A
-# exclusionary gate except weight — no body-type filter, no age cutoff, no price
-# floor/ceiling. None of those had any basis in the brief (which explicitly says
-# never discard on mileage/age alone, and treats budget as a target Stage B
-# weighs, not a hard reject), and age/price gates actively contradicted it. The
-# brand-whitelist "strict" accept mode (`_is_target`/`_BRAND_RE`) was also removed
-# — it only existed to support Wallapop's open-keyword search, which isn't in the
-# brief's portal list and was dropped along with Autocaravanas DM, Mundo
-# Autocaravanas, Campermax, and caravanas.net (also not in the brief).
-
-def test_passes_weight_rejects_over_the_b_licence_limit():
-    assert not harvest._passes_weight("Integral 4.5 t", 3500)
-    assert harvest._passes_weight("Perfilada MMA: 3500 kg", 3500)
-    assert harvest._passes_weight("no weight mentioned", 3500)
+def test_same_house_requires_real_token_overlap():
+    a = {"source": "idealista", "title": "Villa moderna en Tafira con piscina privada"}
+    b = {"source": "fotocasa", "title": "Piso reformado en Vegueta cerca del centro"}
+    assert not harvest.same_house(a, b)
 
 
 # -------------------------------------------------------------------- blocklist
 
 def test_merge_candidates_drops_blocked_ids():
-    new = [{"id": "a", "title": "Benimar", "price": 1, "photo": "", "year": None},
-           {"id": "b", "title": "Hymer", "price": 1, "photo": "", "year": None}]
+    new = [{"id": "a", "title": "Chalet en Tafira", "price": 1, "photo": ""},
+           {"id": "b", "title": "Villa en Tafira", "price": 1, "photo": ""}]
     pool = harvest.merge_candidates([], new, blocked_ids={"a"}, blocked_fps=set())
     assert [c["id"] for c in pool] == ["b"]
 
 
-def test_merge_candidates_drops_a_blocked_vehicle_relisted_at_a_new_url():
-    """The discard must survive the seller deleting the ad and re-posting it."""
-    rejected = {"id": "old", "title": "Benimar Tessoro 496", "year": 2020,
-                "price": 58000, "photo": ""}
-    relisted = {"id": "brand-new-id", "title": "Benimar Tessoro 496", "year": 2020,
-                "price": 55000, "photo": ""}
+def test_merge_candidates_drops_a_blocked_house_relisted_at_a_new_url():
+    """The discard must survive the listing being deleted and re-posted."""
+    rejected = {"id": "old", "title": "Chalet en Tafira con jardín privado",
+                "price": 480000, "photo": ""}
+    relisted = {"id": "brand-new-id", "title": "Chalet en Tafira con jardín privado",
+                "price": 460000, "photo": ""}
     pool = harvest.merge_candidates([], [relisted], blocked_ids=set(),
                                     blocked_fps={harvest.fingerprint(rejected)})
     assert pool == []
 
 
 def test_merge_candidates_purges_a_listing_discarded_since_the_last_run():
-    existing = [{"id": "a", "title": "Benimar", "year": None, "price": 1,
-                 "photo": "", "fingerprint": "benimar|"}]
+    existing = [{"id": "a", "title": "Chalet en Tafira", "price": 1,
+                 "photo": "", "fingerprint": "chalet|tafira"}]
     assert harvest.merge_candidates(existing, [], blocked_ids={"a"}, blocked_fps=set()) == []
 
 
 def test_merge_candidates_does_not_duplicate_an_already_known_listing():
-    existing = [{"id": "a", "title": "Benimar", "year": None, "price": 50000,
-                 "photo": "p.jpg", "fingerprint": "benimar|"}]
-    again = [{"id": "a", "title": "Benimar", "year": None, "price": 48000, "photo": ""}]
+    existing = [{"id": "a", "title": "Chalet en Tafira", "price": 480000,
+                 "photo": "p.jpg", "fingerprint": "chalet|tafira"}]
+    again = [{"id": "a", "title": "Chalet en Tafira", "price": 460000, "photo": ""}]
     pool = harvest.merge_candidates(existing, again, blocked_ids=set(), blocked_fps=set())
     assert len(pool) == 1
-    assert pool[0]["price"] == 48000, "a price drop should refresh the existing entry"
+    assert pool[0]["price"] == 460000, "a price drop should refresh the existing entry"
     assert pool[0]["photo"] == "p.jpg", "an empty new photo must not wipe the old one"
 
 
@@ -211,16 +199,3 @@ def test_fetch_og_image_is_best_effort_and_swallows_errors():
     assert harvest.fetch_og_image("not-a-url") == ""
     with patch("harvest.requests.get", side_effect=OSError("network down")):
         assert harvest.fetch_og_image("https://site/ad") == ""
-
-
-def test_scrape_urls_are_nationwide_spain_not_canarias_filtered():
-    """2026-08-11: scope restored to Europe-wide; Stage A's two deterministic
-    scrapers cover nationwide Spain again, not the Canarias-filtered URLs from
-    the 2026-07-30 detour."""
-    import inspect
-    mila_src = inspect.getsource(harvest.fetch_milanuncios)
-    coches_src = inspect.getsource(harvest.fetch_coches_net)
-    assert "canarias.htm" not in mila_src
-    assert "https://www.milanuncios.com/autocaravanas-de-segunda-mano/\"" in mila_src
-    assert "/canarias/" not in coches_src
-    assert "https://www.coches.net/autocaravanas-y-remolques/?page=1\"" in coches_src

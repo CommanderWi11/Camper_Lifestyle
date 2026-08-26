@@ -12,20 +12,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 import board
 
 
-def winner(listing_id, rank, score=80, title=None, source="test", year=None):
-    w = {
+def winner(listing_id, rank, score=80, title=None, source="test", price=420000):
+    return {
         "id": listing_id,
-        "title": title or f"Autocaravana {listing_id}",
+        "title": title or f"Vivienda {listing_id}",
         "rank": rank,
         "score": score,
         "verdict": "Buena relación calidad-precio.",
         "url": f"https://example.com/{listing_id}",
         "source": source,
-        "price": 50000,
+        "price": price,
     }
-    if year is not None:
-        w["year"] = year
-    return w
 
 
 def test_first_run_seeds_the_board():
@@ -80,7 +77,7 @@ def test_discarded_listings_are_removed_even_if_starred():
 
 
 def test_fewer_than_five_winners_is_allowed():
-    """The market is thin some days. Three good vans beats five with two duds in it."""
+    """The Tafira market is thin some days. Three good houses beats five with two duds."""
     b = board.update_board([], [winner("a", 1), winner("b", 2), winner("c", 3)])
     assert len(b) == 3
 
@@ -88,44 +85,46 @@ def test_fewer_than_five_winners_is_allowed():
 def test_winner_fields_including_new_schema_fields_are_carried_onto_the_board():
     w = winner("a", 1, score=93)
     w.update({
-        "country": "Alemania", "dealer_or_private": "concesionario",
-        "vat_status": "IVA incluido", "checked_at": "2026-07-26",
-        "specs": {"drive_side": "left"},
+        "country": "España", "dealer_or_private": "inmobiliaria",
+        "vat_status": "N/A", "checked_at": "2026-07-26",
+        "is_target_area": True,
+        "specs": {"bedrooms": 4, "has_garden": True},
     })
     b = board.update_board([], [w])
     assert b[0]["score"] == 93
     assert b[0]["verdict"] == "Buena relación calidad-precio."
-    assert b[0]["country"] == "Alemania"
-    assert b[0]["dealer_or_private"] == "concesionario"
-    assert b[0]["vat_status"] == "IVA incluido"
+    assert b[0]["country"] == "España"
+    assert b[0]["dealer_or_private"] == "inmobiliaria"
+    assert b[0]["vat_status"] == "N/A"
     assert b[0]["checked_at"] == "2026-07-26"
-    assert b[0]["specs"]["drive_side"] == "left"
+    assert b[0]["is_target_area"] is True
+    assert b[0]["specs"]["has_garden"] is True
 
 
 def test_a_relist_on_a_different_source_is_promoted_not_duplicated():
-    """The real bug found live on the board 2026-07-20: the same Etrusco 7400SB
-    won one run from coches_net and a later run from milanuncios — two
-    different ids for the same van, which must fold into ONE card, not two."""
+    """The kind of relist collision same_house() guards against: the same house
+    won one run from idealista and a later run from fotocasa — two different ids
+    for the same property, which must fold into ONE card, not two."""
     day1 = board.update_board(
-        [], [winner("coches_net-abc", 3, source="coches_net",
-                     title="Etrusco T 7400 SB — perfilada, viajan y duermen 5, garaje grande")])
+        [], [winner("idealista-abc", 3, source="idealista",
+                     title="Chalet independiente en Tafira con jardín privado, 4 dormitorios, garaje")])
     day2 = board.update_board(
-        day1, [winner("milanuncios-xyz", 4, source="milanuncios",
-                       title="Etrusco 7400SB — integral, camas gemelas traseras fijas + basculante")])
+        day1, [winner("fotocasa-xyz", 4, source="fotocasa",
+                       title="Casa independiente en Tafira con jardín privado, 4 habitaciones, garaje amplio")])
 
     assert len(day2) == 1, "the relist must promote the existing card, not add a second one"
     entry = day2[0]
     # The original id is kept (that's what Supabase stars/comments/discards key on).
-    assert entry["id"] == "coches_net-abc"
+    assert entry["id"] == "idealista-abc"
     assert entry["rank"] == 4
     # Its content reflects the newest winning data (the current live listing).
-    assert "basculante" in entry["title"]
+    assert "amplio" in entry["title"]
 
 
-def test_two_different_vans_sharing_a_chassis_are_not_merged():
+def test_two_different_houses_sharing_a_neighborhood_are_not_merged():
     result = board.update_board(
-        [], [winner("mundo-a", 1, source="mundo_autocaravanas",
-                     title="Fiat Ducato 2.8 JTD – ADRIA CORAL 660 SP G – ¡Reservada!"),
-             winner("dm-b", 2, source="autocaravanas_dm",
-                     title="Fiat Ducato 2.8 JTD – ELNAGH JOXY 10- ¡Reservada!")])
-    assert len(result) == 2, "different models must not be collapsed just for sharing a chassis"
+        [], [winner("idealista-a", 1, source="idealista",
+                     title="Chalet en Tafira Alta con piscina, cerca del colegio, 5 dormitorios"),
+             winner("fotocasa-b", 2, source="fotocasa",
+                     title="Chalet en Tafira Alta con vistas al mar, junto al parque, 3 dormitorios")])
+    assert len(result) == 2, "different properties must not be collapsed just for sharing a neighborhood"

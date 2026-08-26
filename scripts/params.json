@@ -1,9 +1,9 @@
 {
-  "_comment": "Cheap gates for Stage A (harvest.py) ONLY. The real judging — seatbelts, bed layout, damp risk, budget, age, value vs market — lives in research-prompt.md, because it needs the detail page and the web, not a regex. 2026-07-26: dropped max_age_years (Stage A has no basis to hard-reject on age — the brief says never discard on mileage/age alone) and the wallapop geo-filter (Wallapop itself was removed, see harvest.py's SOURCES). min_price/max_price stay as documented values Stage B reads, but are no longer enforced as a Stage A reject either, for the same reason.",
+  "_comment": "Cheap gates for Stage A (harvest.py) ONLY. The real judging — garden privacy, office-space viability, value vs market, Tafira vs fallback area — lives in research-prompt.md, because it needs the detail page and the web, not a regex. min_price/max_price/min_bedrooms are enforced both in Idealista's own search-URL facets (unverified — see harvest.py) and again client-side in fetch_idealista, since the facet URL scheme itself is unverified.",
 
   "top_n": 5,
 
-  "min_price": 50000,
-  "max_price": 100000,
-  "max_weight_kg": 3500
+  "min_price": 0,
+  "max_price": 500000,
+  "min_bedrooms": 3
 }
