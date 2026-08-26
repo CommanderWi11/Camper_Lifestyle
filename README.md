@@ -86,12 +86,6 @@ automático no puede leer). Vive en `docs/history.json`, generado por
 `scripts/ingest_manual_shortlist.py` — no toca `listings.json` ni el pipeline
 diario, es un archivo aparte y aditivo.
 
-## Estado conocido
+## Estado
 
-Proyecto reconvertido desde la búsqueda de autocaravanas (Motorhome_Search) el
-2026-08-26. Pendiente: aprovisionar un proyecto Supabase nuevo (`house_stars`/
-`house_hidden`; ver `docs/supabase-setup.sql`) — hasta entonces la web usa
-localStorage y `harvest.py` usa `scripts/blocklist.json`/`scripts/starred.json`.
-También pendientes: la confirmación del rename del repo a `Home_Quest_QH`, la
-sesión de Chrome CDP dedicada para Idealista, y el plist de launchd. Ver
-`MEMORY.md` para el detalle.
+Ver `MEMORY.md` para el estado y las decisiones actuales del proyecto.

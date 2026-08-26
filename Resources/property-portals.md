@@ -1,9 +1,7 @@
 # Portales inmobiliarios — Gran Canaria
 
-Lista corta a propósito: a diferencia del mercado europeo de autocaravanas (muy
-fragmentado, decenas de sitios nacionales), el mercado inmobiliario español está
-concentrado en un puñado de portales grandes. No hace falta una tabla de 160
-líneas.
+Lista corta a propósito: el mercado inmobiliario español está concentrado en un
+puñado de portales grandes, así que no hace falta una tabla larga de sitios.
 
 ## Orden de recorrido para Stage B
 

@@ -20,12 +20,6 @@ pasted tables sometimes arrive with OCR/copy corruption in cells and URLs;
 cross-reference against other dates' mentions of the same listing before
 trusting a truncated cell), then run this file. Re-running for a date already
 in history.json replaces that date's entries (idempotent).
-
-2026-08-26: repurposed from Motorhome_Search — the mechanism (SHORTLISTS ->
-build_entry -> history.json) is unchanged, only the per-entry fields (now
-house fields instead of vehicle fields) and the source-site examples above.
-SHORTLISTS is reset to empty; the old motorhome-era dataset is preserved at
-Resources/archive-motorhome-search/ if ever needed for reference.
 """
 import json
 import sys

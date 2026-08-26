@@ -8,10 +8,8 @@ winners — that is Stage B (`claude -p`, driven by research-prompt.md), which r
 the detail pages and judges every candidate against the family's actual brief
 (budget <=EUR500k, >=3 bedrooms, private garden, home-office space).
 
-2026-08-26: repurposed from the Motorhome_Search project's two-source Playwright
-scraper (Milanuncios + Coches.net) to a single-source Idealista scraper for this
-project's house search. Idealista's DataDome protection is aggressive, so this
-connects to an already-authenticated Chrome session over CDP (see
+Idealista's DataDome protection is aggressive, so this connects to an
+already-authenticated Chrome session over CDP (see
 `_connect_idealista_browser`) rather than launching a fresh headless context —
 mirroring the working pattern in the sibling project `Assets_HQ/BSA_Options`.
 
@@ -173,10 +171,9 @@ def same_house(a: dict, b: dict) -> bool:
     carry two similar units (a same-source near-duplicate is the agency's data,
     not our scraper's problem to collapse), so same-source pairs are never merged
     no matter how similar their titles are. Cross-source plus a real token
-    overlap (>=3 shared descriptive tokens, calibrated the same way the original
-    motorhome-search version of this function was) is what actually tells "same
-    house seen twice" apart from "two different houses that happen to share
-    generic listing vocabulary".
+    overlap (>=3 shared descriptive tokens) is what actually tells "same house
+    seen twice" apart from "two different houses that happen to share generic
+    listing vocabulary".
     """
     src_a, src_b = a.get("source"), b.get("source")
     if not src_a or not src_b or src_a == src_b:

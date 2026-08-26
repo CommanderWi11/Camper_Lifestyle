@@ -16,10 +16,9 @@
 # re-picks the same winners, and Stage D's `git diff --cached --quiet` check means
 # that publishes no new commit — a quiet day is a no-op, not noise.
 #
-# 2026-08-26: repurposed from the Motorhome_Search project (com.openbob.motorhome-
-# search-daily) into a house search for Luis's family. Schedule/retry history
-# (single 03:00 run, no same-day retries, the 3:20am Atlantic/Canary session-limit
-# risk) carried forward unchanged — see Resources/archive-motorhome-search/ for why.
+# Single 03:00 run, no same-day retries: Claude's daily session limit resets at
+# 3:20am Atlantic/Canary, 20 min after this fires, so some days may still hit
+# it with no retry left — see CLAUDE.md "Things that will bite you".
 # Also requires the dedicated Idealista CDP Chrome profile (~/.chrome-home-quest-cdp,
 # port 9223) already running and logged in — see CLAUDE.md.
 
