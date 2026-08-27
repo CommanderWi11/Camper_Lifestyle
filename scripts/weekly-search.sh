@@ -66,6 +66,35 @@ for i in $(seq 1 12); do
   sleep 10
 done
 
+# ------------------------------------------------- Preflight: Idealista CDP Chrome
+# harvest.py fails loudly (by design) if this Chrome isn't running rather than
+# silently falling back to a fresh headless context (which DataDome would just
+# block) — but "the dedicated profile's Chrome quit/never started" is the single
+# most common way an otherwise-healthy pipeline fails unattended, since nothing
+# else keeps that window alive across reboots/quits. Auto-launch it here if the
+# debug port isn't responding. This does NOT recover an expired Idealista login
+# session — Luis still has to re-auth by hand in that window (see CLAUDE.md
+# "Idealista access (CDP session)" for why that step isn't automated).
+echo "--- Preflight: Idealista CDP Chrome"
+if curl -sf --max-time 3 http://127.0.0.1:9223/json/version > /dev/null 2>&1; then
+  echo "CDP Chrome already running on 9223."
+else
+  echo "CDP Chrome not responding on 9223 — launching it."
+  nohup "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    --remote-debugging-port=9223 \
+    --user-data-dir="$HOME/.chrome-home-quest-cdp" \
+    > /dev/null 2>&1 &
+  disown
+  for i in $(seq 1 15); do
+    sleep 2
+    if curl -sf --max-time 3 http://127.0.0.1:9223/json/version > /dev/null 2>&1; then
+      echo "CDP Chrome up after ${i}x2s."
+      break
+    fi
+    [ "$i" -eq 15 ] && echo "WARNING: CDP Chrome still not responding after 30s — Stage A will likely fail with a clear error."
+  done
+fi
+
 # ---------------------------------------------------------------- Stage A: harvest
 echo "--- Stage A: harvesting candidates"
 if ! "$PY" scripts/harvest.py; then
