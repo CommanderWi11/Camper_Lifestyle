@@ -1,0 +1,9 @@
+{
+  "_comment": "Cheap gates for Stage A (harvest.py --track gc) ONLY. Same shape as params.json (see its own _comment) but for the Gran Canaria track: whole island excluding Tafira, >=4 bedrooms instead of >=3. The real judging still lives in research-prompt-gc.md.",
+
+  "top_n": 5,
+
+  "min_price": 0,
+  "max_price": 500000,
+  "min_bedrooms": 4
+}

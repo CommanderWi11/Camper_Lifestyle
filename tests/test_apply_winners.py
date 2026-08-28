@@ -145,6 +145,17 @@ def test_fewer_than_three_bedrooms_is_refused():
         validate([ok(specs={"bedrooms": 2, "has_garden": True})], blocked=set())
 
 
+def test_gc_track_rejects_three_bedrooms_but_accepts_four():
+    """The 'gc' track's hard gate is >=4 bedrooms, not >=3 — validate() takes
+    the gate as a parameter (see tracks.py's min_bedrooms_gate) rather than a
+    hardcoded literal, so this exercises that per-track wiring directly."""
+    with pytest.raises(Invalid, match="bedroom"):
+        validate([ok(specs={"bedrooms": 3, "has_garden": True})], blocked=set(), min_bedrooms=4)
+
+    got = validate([ok(specs={"bedrooms": 4, "has_garden": True})], blocked=set(), min_bedrooms=4)
+    assert got[0]["specs"]["bedrooms"] == 4
+
+
 def test_no_private_garden_is_refused():
     with pytest.raises(Invalid, match="garden"):
         validate([ok(specs={"bedrooms": 4, "has_garden": False})], blocked=set())

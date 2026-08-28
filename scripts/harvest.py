@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Stage A of the daily pipeline: harvest Idealista.es house-listing candidates.
+"""Stage A of the daily pipeline: harvest Idealista.es house-listing candidates
+for one search track (see tracks.py).
 
-This script is deliberately DUMB. It casts a wide net over Idealista's
-venta-viviendas search for Tafira / Las Palmas de Gran Canaria and writes every
-plausible candidate it finds to candidates.json. It does not rank, score, or pick
-winners — that is Stage B (`claude -p`, driven by research-prompt.md), which reads
-the detail pages and judges every candidate against the family's actual brief
-(budget <=EUR500k, >=3 bedrooms, private garden, home-office space).
+This script is deliberately DUMB. Run per track (`--track tafira` or
+`--track gc`), it casts a wide net over Idealista's venta-viviendas search for
+that track's area(s) and writes every plausible candidate it finds to that
+track's own candidates.json. It does not rank, score, or pick winners — that
+is Stage B (`claude -p`, driven by that track's research-prompt*.md), which
+reads the detail pages and judges every candidate against the family's actual
+brief (budget <=EUR500k, private garden, and a per-track bedroom minimum —
+see tracks.py).
 
 Idealista's DataDome protection is aggressive, so this connects to an
 already-authenticated Chrome session over CDP (see
@@ -17,6 +20,7 @@ Discarded listings (the trash-can button -> Supabase `house_hidden`) are exclude
 here, so a discard means "never searched again", not merely "hidden in the UI".
 """
 
+import argparse
 import json
 import hashlib
 import re
@@ -29,11 +33,21 @@ import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
-PARAMS_FILE = Path(__file__).parent / "params.json"
-CANDIDATES_FILE = Path(__file__).parent / "candidates.json"
+import tracks
+
+# PARAMS_FILE / CANDIDATES_FILE / LISTINGS_FILE are per-track and are
+# reassigned in main() from tracks.TRACKS[args.track] before anything reads
+# them — the default values below are the "tafira" track, so any code that
+# imports this module without going through main() (tests, apply_winners.py's
+# own main() when it hasn't set a track yet) still gets sane defaults.
+# BLOCKLIST_FILE / STARRED_FILE / CONFIG_JS stay global across both tracks on
+# purpose: a discard or a Supabase config should apply regardless of which
+# track found the house.
+PARAMS_FILE = tracks.TRACKS[tracks.DEFAULT_TRACK]["params_file"]
+CANDIDATES_FILE = tracks.TRACKS[tracks.DEFAULT_TRACK]["candidates_file"]
+LISTINGS_FILE = tracks.TRACKS[tracks.DEFAULT_TRACK]["listings_file"]
 BLOCKLIST_FILE = Path(__file__).parent / "blocklist.json"
 STARRED_FILE = Path(__file__).parent / "starred.json"
-LISTINGS_FILE = Path(__file__).parent.parent / "docs" / "listings.json"
 CONFIG_JS = Path(__file__).parent.parent / "docs" / "config.js"
 
 HEADERS = {
@@ -346,14 +360,69 @@ IDEALISTA_SEARCH_AREAS = [
      "https://www.idealista.com/venta-viviendas/las-palmas-de-gran-canaria-las-palmas/"),
 ]
 
+# LIVE-VERIFIED 2026-08-28 (all 10, individually, via the real authenticated
+# CDP session — not guessed-and-trusted) — the "gc" track (whole island of
+# Gran Canaria EXCLUDING Tafira, see EXCLUDE_AREA_TERMS_GC below) needs area
+# coverage for every non-Tafira municipality. Idealista has no single "whole
+# island" geo URL, so this extends the one already-verified municipality-level
+# pattern (`.../venta-viviendas/<municipio>-las-palmas/`, proven for
+# "las-palmas-de-gran-canaria-las-palmas" above) by direct slug substitution
+# to the island's other largest municipalities, then confirmed each one
+# individually returns a real results page (not a 404/"no corresponde a
+# ninguna página" redirect) with the full con-precio-hasta_500000,de-tres-
+# dormitorios,jardin facet combo applied — card counts on that pass: LPGC 32,
+# Telde 12, Santa Lucía de Tirajana 13, San Bartolomé de Tirajana 11, Arucas 5,
+# Ingenio 1, Agüimes 8, Gáldar 6, Santa Brígida 7, Mogán 14 (~109 total before
+# the Tafira-exclusion filter, dedup, and the 4-bedroom client-side re-check —
+# see the note above _BEDROOM_FILTER_SLUGS for why bedrooms aren't a URL facet
+# for this track). A day-to-day count will vary; this just confirms every URL
+# genuinely resolves. A wrong slug here is non-fatal by design either way:
+# `fetch_idealista` catches and logs a per-area failure without aborting the
+# rest of the run (see its try/except below).
+IDEALISTA_SEARCH_AREAS_GC = [
+    ("Las Palmas de Gran Canaria",
+     "https://www.idealista.com/venta-viviendas/las-palmas-de-gran-canaria-las-palmas/"),
+    ("Telde", "https://www.idealista.com/venta-viviendas/telde-las-palmas/"),
+    ("Santa Lucía de Tirajana", "https://www.idealista.com/venta-viviendas/santa-lucia-de-tirajana-las-palmas/"),
+    ("San Bartolomé de Tirajana", "https://www.idealista.com/venta-viviendas/san-bartolome-de-tirajana-las-palmas/"),
+    ("Arucas", "https://www.idealista.com/venta-viviendas/arucas-las-palmas/"),
+    ("Ingenio", "https://www.idealista.com/venta-viviendas/ingenio-las-palmas/"),
+    ("Agüimes", "https://www.idealista.com/venta-viviendas/aguimes-las-palmas/"),
+    ("Gáldar", "https://www.idealista.com/venta-viviendas/galdar-las-palmas/"),
+    ("Santa Brígida", "https://www.idealista.com/venta-viviendas/santa-brigida-las-palmas/"),
+    ("Mogán", "https://www.idealista.com/venta-viviendas/mogan-las-palmas/"),
+]
+
+# Tafira is a DISTRICT inside the Las Palmas de Gran Canaria municipality, not
+# its own municipality — so no municipality-level URL above can exclude it by
+# itself. The "gc" track always drops any candidate whose location/title
+# mentions one of these terms (accent/case-insensitive, see
+# `_mentions_excluded_area`), regardless of which area URL produced it.
+EXCLUDE_AREA_TERMS_GC = ["tafira"]
+
 # LIVE-VERIFIED 2026-08-26: idealista's filter-URL router is picky — a lone
 # amenity/room segment (e.g. "jardin/" or "de-tres-dormitorios-en-adelante/" by
 # itself) 404s, and the "-en-adelante" ("or more") suffix guessed originally is
 # wrong. The combo actually confirmed working (via Luis's own saved-search URL
 # and direct navigation) is "con-precio-hasta_<N>,de-tres-dormitorios,jardin/",
-# in that order. Only min_bedrooms=3 is confirmed; other counts are left
-# unmapped (falls back to client-side-only filtering, which already exists as
-# a safety net below) rather than guessing an unverified slug.
+# in that order.
+#
+# LIVE-VERIFIED 2026-08-28 (for the "gc" track's 4-bedroom gate): idealista's
+# own bedroom-filter UI on venta-viviendas caps at 3 — inspecting the site's
+# real filter links (`a[href*='dormitorio']` on a city search page) returns
+# only "con-de-un-dormitorio" / "-dos-" / "-tres-", nothing for 4. Every
+# guessed 4-bedroom slug tried live ("de-cuatro-dormitorios",
+# "de-cuatro-dormitorios-en-adelante", "de-4-dormitorios",
+# "mas-de-tres-dormitorios") 404s ("Lo sentimos, la dirección que has
+# introducido..."). This is a genuine site limitation, not an unconfirmed
+# guess to fix later — 4 is deliberately left UNMAPPED so
+# `_build_idealista_search_url` skips the bedroom facet for that track and
+# falls back to the client-side check in `fetch_idealista` below, which is
+# confirmed to work: a price+jardin-only search on Telde returned 29 results
+# spanning 2-6 bedrooms (Counter: {2: 10, 3: 12, 4: 3, 5: 3, 6: 1}), so the
+# 4+ houses ARE present in the unfiltered results, just not facet-filterable
+# at the URL level — they still get selected correctly by the bedrooms<4
+# client-side check.
 _BEDROOM_FILTER_SLUGS = {
     3: "de-tres-dormitorios",
 }
@@ -382,6 +451,20 @@ def _location_from_title(title: str) -> str:
     """
     parts = title.split(" en ", 1)
     return parts[1].strip() if len(parts) == 2 else title
+
+
+def _mentions_excluded_area(item: dict, exclude_terms: list[str]) -> bool:
+    """True if `item`'s location or title mentions any of `exclude_terms`
+    (accent/case-insensitive) — used by the "gc" track to drop Tafira-district
+    results that a municipality-wide search URL cannot filter out on its own
+    (see EXCLUDE_AREA_TERMS_GC above)."""
+    haystack = _norm_plain(item.get("location", "")) + " " + _norm_plain(item.get("title", ""))
+    return any(term in haystack for term in exclude_terms)
+
+
+def _norm_plain(text: str) -> str:
+    norm = unicodedata.normalize("NFKD", text or "")
+    return "".join(c for c in norm if not unicodedata.combining(c)).lower()
 
 
 def _build_idealista_search_url(base_url: str, params: dict) -> str:
@@ -516,13 +599,19 @@ def _parse_idealista_cards(page) -> list:
     return out
 
 
-def fetch_idealista(params: dict) -> list:
-    """Scrape Idealista.es venta-viviendas listings across Tafira Alta, Tafira
-    Baja, and — as the explicit fallback research-prompt.md asks for — the wider
-    Las Palmas de Gran Canaria city (see `IDEALISTA_SEARCH_AREAS`). Tafira alone
-    is thin (1-2 live matches on a given day), which is exactly why the fallback
-    area exists; Stage B is what actually decides `is_target_area` per listing,
-    from `location`, not this harvester.
+def fetch_idealista(params: dict, areas: list[tuple[str, str]] | None = None,
+                     exclude_terms: list[str] | None = None) -> list:
+    """Scrape Idealista.es venta-viviendas listings across `areas` (defaults to
+    the Tafira track's Tafira Alta / Tafira Baja / Las Palmas de Gran Canaria
+    fallback — see `IDEALISTA_SEARCH_AREAS`). Tafira alone is thin (1-2 live
+    matches on a given day), which is exactly why that track's fallback area
+    exists; Stage B is what actually decides `is_target_area` per listing, from
+    `location`, not this harvester.
+
+    `exclude_terms`, when given, drops any result whose location/title mentions
+    one of those terms (see `_mentions_excluded_area`) — used by the "gc" track
+    to filter out Tafira-district results a municipality-wide URL can't exclude
+    on its own.
 
     Connects via CDP to an already-authenticated Chrome session (see
     `_connect_idealista_browser`) rather than launching a fresh context, since
@@ -533,6 +622,7 @@ def fetch_idealista(params: dict) -> list:
     against `params` below as a safety net for any area/count not covered by a
     known facet mapping.
     """
+    areas = areas if areas is not None else IDEALISTA_SEARCH_AREAS
     min_bedrooms = int(params.get("min_bedrooms") or 0)
     max_price = params.get("max_price") or None
     min_price = params.get("min_price") or 0
@@ -541,7 +631,7 @@ def fetch_idealista(params: dict) -> list:
     with sync_playwright() as p:
         browser, page = _connect_idealista_browser(p)
         try:
-            for label, base_url in IDEALISTA_SEARCH_AREAS:
+            for label, base_url in areas:
                 url = _build_idealista_search_url(base_url, params)
                 try:
                     page.goto(url, timeout=45000)
@@ -567,6 +657,8 @@ def fetch_idealista(params: dict) -> list:
                             continue
                         if min_bedrooms and bedrooms is not None and bedrooms < min_bedrooms:
                             continue
+                        if exclude_terms and _mentions_excluded_area(item, exclude_terms):
+                            continue
                         results.append(item)
                 except Exception as exc:
                     print(f"[idealista] error fetching {label}: {exc}", file=sys.stderr)
@@ -585,6 +677,32 @@ def fetch_idealista(params: dict) -> list:
             pass
 
     return results
+
+
+def fetch_detail_page(url: str) -> str:
+    """Fetch one Idealista listing's rendered text via the same authenticated
+    CDP session `fetch_idealista` uses for search-results pages.
+
+    Stage B (research-prompt.md) needs this for detail pages, not WebFetch:
+    WebFetch is a plain, unauthenticated HTTP request with no browser
+    fingerprint or session cookie, and Idealista's DataDome anti-bot returns a
+    403/CAPTCHA for that on every single listing, every time — live-confirmed
+    2026-08-28, when every winner that night carried a flag admitting Stage B
+    never actually read a description and had to guess the two hard gates
+    (garden privacy, desk-area viability) that only the ad text can confirm.
+    Reusing the real logged-in tab, exactly as the search-results scrape does,
+    is what actually gets past DataDome.
+    """
+    with sync_playwright() as p:
+        browser, page = _connect_idealista_browser(p)
+        page.goto(url, timeout=45000)
+        page.wait_for_timeout(3000)
+        if "/login" in page.url:
+            raise RuntimeError(
+                "Idealista session expired — redirected to /login. "
+                f"Re-authenticate manually in the CDP Chrome window ({IDEALISTA_CDP_URL})."
+            )
+        return page.inner_text("body")
 
 
 # ---------------------------------------------------------------------------
@@ -621,32 +739,44 @@ def merge_candidates(existing: list, new_results: list,
     return kept
 
 
-SOURCES = [
-    ("idealista", fetch_idealista),
-]
+def _parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Stage A: harvest Idealista candidates for one search track."
+    )
+    p.add_argument("--track", choices=sorted(tracks.TRACKS), default=tracks.DEFAULT_TRACK,
+                    help="Which search track to harvest for (default: %(default)s)")
+    return p.parse_args()
 
 
 def main() -> None:
+    global PARAMS_FILE, CANDIDATES_FILE, LISTINGS_FILE
+
+    args = _parse_args()
+    track = tracks.TRACKS[args.track]
+    PARAMS_FILE = track["params_file"]
+    CANDIDATES_FILE = track["candidates_file"]
+    LISTINGS_FILE = track["listings_file"]
+
+    areas = IDEALISTA_SEARCH_AREAS_GC if args.track == "gc" else IDEALISTA_SEARCH_AREAS
+    exclude_terms = EXCLUDE_AREA_TERMS_GC if args.track == "gc" else None
+
     params = load_params()
     blocked_ids = load_blocklist()
     blocked_fps = blocked_fingerprints(blocked_ids)
     if blocked_fps:
         print(f"[blocklist] {len(blocked_fps)} house fingerprints blocked cross-source")
 
-    harvested: list = []
-    for name, fetcher in SOURCES:
-        print(f"Fetching {name}...")
-        try:
-            found = fetcher(params)
-        except Exception as exc:
-            print(f"[{name}] FAILED: {exc}", file=sys.stderr)
-            found = []
-        # A source silently dropping to zero is how these pipelines rot. Say so.
-        marker = "  <-- ZERO, check selectors" if not found else ""
-        print(f"[{name}] {len(found)} candidates{marker}")
-        harvested.extend(found)
+    print(f"Fetching idealista ({track['label']})...")
+    try:
+        found = fetch_idealista(params, areas=areas, exclude_terms=exclude_terms)
+    except Exception as exc:
+        print(f"[idealista] FAILED: {exc}", file=sys.stderr)
+        found = []
+    # A source silently dropping to zero is how these pipelines rot. Say so.
+    marker = "  <-- ZERO, check selectors" if not found else ""
+    print(f"[idealista] {len(found)} candidates{marker}")
 
-    pool = merge_candidates(load_candidates(), harvested, blocked_ids, blocked_fps)
+    pool = merge_candidates(load_candidates(), found, blocked_ids, blocked_fps)
     save_candidates(pool)
     print(f"Wrote {len(pool)} candidates to {CANDIDATES_FILE.name}")
 

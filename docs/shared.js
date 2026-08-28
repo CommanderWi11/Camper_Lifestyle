@@ -1,12 +1,19 @@
-// Plumbing shared by both pages — index.html (Top 5 + Favoritos) and
-// manual.html (Añadidos a mano, the relocated history view). Split out of
-// app.js 2026-08-13 when the manual snapshots moved to their own page.
+// Plumbing shared by both pages — index.html (Top 5 + Favoritos, now with two
+// track tabs: Tafira / Gran Canaria) and manual.html (Añadidos a mano, the
+// relocated history view — Tafira-only, no tabs, see allKnownEntries() below).
+// Split out of app.js 2026-08-13 when the manual snapshots moved to their own
+// page; extended 2026-08-28 for the two-track tabs.
 //
 // Contract with the per-page scripts: each page defines its own global
 // render() (classic scripts, shared global scope) and calls loadData() +
 // wireGrid() from its init. The star/discard handlers here re-render by
-// calling that page's render().
+// calling that page's render(). `allListings` always points at the ACTIVE
+// track's board (see setActiveTrack()) — manual.html never calls
+// setActiveTrack, so it stays on the default ("tafira") the whole time, which
+// is what its Top-5-exclusion check in manual.js needs.
 
+let allListingsByTrack = { tafira: [], gc: [] };
+let activeTrack = 'tafira';
 let allListings = [];
 let historySnapshots = [];
 let starredSet = new Set();
@@ -69,13 +76,23 @@ async function persistHidden(id) {
 }
 
 async function loadData() {
-  const [listings, history] = await Promise.all([
+  const [tafira, gc, history] = await Promise.all([
     fetch('listings.json').then(r => r.json()),
+    fetch('listings-gc.json').then(r => r.ok ? r.json() : []).catch(() => []),
     fetch('history.json').then(r => r.ok ? r.json() : []).catch(() => []),
     loadState(),
   ]);
-  allListings = listings;
+  allListingsByTrack = { tafira, gc };
+  allListings = allListingsByTrack[activeTrack];
   historySnapshots = history;
+}
+
+/** Switches which track's board `allListings` points at (see the module
+ *  comment above). Only called from index.html's tab buttons — manual.html
+ *  never calls this, so it stays on the default 'tafira' track. */
+function setActiveTrack(track) {
+  activeTrack = track;
+  allListings = allListingsByTrack[track] || [];
 }
 
 function wireGrid() {
@@ -84,17 +101,22 @@ function wireGrid() {
   grid.addEventListener('click', handleDiscardToggle);
 }
 
-/** Every listing this dashboard knows about, automated board + history, keyed
- *  by id — a favorite can be starred from either, so Favoritos has to be able
- *  to find it wherever it lives. historySnapshots is newest-first, so on a
- *  shared id (the same vehicle reappearing across dated searches) the most
- *  recent snapshot's copy wins. */
+/** Every listing this dashboard knows about for the ACTIVE track, board +
+ *  history, keyed by id — a favorite can be starred from either, so
+ *  Favoritos has to be able to find it wherever it lives. historySnapshots
+ *  (the manual "Añadidos a mano" archive) is Tafira-only, so it's merged in
+ *  only when the Tafira tab is active — the Gran Canaria tab has no manual
+ *  history of its own, only its own board. historySnapshots is newest-first,
+ *  so on a shared id (the same house reappearing across dated searches) the
+ *  most recent snapshot's copy wins. */
 function allKnownEntries() {
   const known = new Map();
   for (const l of allListings) known.set(l.id, l);
-  for (const snapshot of historySnapshots) {
-    for (const e of snapshot.entries) {
-      if (!known.has(e.id)) known.set(e.id, e);
+  if (activeTrack === 'tafira') {
+    for (const snapshot of historySnapshots) {
+      for (const e of snapshot.entries) {
+        if (!known.has(e.id)) known.set(e.id, e);
+      }
     }
   }
   return known;

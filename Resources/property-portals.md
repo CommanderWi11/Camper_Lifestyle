@@ -10,9 +10,11 @@ puñado de portales grandes, así que no hace falta una tabla larga de sitios.
    Tafira/Las Palmas de Gran Canaria, filtrada por precio y dormitorios) y entrega
    esos candidatos en `candidates.json`. Aun así, Stage B debe poder navegarlo
    también en vivo: el harvester filtra por facetas estructuradas, y algunos
-   anuncios mencionan el jardín (o la zona de despacho) solo en el texto libre,
-   no en las facetas — esos se le escapan a Stage A pero no deberían escapársele
-   a Stage B.
+   anuncios mencionan el jardín solo en el texto libre, no en las facetas —
+   esos se le escapan a Stage A pero no deberían escapársele a Stage B. Usa
+   `"$REPO/.venv/bin/python3" "$REPO/scripts/idealista_detail.py" <url>` (vía
+   Bash, ruta absoluta) para abrir fichas de Idealista, nunca WebFetch — ver
+   `research-prompt.md`/`research-prompt-gc.md`.
 2. **[Fotocasa.es](https://www.fotocasa.es/)** — búsqueda en vivo, sin scraper
    propio. Cúbrelo con la misma profundidad que Idealista.
 3. **[pisos.com](https://www.pisos.com/)** — búsqueda en vivo, sin scraper

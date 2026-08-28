@@ -1,24 +1,34 @@
 #!/usr/bin/env python3
-"""Stage C: validate this week's winners and fold them into the board.
+"""Stage C: validate one track's winners and fold them into that track's board.
 
 This is the gate between a non-deterministic model and the family's live dashboard.
 `claude -p` is good, but it is not a database — so nothing it produces reaches
-docs/listings.json until it has passed every check below. If validation fails we
-exit non-zero and weekly-search.sh refuses to commit, leaving last week's board
-untouched. A stale board beats a corrupted one.
+a track's listings.json until it has passed every check below. If validation
+fails we exit non-zero and weekly-search.sh refuses to commit, leaving that
+track's last board untouched. A stale board beats a corrupted one.
+
+Run per track (`--track tafira` or `--track gc`, see tracks.py) — every file
+path below is reassigned in main() from tracks.TRACKS[args.track], including
+harvest.CANDIDATES_FILE / harvest.LISTINGS_FILE, since load_candidates() /
+load_listings() (imported from harvest.py) resolve those paths from harvest's
+own module globals, not this module's.
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
 
 import board
+import harvest
+import tracks
 from harvest import (
-    BLOCKLIST_FILE, LISTINGS_FILE, fetch_og_image, load_blocklist,
-    load_candidates, load_listings, load_starred, make_id, same_house,
+    fetch_og_image, load_blocklist, load_candidates, load_listings,
+    load_starred, make_id, same_house,
 )
 
-WINNERS_FILE = Path(__file__).parent / "winners.json"
+WINNERS_FILE = tracks.TRACKS[tracks.DEFAULT_TRACK]["winners_file"]
+LISTINGS_FILE = tracks.TRACKS[tracks.DEFAULT_TRACK]["listings_file"]
 HISTORY_FILE = Path(__file__).parent.parent / "docs" / "history.json"
 MAX_WINNERS = 5
 
@@ -44,7 +54,7 @@ def blocked_listings(blocked: set[str]) -> list:
     return [l for l in known if l.get("id") in blocked]
 
 
-def validate(raw: object, blocked: set[str]) -> list:
+def validate(raw: object, blocked: set[str], min_bedrooms: int = 3) -> list:
     if not isinstance(raw, list):
         raise Invalid(f"expected a JSON list of winners, got {type(raw).__name__}")
     if len(raw) > MAX_WINNERS:
@@ -125,8 +135,8 @@ def validate(raw: object, blocked: set[str]) -> list:
             raise Invalid(f"winner {wid} has price {price!r}, expected a number <=500000")
 
         bedrooms = w["specs"].get("bedrooms")
-        if not isinstance(bedrooms, int) or bedrooms < 3:
-            raise Invalid(f"winner {wid} has {bedrooms!r} bedrooms, expected >=3")
+        if not isinstance(bedrooms, int) or bedrooms < min_bedrooms:
+            raise Invalid(f"winner {wid} has {bedrooms!r} bedrooms, expected >={min_bedrooms}")
 
         if w["specs"].get("has_garden") is not True:
             raise Invalid(f"winner {wid} has no private garden — hard requirement is a garden")
@@ -150,7 +160,31 @@ def validate(raw: object, blocked: set[str]) -> list:
     return winners
 
 
+def _parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Stage C: validate one track's winners.json and update its board."
+    )
+    p.add_argument("--track", choices=sorted(tracks.TRACKS), default=tracks.DEFAULT_TRACK,
+                    help="Which search track to validate/publish (default: %(default)s)")
+    return p.parse_args()
+
+
 def main() -> int:
+    global WINNERS_FILE, LISTINGS_FILE
+
+    args = _parse_args()
+    track = tracks.TRACKS[args.track]
+    WINNERS_FILE = track["winners_file"]
+    LISTINGS_FILE = track["listings_file"]
+    # load_candidates()/load_listings() (imported from harvest.py) resolve
+    # their paths from harvest's OWN module globals, not this module's names —
+    # a plain `from harvest import X` binds X at import time, it does not stay
+    # live. Setting these module attributes is what actually makes
+    # blocked_listings() / board.update_board()'s `load_listings()` call below
+    # track-scoped.
+    harvest.CANDIDATES_FILE = track["candidates_file"]
+    harvest.LISTINGS_FILE = track["listings_file"]
+
     if not WINNERS_FILE.exists():
         print(f"ERROR: {WINNERS_FILE} was never written — the research step failed.",
               file=sys.stderr)
@@ -159,13 +193,13 @@ def main() -> int:
     try:
         raw = json.loads(WINNERS_FILE.read_text())
     except json.JSONDecodeError as exc:
-        print(f"ERROR: winners.json is not valid JSON ({exc}).", file=sys.stderr)
+        print(f"ERROR: {WINNERS_FILE.name} is not valid JSON ({exc}).", file=sys.stderr)
         return 1
 
     blocked = load_blocklist()
 
     try:
-        winners = validate(raw, blocked)
+        winners = validate(raw, blocked, min_bedrooms=track["min_bedrooms_gate"])
     except Invalid as exc:
         print(f"ERROR: refusing to publish — {exc}", file=sys.stderr)
         return 1

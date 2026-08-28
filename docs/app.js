@@ -1,25 +1,45 @@
 // Top 5 de hoy + Favoritos — minimal cards, nothing else.
 //
-// listings.json holds today's ranked Top 5 (rank 1-5) and Favorites (starred,
-// rank null). A listing that drops out of the Top 5 and was never starred simply
-// isn't in the file on the next research pass — no archive to maintain here.
+// listings.json / listings-gc.json each hold one track's ranked Top 5 (rank
+// 1-5) and Favorites (starred, rank null) — Tafira and Gran Canaria
+// respectively, switched via the tab bar (see wireTabs()). A listing that
+// drops out of a track's Top 5 and was never starred simply isn't in that
+// file on the next research pass — no archive to maintain here.
 //
 // The manual research snapshots (history.json) render on their own page since
-// 2026-08-13 — manual.html / manual.js, linked from the header. Data loading,
-// card rendering, and the star/discard handlers live in shared.js.
+// 2026-08-13 — manual.html / manual.js, linked from the header. That page is
+// Tafira-only and has no tabs. Data loading, card rendering, and the
+// star/discard handlers live in shared.js.
 
 async function init() {
   await loadData();
-
-  const dates = allListings.map(l => l.checked_at || l.added_at).filter(Boolean).sort().reverse();
-  if (dates.length) {
-    const daysAgo = Math.floor((Date.now() - new Date(dates[0]).getTime()) / 86400000);
-    document.getElementById('last-updated').textContent =
-      daysAgo <= 0 ? `Actualizado hoy` : daysAgo === 1 ? `Actualizado ayer` : `Hace ${daysAgo} días`;
-  }
-
   wireGrid();
+  wireTabs();
+  updateLastUpdated();
   render();
+}
+
+function updateLastUpdated() {
+  const dates = allListings.map(l => l.checked_at || l.added_at).filter(Boolean).sort().reverse();
+  const el = document.getElementById('last-updated');
+  if (!dates.length) { el.textContent = ''; return; }
+  const daysAgo = Math.floor((Date.now() - new Date(dates[0]).getTime()) / 86400000);
+  el.textContent = daysAgo <= 0 ? `Actualizado hoy` : daysAgo === 1 ? `Actualizado ayer` : `Hace ${daysAgo} días`;
+}
+
+function wireTabs() {
+  const buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) return;
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      setActiveTrack(btn.dataset.track);
+      updateLastUpdated();
+      render();
+    });
+  });
 }
 
 function splitTop5AndFavorites(listings, known) {

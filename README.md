@@ -2,9 +2,8 @@
 
 **Top 5** de hoy — viviendas en venta para la familia de Luis, buscadas y
 valoradas a diario. Presupuesto **≤500.000€**, **≥3 dormitorios**, **jardín
-privado** (no vale acceso a uno comunitario) y como mínimo una **zona de
-escritorio** para el teletrabajo (mejor aún si es una **habitación de despacho**
-dedicada). Zona principal: **Tafira** (Las Palmas de Gran Canaria), con barrios
+privado** (no vale acceso a uno comunitario). Zona principal: **Tafira**
+(Las Palmas de Gran Canaria), con barrios
 cercanos de Las Palmas de Gran Canaria como alternativa solo si Tafira sola no da
 suficientes candidatos — y siempre marcados claramente como fuera de Tafira, nunca
 mezclados como si fueran de la zona principal.
@@ -31,9 +30,7 @@ Orquestado por `scripts/weekly-search.sh`, programado con
 ## La rúbrica
 
 Filtros innegociables: precio **≤500.000€**, **≥3 dormitorios**, **jardín
-privado**, y como mínimo una **zona de escritorio** viable para el teletrabajo.
-Preferencias (no filtros): una habitación de despacho dedicada gana a una simple
-zona de escritorio, en igualdad de condiciones; **Tafira** gana a una zona
+privado**. Preferencias (no filtros): **Tafira** gana a una zona
 alternativa (marcada como tal); a partir de ahí, se ordena por valor global —
 **sin puntuación porcentual inventada**, se clasifica de forma cualitativa, sin
 inventar una fórmula ponderada.

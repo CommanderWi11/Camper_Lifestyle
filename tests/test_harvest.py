@@ -199,3 +199,73 @@ def test_fetch_og_image_is_best_effort_and_swallows_errors():
     assert harvest.fetch_og_image("not-a-url") == ""
     with patch("harvest.requests.get", side_effect=OSError("network down")):
         assert harvest.fetch_og_image("https://site/ad") == ""
+
+
+# --------------------------------------------------------------- "gc" track
+#
+# The live Playwright/CDP scraping in fetch_idealista() is deliberately not
+# unit tested (see module docstring above) — what's covered here is the pure
+# logic the "gc" track adds: the area list shape, the bedroom-slug fallback,
+# and the Tafira-exclusion filter.
+
+def test_gc_track_area_list_is_populated_and_excludes_no_tafira_label():
+    """The gc track's own area list must not carry a Tafira-labeled entry —
+    that territory belongs to the tafira track exclusively."""
+    assert len(harvest.IDEALISTA_SEARCH_AREAS_GC) > 0
+    labels = [label.lower() for label, _ in harvest.IDEALISTA_SEARCH_AREAS_GC]
+    assert not any("tafira" in label for label in labels)
+
+
+def test_bedroom_filter_slugs_only_cover_3_no_4_slug_exists_on_the_real_site():
+    """LIVE-VERIFIED 2026-08-28: idealista's own bedroom-filter UI caps at 3 —
+    there is no "4 dormitorios" URL facet on the real site (every guessed slug
+    404s). The "gc" track's >=4 gate is therefore enforced client-side only
+    (see the safety-net check below), never via a URL facet — 4 must stay
+    unmapped here, not filled in with a guess."""
+    assert harvest._BEDROOM_FILTER_SLUGS == {3: "de-tres-dormitorios"}
+
+
+def test_build_search_url_falls_back_to_client_side_only_for_four_bedrooms():
+    url = harvest._build_idealista_search_url(
+        "https://www.idealista.com/venta-viviendas/telde-las-palmas/",
+        {"max_price": 500000, "min_bedrooms": 4},
+    )
+    # No bedroom facet segment for 4 — just price + the always-on garden facet.
+    assert "dormitorios" not in url
+    assert "con-precio-hasta_500000" in url and "jardin" in url
+
+
+def test_mentions_excluded_area_matches_tafira_in_location_case_and_accent_insensitively():
+    item = {"location": "TAFIRA Alta, Las Palmas de Gran Canaria", "title": "Chalet en venta"}
+    assert harvest._mentions_excluded_area(item, ["tafira"])
+
+
+def test_mentions_excluded_area_matches_tafira_in_title_when_location_is_blank():
+    item = {"location": "", "title": "Chalet en Tafira Baja con jardín"}
+    assert harvest._mentions_excluded_area(item, ["tafira"])
+
+
+def test_mentions_excluded_area_does_not_false_positive_on_other_districts():
+    item = {"location": "Telde, Gran Canaria", "title": "Chalet independiente en Telde"}
+    assert not harvest._mentions_excluded_area(item, ["tafira"])
+
+
+def test_fetch_idealista_defaults_to_the_tafira_area_list():
+    """No `areas` argument given -> falls back to IDEALISTA_SEARCH_AREAS (the
+    tafira track's list), preserving every pre-existing call site's behavior."""
+    import inspect
+    sig = inspect.signature(harvest.fetch_idealista)
+    assert sig.parameters["areas"].default is None
+
+
+def test_tracks_config_has_distinct_files_and_gates_per_track():
+    import tracks
+
+    assert set(tracks.TRACKS) == {"tafira", "gc"}
+    assert tracks.TRACKS["tafira"]["min_bedrooms_gate"] == 3
+    assert tracks.TRACKS["gc"]["min_bedrooms_gate"] == 4
+
+    # Every per-track file path must be distinct — a shared path between
+    # tracks would mean one track's Stage A/C silently clobbers the other's.
+    for key in ("params_file", "candidates_file", "winners_file", "listings_file", "research_prompt"):
+        assert tracks.TRACKS["tafira"][key] != tracks.TRACKS["gc"][key], key

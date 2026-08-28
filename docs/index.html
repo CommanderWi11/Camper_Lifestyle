@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,480;9..144,600;9..144,860&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
 </head>
@@ -24,11 +24,16 @@
     Sin conexión — favoritos y descartes solo en este navegador.
   </div>
 
+  <div class="tab-bar" role="tablist" aria-label="Zona de búsqueda">
+    <button class="tab-btn active" data-track="tafira" role="tab" aria-selected="true">Tafira</button>
+    <button class="tab-btn tab-btn--gc" data-track="gc" role="tab" aria-selected="false">Gran Canaria</button>
+  </div>
+
   <main id="listings-grid">
     <p class="msg">Cargando…</p>
   </main>
 
-  <script src="shared.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
