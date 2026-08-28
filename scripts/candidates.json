@@ -446,5 +446,19 @@
     "status": "new",
     "added_at": "2026-08-26",
     "fingerprint": "canaria-gran-mesas-palmas-pareado-toscon|"
+  },
+  {
+    "id": "idealista-1c14af2c",
+    "title": "Piso en Avenida 8 de Marzo, 8, Tamaraceite, Las Palmas de Gran Canaria",
+    "price": 285000,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Avenida 8 de Marzo, 8, Tamaraceite, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/112384725/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/c1/70/31/1468179732.jpg",
+    "status": "new",
+    "added_at": "2026-08-28",
+    "fingerprint": "avenida-canaria-gran-marzo-palmas-tamaraceite|"
   }
 ]
