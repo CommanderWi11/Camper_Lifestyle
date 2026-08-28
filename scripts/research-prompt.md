@@ -284,9 +284,13 @@ Reglas del contrato:
   exclusivo, leyendo la descripción real del anuncio (ver la nota de arriba
   sobre Idealista/WebFetch — un jardín que no has podido confirmar por no
   poder abrir la ficha **no cuenta como confirmado**, aunque el tipo de
-  vivienda lo haga probable). Si el anuncio solo ofrece jardín/zona verde
-  comunitaria, o no has podido confirmarlo, la vivienda no debería estar en
-  `winners.json` en absoluto (requisito innegociable, ver arriba) — no lo
-  marques `true` "a medias" ni por intuición.
+  vivienda lo haga probable — "chalet independiente" o "casa rural" NO es una
+  confirmación de jardín privado por sí solo, es solo una probabilidad; esto
+  ya ha producido un board entero con los 5 ganadores marcados `has_garden:
+  true` por tipología en vez de por lectura real — no lo repitas). Si el
+  anuncio solo ofrece jardín/zona verde comunitaria, o no has podido
+  confirmarlo, la vivienda no debería estar en `winners.json` en absoluto
+  (requisito innegociable, ver arriba) — no lo marques `true` "a medias" ni
+  por intuición.
 - Resto de `specs` — usa `null` en lo que no hayas podido confirmar. **Nunca
   inventes un número.**

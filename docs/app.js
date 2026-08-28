@@ -1,10 +1,15 @@
-// Top 5 de hoy + Favoritos — minimal cards, nothing else.
+// Top 5 de hoy + Favoritos + Búsquedas anteriores — minimal cards, nothing else.
 //
 // listings.json / listings-gc.json each hold one track's ranked Top 5 (rank
 // 1-5) and Favorites (starred, rank null) — Tafira and Gran Canaria
 // respectively, switched via the tab bar (see wireTabs()). A listing that
 // drops out of a track's Top 5 and was never starred simply isn't in that
-// file on the next research pass — no archive to maintain here.
+// file on the next research pass — but it isn't gone: archive.json /
+// archive-gc.json (added 2026-08-28) keep every day's real winners forever,
+// and the "Búsquedas anteriores" section below renders them one dated batch
+// at a time, deduped so each house shows under only the newest date that
+// mentions it (dedupeHistoryByLatest, from history-dedup.js — the exact same
+// dedup manual.html already uses for the hand-added shortlist archive).
 //
 // The manual research snapshots (history.json) render on their own page since
 // 2026-08-13 — manual.html / manual.js, linked from the header. That page is
@@ -58,7 +63,13 @@ function render() {
   const { top5, favorites } = splitTop5AndFavorites(listings, known);
   const grid = document.getElementById('listings-grid');
 
-  if (!top5.length && !favorites.length) {
+  // Búsquedas anteriores: everything already shown above (today's Top 5,
+  // Favoritos) or hidden is excluded, then each remaining house is deduped
+  // down to only the newest dated batch that mentions it.
+  const shownIds = new Set([...hiddenSet, ...starredSet, ...top5.map(l => l.id)]);
+  const previousBatches = dedupeHistoryByLatest(archiveSnapshots, shownIds);
+
+  if (!top5.length && !favorites.length && !previousBatches.length) {
     grid.innerHTML = '<p class="msg">Nada por aquí todavía.</p>';
     return;
   }
@@ -73,6 +84,18 @@ function render() {
   html += favorites.length
     ? `<div class="grid">${favorites.map(renderCard).join('')}</div>`
     : '<p class="msg">Pulsa ★ en una vivienda para guardarla aquí.</p>';
+  html += '</section>';
+
+  html += '<section><h2 class="archive-heading">Búsquedas anteriores</h2>';
+  if (previousBatches.length) {
+    for (const batch of previousBatches) {
+      html += `<div class="history-batch"><h3 class="history-heading">${formatDateEs(batch.date)}</h3>`;
+      html += `<div class="grid">${batch.entries.map(renderCard).join('')}</div>`;
+      html += '</div>';
+    }
+  } else {
+    html += '<p class="msg">Todavía no hay búsquedas anteriores que mostrar.</p>';
+  }
   html += '</section>';
 
   grid.innerHTML = html;

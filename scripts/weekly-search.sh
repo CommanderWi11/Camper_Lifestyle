@@ -304,6 +304,7 @@ fi
 # track's bad day never blocks the other's real publish.
 echo "--- Stage D: publishing"
 git add --ignore-errors docs/listings.json docs/listings-gc.json \
+        docs/archive.json docs/archive-gc.json \
         scripts/candidates.json scripts/candidates-gc.json \
         scripts/winners.json scripts/winners-gc.json \
         scripts/starred.json

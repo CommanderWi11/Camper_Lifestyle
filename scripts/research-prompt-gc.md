@@ -310,9 +310,14 @@ Reglas del contrato:
   duda sobre si el jardín es privado o comunitario, gastos de comunidad no
   publicados, etc.
 - `specs.has_garden` — solo `true` si has confirmado que es de uso privado y
-  exclusivo. Si el anuncio solo ofrece jardín/zona verde comunitaria, la
-  vivienda no debería estar en `winners-gc.json` en absoluto (requisito
-  innegociable, ver arriba) — no lo marques `true` "a medias".
+  exclusivo, leyendo la descripción real del anuncio (ver la nota de arriba
+  sobre Idealista/WebFetch — un jardín que no has podido confirmar por no
+  poder abrir la ficha **no cuenta como confirmado**, aunque el tipo de
+  vivienda lo haga probable — "chalet independiente" o "chalet pareado" NO es
+  una confirmación de jardín privado por sí solo). Si el anuncio solo ofrece
+  jardín/zona verde comunitaria, o no has podido confirmarlo, la vivienda no
+  debería estar en `winners-gc.json` en absoluto (requisito innegociable, ver
+  arriba) — no lo marques `true` "a medias" ni por intuición.
 - `specs.has_office_room` / `specs.office_notes` — informativo en este track,
   nunca eliminatorio: `true` solo si hay una habitación dedicada; si solo hay
   una zona/alcoba viable, déjalo en `false` y describe la zona en

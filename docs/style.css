@@ -238,6 +238,9 @@ h2::before {
 .manual-heading { color: var(--manual); }
 .manual-heading::before { background: var(--manual); }
 
+.archive-heading { color: var(--ink-soft); }
+.archive-heading::before { background: var(--ink-soft); }
+
 .history-batch { margin-top: 2rem; }
 .history-batch:first-child { margin-top: 0; }
 

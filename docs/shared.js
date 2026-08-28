@@ -13,8 +13,10 @@
 // is what its Top-5-exclusion check in manual.js needs.
 
 let allListingsByTrack = { tafira: [], gc: [] };
+let archiveByTrack = { tafira: [], gc: [] };
 let activeTrack = 'tafira';
 let allListings = [];
+let archiveSnapshots = [];
 let historySnapshots = [];
 let starredSet = new Set();
 let starredAtById = new Map();
@@ -76,23 +78,29 @@ async function persistHidden(id) {
 }
 
 async function loadData() {
-  const [tafira, gc, history] = await Promise.all([
+  const [tafira, gc, tafiraArchive, gcArchive, history] = await Promise.all([
     fetch('listings.json').then(r => r.json()),
     fetch('listings-gc.json').then(r => r.ok ? r.json() : []).catch(() => []),
+    fetch('archive.json').then(r => r.ok ? r.json() : []).catch(() => []),
+    fetch('archive-gc.json').then(r => r.ok ? r.json() : []).catch(() => []),
     fetch('history.json').then(r => r.ok ? r.json() : []).catch(() => []),
     loadState(),
   ]);
   allListingsByTrack = { tafira, gc };
+  archiveByTrack = { tafira: tafiraArchive, gc: gcArchive };
   allListings = allListingsByTrack[activeTrack];
+  archiveSnapshots = archiveByTrack[activeTrack];
   historySnapshots = history;
 }
 
-/** Switches which track's board `allListings` points at (see the module
- *  comment above). Only called from index.html's tab buttons — manual.html
- *  never calls this, so it stays on the default 'tafira' track. */
+/** Switches which track's board `allListings`/`archiveSnapshots` point at
+ *  (see the module comment above). Only called from index.html's tab
+ *  buttons — manual.html never calls this, so it stays on the default
+ *  'tafira' track. */
 function setActiveTrack(track) {
   activeTrack = track;
   allListings = allListingsByTrack[track] || [];
+  archiveSnapshots = archiveByTrack[track] || [];
 }
 
 function wireGrid() {
@@ -101,17 +109,21 @@ function wireGrid() {
   grid.addEventListener('click', handleDiscardToggle);
 }
 
-/** Every listing this dashboard knows about for the ACTIVE track, board +
- *  history, keyed by id — a favorite can be starred from either, so
- *  Favoritos has to be able to find it wherever it lives. historySnapshots
- *  (the manual "Añadidos a mano" archive) is Tafira-only, so it's merged in
- *  only when the Tafira tab is active — the Gran Canaria tab has no manual
- *  history of its own, only its own board. historySnapshots is newest-first,
- *  so on a shared id (the same house reappearing across dated searches) the
- *  most recent snapshot's copy wins. */
+/** Every listing this dashboard knows about for the ACTIVE track — today's
+ *  board, that track's "previous searches" archive, and (Tafira only) the
+ *  manual "Añadidos a mano" history — keyed by id, so a favorite can be
+ *  starred from any of them and Favoritos/the discard confirm dialog can
+ *  still find it. archiveSnapshots and historySnapshots are both
+ *  newest-first, so on a shared id (the same house reappearing across dated
+ *  searches) the most recent snapshot's copy wins. */
 function allKnownEntries() {
   const known = new Map();
   for (const l of allListings) known.set(l.id, l);
+  for (const snapshot of archiveSnapshots) {
+    for (const e of snapshot.entries) {
+      if (!known.has(e.id)) known.set(e.id, e);
+    }
+  }
   if (activeTrack === 'tafira') {
     for (const snapshot of historySnapshots) {
       for (const e of snapshot.entries) {
@@ -210,6 +222,7 @@ async function handleDiscardToggle(e) {
   if (!btn) return;
   const id = btn.dataset.id;
   const listing = allListings.find(l => l.id === id)
+    || archiveSnapshots.flatMap(s => s.entries).find(e => e.id === id)
     || historySnapshots.flatMap(s => s.entries).find(e => e.id === id);
   if (!confirm(`¿Eliminar "${listing ? listing.title : 'esta vivienda'}"? No volverá a aparecer.`)) return;
 
