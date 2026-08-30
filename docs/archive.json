@@ -1,5 +1,161 @@
 [
   {
+    "date": "2026-08-30",
+    "entries": [
+      {
+        "id": "idealista-64bbedd0",
+        "url": "https://www.idealista.com/inmueble/109536693/",
+        "source": "idealista",
+        "title": "Chalet pareado en CL Cantonera, 15, Tafira Alta (Residencial Los Frailes)",
+        "price": 480000,
+        "country": "España",
+        "location": "Tafira Alta, Las Palmas de Gran Canaria",
+        "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/0b/4a/ab/1384585561.jpg",
+        "dealer_or_private": "agencia",
+        "vat_status": "ITP no incluido en el precio — el propio anuncio indica explícitamente que impuestos y gastos de la transacción no están incluidos",
+        "checked_at": "2026-08-30",
+        "rank": 1,
+        "score": 88,
+        "is_target_area": true,
+        "verdict": "El anuncio con la confirmación de jardín más sólida de toda la búsqueda: dice literalmente 'jardines privados' (en plural, varias zonas) además de una terraza con BBQ, y está en Tafira Alta, la zona objetivo. 183 m², 4 baños para 3 dormitorios, garaje incluido, buen estado (sin reforma) y orientación sur. El pero: a 480.000 € queda a solo 20.000 € del tope de la familia, y la calificación energética no aparece con letra en el anuncio (no confirmable).",
+        "flags": [
+          "Calificación energética no confirmable: el anuncio muestra el apartado pero sin letra ni consumo visibles",
+          "Comisión/gastos de comunidad no publicados en el anuncio — verificar con la agencia (LIVIGO REAL STATE)"
+        ],
+        "specs": {
+          "bedrooms": 3,
+          "bathrooms": 4,
+          "size_m2": 183,
+          "floor": null,
+          "has_elevator": null,
+          "has_garden": true,
+          "garden_notes": "Jardín privado confirmado explícitamente en la descripción ('espacios exteriores privados... jardines privados'), con terraza con zona de barbacoa. No es jardín comunitario del Residencial Los Frailes, es de uso exclusivo de la vivienda.",
+          "terrace": true,
+          "parking": "1 plaza de garaje privada incluida en el precio (en el aparcamiento de la comunidad)",
+          "energy_rating": null,
+          "year_built": 1994,
+          "needs_reform": false,
+          "community_fees": null,
+          "orientation": "sur"
+        }
+      },
+      {
+        "id": "idealista-67bc42c0",
+        "url": "https://www.idealista.com/inmueble/111998435/",
+        "source": "idealista",
+        "title": "Chalet pareado en Villa Westerling, Tafira Alta",
+        "price": 487500,
+        "country": "España",
+        "location": "Tafira Alta (Villa Westerling), Las Palmas de Gran Canaria",
+        "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/e7/01/37/1459154026.jpg",
+        "dealer_or_private": "agencia",
+        "vat_status": "ITP no incluido (segunda mano) — no confirmado explícitamente en el texto del anuncio, es el régimen estándar en Canarias para vivienda usada",
+        "checked_at": "2026-08-30",
+        "rank": 2,
+        "score": 84,
+        "is_target_area": true,
+        "verdict": "La casa más grande de las finalistas (207 m², 4 dormitorios, 3 baños) en Tafira Alta, con parcela propia de 104 m² y varias zonas exteriores (jardín de entrada, rincón lateral con árbol/plantas, jardín de invierno acristalado con pérgola y BBQ en la parte trasera) descritas como parte de la vivienda, no de zonas comunes — buena señal de jardín privado aunque el anuncio no usa la palabra 'privado' de forma literal. Garaje incluido, buen estado, sin reforma. El pero: a 487.500 € es la más cara de las cuatro, y el dato de calificación energética que muestra el anuncio (1 kWh/m² año) es casi con toda seguridad un error de carga, no un dato real.",
+        "flags": [
+          "El jardín se infiere de la parcela propia (104 m²) y de descripciones específicas de la vivienda, no de la palabra literal 'privado' — confianza alta pero no absoluta",
+          "La calificación energética mostrada (Consumo: 1 kWh/m² año) es casi con certeza un error del anuncio — no tratar como dato real",
+          "Año de construcción no indicado en el anuncio"
+        ],
+        "specs": {
+          "bedrooms": 4,
+          "bathrooms": 3,
+          "size_m2": 207,
+          "floor": null,
+          "has_elevator": null,
+          "has_garden": true,
+          "garden_notes": "Parcela propia de 104 m² con zona ajardinada en la entrada (parte también aparcamiento), rincón lateral con árbol y plantas, y jardín de invierno acristalado con pérgola y barbacoa de obra en la zona trasera — todo descrito como parte de 'la propiedad'/'la vivienda', no de la urbanización.",
+          "terrace": true,
+          "parking": "1 plaza de garaje incluida en el precio",
+          "energy_rating": null,
+          "year_built": null,
+          "needs_reform": false,
+          "community_fees": null,
+          "orientation": null
+        }
+      },
+      {
+        "id": "idealista-f82da6e4",
+        "url": "https://www.idealista.com/inmueble/110994922/",
+        "source": "idealista",
+        "title": "Casa o chalet independiente en Carretera Crta de Bandama s/n, Tafira",
+        "price": 445000,
+        "country": "España",
+        "location": "Tafira (entorno de Bandama, límite con Santa Brígida), Las Palmas de Gran Canaria",
+        "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/dd/46/21/1422007849.jpg",
+        "dealer_or_private": "agencia",
+        "vat_status": "ITP no incluido (segunda mano) — no confirmado explícitamente en el texto del anuncio",
+        "checked_at": "2026-08-30",
+        "rank": 3,
+        "score": 74,
+        "is_target_area": true,
+        "verdict": "El mejor precio por parcela de las cuatro: casa independiente sobre 504 m² de terreno propio, con jardín explícito ('su jardín'), porche, terraza con barbacoa y aljibe propio para riego. Rebajada un 7% (de 480.000 € a 445.000 €). El pero es serio: solo 1 baño para 3 dormitorios, el anuncio la marca 'para reformar', y la calificación energética indicada (300 kWh/m² año de consumo) es muy alta — probablemente banda E-G. Además, el propio texto del anuncio la sitúa en 'Santa Brígida' aunque la ficha estructurada de Idealista la clasifica como Barrio/Distrito Tafira, Las Palmas de Gran Canaria; está en la zona límite junto a la Caldera de Bandama.",
+        "flags": [
+          "El texto libre del anuncio dice 'Santa Brígida' pero la ubicación estructurada de Idealista dice Barrio Tafira/Distrito Tafira, Las Palmas de Gran Canaria — verificar el término municipal exacto antes de ofertar, está en la zona límite de la Caldera de Bandama",
+          "Solo 1 baño para 3 dormitorios",
+          "Necesita reforma (así lo indica el propio anuncio: 'Segunda mano/para reformar')",
+          "Consumo energético indicado muy alto (300 kWh/m² año) — probablemente calificación baja (E-G), la letra exacta no aparece en el anuncio"
+        ],
+        "specs": {
+          "bedrooms": 3,
+          "bathrooms": 1,
+          "size_m2": 196,
+          "floor": null,
+          "has_elevator": null,
+          "has_garden": true,
+          "garden_notes": "Casa independiente sobre parcela propia de 504 m² ('Su jardín, junto con un acogedor porche y una terraza delantera con barbacoa'), con aljibe propio para riego. Jardín privado explícito, sin ambigüedad de comunidad porque es vivienda unifamiliar independiente.",
+          "terrace": true,
+          "parking": null,
+          "energy_rating": null,
+          "year_built": 1998,
+          "needs_reform": true,
+          "community_fees": null,
+          "orientation": null
+        }
+      },
+      {
+        "id": "idealista-68a00b48",
+        "url": "https://www.idealista.com/inmueble/111883967/",
+        "source": "idealista",
+        "title": "Casa o chalet independiente en Calle Horizonte, 50, Las Majadillas, Tamaraceite",
+        "price": 450000,
+        "country": "España",
+        "location": "Las Majadillas, Tamaraceite, Las Palmas de Gran Canaria",
+        "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/da/2e/e2/1451576454.jpg",
+        "dealer_or_private": "agencia",
+        "vat_status": "ITP no incluido — el anuncio indica impuestos de compra estimados en 29.250 € a cargo del comprador, más notaría, registro y gestoría",
+        "checked_at": "2026-08-30",
+        "rank": 4,
+        "score": 68,
+        "is_target_area": false,
+        "verdict": "Incluida como fallback (fuera de Tafira) porque la búsqueda en Tafira por sí sola solo dio tres candidatas sólidas. Casa independiente con la parcela más grande de las cuatro (722 m²), actualmente huerto familiar con tomates, plátanos y calabazas — jardín privado sin ninguna ambigüedad, es una parcela unifamiliar completa. Calificación energética E confirmada explícitamente, buen estado, sin necesidad de reforma. El pero: no está en Tafira (Tamaraceite es otro barrio de Las Palmas), y la planta baja/sótano se describe como espacio diáfano sin terminar (potencial garaje/trastero), lo que puede suponer coste adicional de acondicionamiento.",
+        "flags": [
+          "Fuera de Tafira (barrio Tamaraceite - Las Majadillas) — incluida solo por escasez de candidatas en Tafira que superasen todos los filtros, is_target_area: false",
+          "La planta baja/sótano es un espacio diáfano sin terminar (posible garaje/trastero/taller) — no incluido como plaza de garaje confirmada"
+        ],
+        "specs": {
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "size_m2": 219,
+          "floor": null,
+          "has_elevator": null,
+          "has_garden": true,
+          "garden_notes": "Parcela propia de 722 m² de una casa completamente independiente, actualmente en uso como huerto familiar (tomates, plátanos, calabazas) — jardín/terreno privado sin ambigüedad de zona comunitaria.",
+          "terrace": true,
+          "parking": null,
+          "energy_rating": "E",
+          "year_built": 1990,
+          "needs_reform": false,
+          "community_fees": null,
+          "orientation": "este"
+        }
+      }
+    ]
+  },
+  {
     "date": "2026-08-29",
     "entries": [
       {
