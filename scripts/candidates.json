@@ -446,5 +446,19 @@
     "status": "new",
     "added_at": "2026-08-28",
     "fingerprint": "avenida-canaria-gran-marzo-palmas-tamaraceite|"
+  },
+  {
+    "id": "idealista-ffd7bd06",
+    "title": "Piso en Calle Hermanos Domínguez Santana, 12, Tamaraceite, Las Palmas de Gran Canaria",
+    "price": 280000,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Calle Hermanos Domínguez Santana, 12, Tamaraceite, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/100115646/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/ec/0d/73/1069644637.jpg",
+    "status": "new",
+    "added_at": "2026-09-01",
+    "fingerprint": "12-calle-canaria-dominguez-gran-hermanos-palmas-santana-tamaraceite|"
   }
 ]

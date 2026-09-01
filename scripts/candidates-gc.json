@@ -824,5 +824,19 @@
     "status": "new",
     "added_at": "2026-09-01",
     "fingerprint": "calle-doctoral-galdos-lucia-pareado-perez-santa-tirajana|"
+  },
+  {
+    "id": "idealista-b2be436a",
+    "title": "Chalet adosado en Pantana, 31, Cruce de Arinaga, Agüimes",
+    "price": 260000,
+    "bedrooms": 4,
+    "year": null,
+    "location": "Pantana, 31, Cruce de Arinaga, Agüimes",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/112421881/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/d6/92/3b/1469457124.jpg",
+    "status": "new",
+    "added_at": "2026-09-01",
+    "fingerprint": "31-adosado-aguimes-arinaga-cruce-pantana|"
   }
 ]
