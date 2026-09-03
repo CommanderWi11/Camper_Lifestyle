@@ -7,3 +7,9 @@ __pycache__/
 venv/
 .state/
 supabase/.temp/
+
+# Operational docs and local job definitions — kept local, never published.
+# This repo is public: repo files are browsable even when Pages only serves docs/.
+CLAUDE.md
+MEMORY.md
+launchd/
