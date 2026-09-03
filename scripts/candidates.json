@@ -42,20 +42,6 @@
     "fingerprint": "adosado-canaria-gran-hoyos-marzagan-montaneta-palmas|"
   },
   {
-    "id": "idealista-f82da6e4",
-    "title": "Casa o chalet independiente en Carretera Crta de Bandama s/n, Tafira, Las Palmas de Gran Canaria",
-    "price": 445000,
-    "bedrooms": 3,
-    "year": null,
-    "location": "Carretera Crta de Bandama s/n, Tafira, Las Palmas de Gran Canaria",
-    "source": "idealista",
-    "url": "https://www.idealista.com/inmueble/110994922/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/dd/46/21/1422007849.jpg",
-    "status": "new",
-    "added_at": "2026-08-26",
-    "fingerprint": "bandama-canaria-carretera-crta-gran-independiente-palmas-tafira|"
-  },
-  {
     "id": "idealista-f6a433ca",
     "title": "Chalet pareado en Calle Llanos de Ucanca, Las Mesas - El Toscón, Las Palmas de Gran Canaria",
     "price": 470000,
@@ -254,7 +240,7 @@
   {
     "id": "idealista-9ba0c01a",
     "title": "Piso en Calle Camelia, 19, Siete Palmas, Las Palmas de Gran Canaria",
-    "price": 370000,
+    "price": 360000,
     "bedrooms": 3,
     "year": null,
     "location": "Calle Camelia, 19, Siete Palmas, Las Palmas de Gran Canaria",
@@ -330,24 +316,10 @@
     "location": "Calle Virgen del Pilar, Escaleritas - La Feria, Las Palmas de Gran Canaria",
     "source": "idealista",
     "url": "https://www.idealista.com/inmueble/111809307/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/da/3d/a4/1464055130.jpg",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/24/7e/00/1469888114.jpg",
     "status": "new",
     "added_at": "2026-08-26",
     "fingerprint": "calle-canaria-escaleritas-feria-gran-palmas-pilar-virgen|"
-  },
-  {
-    "id": "idealista-a4579a38",
-    "title": "Chalet pareado en Lugar Llanos de la Barrera, 19, Marzagán-Los Hoyos-La Montañeta, Las Palmas de Gran Canaria",
-    "price": 349900,
-    "bedrooms": 3,
-    "year": null,
-    "location": "Lugar Llanos de la Barrera, 19, Marzagán-Los Hoyos-La Montañeta, Las Palmas de Gran Canaria",
-    "source": "idealista",
-    "url": "https://www.idealista.com/inmueble/111559152/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/47/93/3b/1464724504.jpg",
-    "status": "new",
-    "added_at": "2026-08-26",
-    "fingerprint": "19-barrera-canaria-gran-hoyos-llanos-lugar-marzagan-montaneta-palmas-pareado|"
   },
   {
     "id": "idealista-5d9e57c4",
@@ -460,5 +432,19 @@
     "status": "new",
     "added_at": "2026-09-01",
     "fingerprint": "12-calle-canaria-dominguez-gran-hermanos-palmas-santana-tamaraceite|"
+  },
+  {
+    "id": "idealista-dbe68cf6",
+    "title": "Piso en Calle Camelia, 19, Siete Palmas, Las Palmas de Gran Canaria",
+    "price": 350000,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Calle Camelia, 19, Siete Palmas, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/111860066/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/9c/ab/61/1450792057.jpg",
+    "status": "new",
+    "added_at": "2026-09-03",
+    "fingerprint": "19-calle-camelia-canaria-gran-palmas-siete|"
   }
 ]

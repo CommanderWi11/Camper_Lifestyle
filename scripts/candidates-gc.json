@@ -350,20 +350,6 @@
     "fingerprint": "arucas-cardones-carretera-independiente-tinocas-valle|"
   },
   {
-    "id": "idealista-5cf3bd66",
-    "title": "Casa o chalet independiente en Carretera Visvique, 45 Gc, Los Castillos-Los Portales-Visvique, Arucas",
-    "price": 400000,
-    "bedrooms": 4,
-    "year": null,
-    "location": "Carretera Visvique, 45 Gc, Los Castillos-Los Portales-Visvique, Arucas",
-    "source": "idealista",
-    "url": "https://www.idealista.com/inmueble/111460185/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/d3/a0/59/1437273630.jpg",
-    "status": "new",
-    "added_at": "2026-08-28",
-    "fingerprint": "45-arucas-carretera-castillos-gc-independiente-portales-visvique|"
-  },
-  {
     "id": "idealista-1721266f",
     "title": "Casa o chalet independiente en Ingenio, Ingenio",
     "price": 499000,
@@ -814,7 +800,7 @@
   {
     "id": "idealista-e510e7ad",
     "title": "Chalet pareado en Calle Pérez Galdós, El Doctoral, Santa Lucía de Tirajana",
-    "price": 203000,
+    "price": 194000,
     "bedrooms": 6,
     "year": null,
     "location": "Calle Pérez Galdós, El Doctoral, Santa Lucía de Tirajana",
