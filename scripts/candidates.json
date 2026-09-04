@@ -78,7 +78,7 @@
     "location": "Avenida Juan Carlos I, Siete Palmas, Las Palmas de Gran Canaria",
     "source": "idealista",
     "url": "https://www.idealista.com/inmueble/112041851/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/ed/29/d0/1457944019.jpg",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/9f/7f/c0/1470210769.jpg",
     "status": "new",
     "added_at": "2026-08-26",
     "fingerprint": "avenida-canaria-carlos-gran-juan-palmas-siete|"
@@ -446,5 +446,33 @@
     "status": "new",
     "added_at": "2026-09-03",
     "fingerprint": "19-calle-camelia-canaria-gran-palmas-siete|"
+  },
+  {
+    "id": "idealista-052672d6",
+    "title": "Piso en Calle Doctor Alfonso Chiscano Díaz, 12, Negrín, Las Palmas de Gran Canaria",
+    "price": 418100,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Calle Doctor Alfonso Chiscano Díaz, 12, Negrín, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/112451499/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/98/75/24/1470432749.jpg",
+    "status": "new",
+    "added_at": "2026-09-04",
+    "fingerprint": "12-alfonso-calle-canaria-chiscano-diaz-doctor-gran-negrin-palmas|"
+  },
+  {
+    "id": "idealista-e7991986",
+    "title": "Piso en Calle Doctor Alfonso Chiscano Díaz, 12, Negrín, Las Palmas de Gran Canaria",
+    "price": 407600,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Calle Doctor Alfonso Chiscano Díaz, 12, Negrín, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/112451485/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/82/d9/48/1470432364.jpg",
+    "status": "new",
+    "added_at": "2026-09-04",
+    "fingerprint": "12-alfonso-calle-canaria-chiscano-diaz-doctor-gran-negrin-palmas|"
   }
 ]
