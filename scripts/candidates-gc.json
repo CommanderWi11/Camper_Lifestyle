@@ -548,13 +548,13 @@
   {
     "id": "idealista-f7cafe8a",
     "title": "Chalet pareado en El Santísimo, La Angostura - Los Olivos, Santa Brigida",
-    "price": 369000,
+    "price": 358000,
     "bedrooms": 4,
     "year": null,
     "location": "El Santísimo, La Angostura - Los Olivos, Santa Brigida",
     "source": "idealista",
     "url": "https://www.idealista.com/inmueble/112015032/",
-    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/66/d9/7a/1455837203.jpg",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/77/cc/67/1471147505.jpg",
     "status": "new",
     "added_at": "2026-08-28",
     "fingerprint": "angostura-brigida-olivos-pareado-santa-santisimo|"
@@ -824,5 +824,19 @@
     "status": "new",
     "added_at": "2026-09-01",
     "fingerprint": "31-adosado-aguimes-arinaga-cruce-pantana|"
+  },
+  {
+    "id": "idealista-c56127ad",
+    "title": "Chalet adosado en Calle Pio Baroja, 54, Playa del Hombre - Taliarte - Salinetas, Telde",
+    "price": 499000,
+    "bedrooms": 4,
+    "year": null,
+    "location": "Calle Pio Baroja, 54, Playa del Hombre - Taliarte - Salinetas, Telde",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/112471586/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/bc/21/77/1471122521.jpg",
+    "status": "new",
+    "added_at": "2026-09-07",
+    "fingerprint": "54-adosado-baroja-calle-hombre-pio-playa-salinetas-taliarte-telde|"
   }
 ]
