@@ -474,5 +474,19 @@
     "status": "new",
     "added_at": "2026-09-04",
     "fingerprint": "12-alfonso-calle-canaria-chiscano-diaz-doctor-gran-negrin-palmas|"
+  },
+  {
+    "id": "idealista-7d6621f0",
+    "title": "Casa o chalet independiente en Marzagán-Los Hoyos-La Montañeta, Las Palmas de Gran Canaria",
+    "price": 425000,
+    "bedrooms": 3,
+    "year": null,
+    "location": "Marzagán-Los Hoyos-La Montañeta, Las Palmas de Gran Canaria",
+    "source": "idealista",
+    "url": "https://www.idealista.com/inmueble/111948959/",
+    "photo": "https://img4.idealista.com/blur/480_360_mq/0/id.pro.es.image.master/4d/db/ea/1453657743.jpg",
+    "status": "new",
+    "added_at": "2026-09-08",
+    "fingerprint": "canaria-gran-hoyos-independiente-marzagan-montaneta-palmas|"
   }
 ]
