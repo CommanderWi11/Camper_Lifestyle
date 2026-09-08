@@ -70,6 +70,32 @@ def test_is_new_today_flags_first_time_winners_only():
     assert c["is_new_today"] is True, "a first-time winner is new"
 
 
+def test_a_returning_winner_is_flagged_new_again():
+    """Deliberate (Luis, 2026-09-08), not an oversight.
+
+    The dashboard's "Nuevo" badge means *new to this board*, not *newly listed*.
+    A house that wins, drops out, and later wins its way back is badged again —
+    it is news to the reader each time it reappears. Do not "fix" this into a
+    first-sighting-ever flag without changing the badge's meaning too.
+    """
+    day1 = board.update_board([], [winner("a", 1), winner("b", 2)])
+    day2 = board.update_board(day1, [winner("b", 1)])          # 'a' drops off entirely
+    day3 = board.update_board(day2, [winner("b", 1), winner("a", 2)])   # 'a' returns
+
+    assert "a" not in {l["id"] for l in day2}, "unstarred 'a' really left the board"
+    a = next(l for l in day3 if l["id"] == "a")
+    assert a["is_new_today"] is True, "a returning winner is new to the board again"
+
+
+def test_a_favorite_never_carries_the_new_flag():
+    """The badge is gated on rank in the UI, but the data says the same thing."""
+    day1 = board.update_board([], [winner("a", 1), winner("b", 2)])
+    day2 = board.update_board(day1, [winner("b", 1)], starred_ids={"a"})
+
+    a = next(l for l in day2 if l["id"] == "a")
+    assert a["rank"] is None and a["is_new_today"] is False
+
+
 def test_discarded_listings_are_removed_even_if_starred():
     day1 = board.update_board([], [winner("a", 1), winner("b", 2)], starred_ids={"a"})
     day2 = board.update_board(day1, [], starred_ids={"a"}, blocked_ids={"a"})

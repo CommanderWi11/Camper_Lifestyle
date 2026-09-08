@@ -158,6 +158,17 @@ function renderCard(listing, index) {
   const hasOffice = listing.specs?.has_office_room === true;
   const hasDeskArea = !hasOffice && Boolean(listing.specs?.office_notes);
   const rankBadge = listing.rank ? `<span class="rank-badge">${String(listing.rank).padStart(2, '0')}</span>` : '';
+  // "Nuevo" marks a card that was not in the PREVIOUS run's Top 5. board.py
+  // recomputes is_new_today on every run, so the badge clears itself the moment
+  // a new search publishes and survives a day the search failed to publish —
+  // "until a new search is performed", as asked. A house that drops off the
+  // board and later wins its way back is deliberately badged again
+  // (Luis, 2026-09-08) — the badge means "new to this board", not "newly listed".
+  // Also gated on `rank` so it can only ever land on today's Top 5: Favorites
+  // already carry is_new_today:false, and archive entries carry no such field.
+  const newBadge = listing.rank && listing.is_new_today
+    ? `<span class="new-badge">Nuevo</span>`
+    : '';
   const titleText = escapeHtml(listing.title);
   const outsideTafira = listing.is_target_area === false;
 
@@ -165,6 +176,7 @@ function renderCard(listing, index) {
     <article class="card" style="--stagger:${index || 0}" data-id="${listing.id}">
       <div class="photo-frame">
         ${rankBadge}
+        ${newBadge}
         <a class="photo-link" href="${listing.url}" target="_blank" rel="noopener noreferrer">
           ${listing.photo
             ? `<img class="photo" src="${listing.photo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`

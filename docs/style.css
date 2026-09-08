@@ -339,6 +339,26 @@ h2::before {
   line-height: 1;
 }
 
+/* Mirrors .rank-badge's inset at the opposite corner. Filled with the accent
+   rather than the neutral --scrim so it reads as a signal ("look at this one")
+   instead of blending into the card chrome the rank number belongs to. */
+.new-badge {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--on-accent);
+  background: var(--accent);
+  padding: 0.34rem 0.56rem;
+  border-radius: 999px;
+  line-height: 1;
+  box-shadow: 0 2px 8px -2px rgba(20, 16, 12, 0.55);
+}
+
 .card-body { padding: 1.1rem 1.15rem 1.2rem; }
 
 .title {
